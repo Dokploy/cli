@@ -42,13 +42,10 @@ export default class Verify extends Command {
 
 			const response = await axios.post(
 				`${url}/api/trpc/auth.verifyToken`,
-				{
-					json: {
-						token,
-					},
-				},
+				{},
 				{
 					headers: {
+						Authorization: `Bearer ${token}`,
 						"Content-Type": "application/json",
 					},
 				},

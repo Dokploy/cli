@@ -83,23 +83,17 @@ export default class Authenticate extends Command {
 		try {
 			console.log(`\n${chalk.blue("Validating server...")}`);
 
-			const response = await axios.post(
+			await axios.post(
 				`${url}/api/trpc/auth.verifyToken`,
-				{
-					json: {
-						token,
-					},
-				},
+				{},
 				{
 					headers: {
+						Authorization: `Bearer ${token}`,
 						"Content-Type": "application/json",
 					},
 				},
 			);
 
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Invalid token"));
-			}
 			fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 			this.log(chalk.green("Authentication details saved successfully."));
 		} catch (error) {
