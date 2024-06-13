@@ -5,8 +5,8 @@ import inquirer from "inquirer";
 
 import { readAuthConfig } from "../../utils/utils.js";
 
-export default class AppCreate extends Command {
-	static description = "Create a new application within a project.";
+export default class DatabaseCreate extends Command {
+	static description = "Create a new database within a project.";
 
 	static examples = ["$ <%= config.bin %> app create"];
 
@@ -21,7 +21,7 @@ export default class AppCreate extends Command {
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 
-		const { flags } = await this.parse(AppCreate);
+		const { flags } = await this.parse(DatabaseCreate);
 
 		let { projectId } = flags;
 
@@ -55,7 +55,7 @@ export default class AppCreate extends Command {
 							name: project.name,
 							value: project.projectId,
 						})),
-						message: "Select a project to create the database in:",
+						message: "Select a project to create the application in:",
 						name: "selectedProject",
 						type: "list",
 					},
@@ -68,32 +68,16 @@ export default class AppCreate extends Command {
 			}
 		}
 
-		const databases = ["postgres", "mysql", "redis", "mariadb", "mongo"];
-
-		const databaseSelect = await inquirer.prompt([
-			{
-				choices: databases.map((database: any) => ({
-					name: database,
-					value: database,
-				})),
-				message: "Select a database to create the application in:",
-				name: "selectedDatabase",
-				type: "list",
-			},
-		]);
-
-		const urlSelected = `${auth.url}/api/trpc/${databaseSelect.selectedDatabase}.create`;
-
 		// Solicitar detalles de la nueva aplicación
 		const appDetails = await inquirer.prompt([
 			{
 				message: "Enter the database name:",
 				name: "appName",
 				type: "input",
-				validate: (input) => (input ? true : "Database name is required"),
+				validate: (input) => (input ? true : "Application name is required"),
 			},
 			{
-				message: "Enter the database description (optional):",
+				message: "Enter the application description (optional):",
 				name: "appDescription",
 				type: "input",
 			},
@@ -103,30 +87,32 @@ export default class AppCreate extends Command {
 
 		// Crear la aplicación en el proyecto seleccionado
 		try {
-			// const response = await axios.post(
-			// 	`${auth.url}/api/trpc/application.create`,
-			// 	{
-			// 		json: {
-			// 			description: appDescription,
-			// 			name: appName,
-			// 			projectId,
-			// 		},
-			// 	},
-			// 	{
-			// 		headers: {
-			// 			Authorization: `Bearer ${auth.token}`,
-			// 			"Content-Type": "application/json",
-			// 		},
-			// 	},
-			// );
-			// if (!response.data.result.data.json) {
-			// 	this.error(chalk.red("Error creating application"));
-			// }
-			// this.log(
-			// 	chalk.green(
-			// 		`Application '${appName}' created successfully in project ID '${projectId}'.`,
-			// 	),
-			// );
+			const response = await axios.post(
+				`${auth.url}/api/trpc/database.create`,
+				{
+					json: {
+						description: appDescription,
+						name: appName,
+						projectId,
+					},
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${auth.token}`,
+						"Content-Type": "application/json",
+					},
+				},
+			);
+
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error creating application"));
+			}
+
+			this.log(
+				chalk.green(
+					`Application '${appName}' created successfully in project ID '${projectId}'.`,
+				),
+			);
 		} catch (error) {
 			// @ts-expect-error  TODO: Fix this
 			this.error(chalk.red(`Failed to create application: ${error.message}`));
