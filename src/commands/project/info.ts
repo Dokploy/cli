@@ -54,7 +54,7 @@ export default class ProjectInfo extends Command {
 
 				const selectedProjectId = answers.selectedProject;
 
-				await await this.showProjectInfo(auth, selectedProjectId);
+				await this.showProjectInfo(auth, selectedProjectId);
 			} catch (error) {
 				// @ts-expect-error hola
 				this.error(chalk.red(`Failed to fetch project list: ${error.message}`));
