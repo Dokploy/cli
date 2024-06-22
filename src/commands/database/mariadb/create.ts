@@ -75,8 +75,8 @@ export default class DatabaseMariadbCreate extends Command {
 					type: "password",
 				},
 				{
-					default: "mariadb:4",
-					message: "Docker Image (default: mariadb:4):",
+					default: "mariadb:11",
+					message: "Docker Image (default: mariadb:11):",
 					name: "dockerImage",
 					type: "input",
 				},
