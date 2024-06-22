@@ -4,9 +4,10 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 
 import { readAuthConfig } from "../../../utils/utils.js";
+import { getProject, getProjects } from "../../../utils/shared.js";
 
 export default class DatabaseRedisDelete extends Command {
-	static description = "Delete an application from a project.";
+	static description = "Delete an redis database from a project.";
 
 	static examples = [
 		"$ <%= config.bin %> redis delete",
@@ -28,78 +29,44 @@ export default class DatabaseRedisDelete extends Command {
 		let { projectId } = flags;
 
 		if (!projectId) {
-			// Obtener la lista de proyectos y permitir la selección
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 
-			try {
-				const response = await axios.get(`${auth.url}/api/trpc/project.all`, {
-					headers: {
-						Authorization: `Bearer ${auth.token}`,
-						"Content-Type": "application/json",
-					},
-				});
+			const projects = await getProjects(auth, this);
 
-				if (!response.data.result.data.json) {
-					this.error(chalk.red("Error fetching projects"));
-				}
-
-				const projects = response.data.result.data.json;
-
-				if (projects.length === 0) {
-					this.log(chalk.yellow("No projects found."));
-					return;
-				}
-
-				// Permitir al usuario seleccionar un proyecto
-				const answers = await inquirer.prompt([
-					{
-						choices: projects.map((project: any) => ({
-							name: project.name,
-							value: project.projectId,
-						})),
-						message: "Select a project to delete the mariadb database from:",
-						name: "selectedProject",
-						type: "list",
-					},
-				]);
-
-				projectId = answers.selectedProject;
-			} catch (error) {
-				// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
-				this.error(chalk.red(`Failed to fetch project list: ${error.message}`));
+			if (projects.length === 0) {
+				this.log(chalk.yellow("No projects found."));
+				return;
 			}
+
+			const answers = await inquirer.prompt([
+				{
+					choices: projects.map((project: any) => ({
+						name: project.name,
+						value: project.projectId,
+					})),
+					message: "Select a project to delete the redis database from:",
+					name: "selectedProject",
+					type: "list",
+				},
+			]);
+
+			projectId = answers.selectedProject;
 		}
 
 		try {
-			const response = await axios.get(`${auth.url}/api/trpc/project.one`, {
-				headers: {
-					Authorization: `Bearer ${auth.token}`,
-					"Content-Type": "application/json",
-				},
-				params: {
-					input: JSON.stringify({
-						json: { projectId },
-					}),
-				},
-			});
+			const project = await getProject(projectId, auth, this);
 
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error fetching applications"));
-			}
-
-			const apps = response.data.result.data.json;
-
-			if (apps.redis.length === 0) {
-				this.log(chalk.yellow("No applications found in this project."));
+			if (!project.redis || project.redis.length === 0) {
+				this.log(chalk.yellow("No redis databases found in this project."));
 				return;
 			}
 
 			// Permitir al usuario seleccionar una aplicación
 			const appAnswers = await inquirer.prompt([
 				{
-					choices: apps.redis.map((app: any) => ({
-						name: app.name,
-						value: app.redisId,
+					choices: project.redis.map((db: any) => ({
+						name: db.name,
+						value: db.redisId,
 					})),
 					message: "Select the redis database to delete:",
 					name: "selectedApp",
@@ -109,22 +76,20 @@ export default class DatabaseRedisDelete extends Command {
 
 			const redisId = appAnswers.selectedApp;
 
-			// Confirmar eliminación
 			const confirmAnswers = await inquirer.prompt([
 				{
 					default: false,
-					message: "Are you sure you want to delete this mysql database?",
+					message: "Are you sure you want to delete this redis database?",
 					name: "confirmDelete",
 					type: "confirm",
 				},
 			]);
 
 			if (!confirmAnswers.confirmDelete) {
-				this.log(chalk.yellow("Application deletion cancelled."));
+				this.log(chalk.yellow("Database deletion cancelled."));
 				return;
 			}
 
-			// Eliminar la aplicación seleccionada
 			const deleteResponse = await axios.post(
 				`${auth.url}/api/trpc/redis.remove`,
 				{
@@ -141,13 +106,15 @@ export default class DatabaseRedisDelete extends Command {
 			);
 
 			if (!deleteResponse.data.result.data.json) {
-				this.error(chalk.red("Error deleting application"));
+				this.error(chalk.red("Error deleting redis database"));
 			}
 
-			this.log(chalk.green("Application deleted successfully."));
+			this.log(chalk.green("Redis database deleted successfully."));
 		} catch (error) {
-			// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
-			this.error(chalk.red(`Failed to delete application: ${error.message}`));
+			this.error(
+				// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
+				chalk.red(`Failed to delete redis database: ${error.message}`),
+			);
 		}
 	}
 }

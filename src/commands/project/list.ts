@@ -1,9 +1,9 @@
 import { Command } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import Table from "cli-table3";
 
 import { readAuthConfig } from "../../utils/utils.js";
+import { getProjects } from "../../utils/shared.js";
 
 export default class ProjectList extends Command {
 	static description = "List all projects.";
@@ -16,18 +16,7 @@ export default class ProjectList extends Command {
 		console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 
 		try {
-			const response = await axios.get(`${auth.url}/api/trpc/project.all`, {
-				headers: {
-					Authorization: `Bearer ${auth.token}`,
-					"Content-Type": "application/json",
-				},
-			});
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error fetching projects"));
-			}
-
-			const projects = response.data.result.data.json;
+			const projects = await getProjects(auth, this);
 
 			if (projects.length === 0) {
 				this.log(chalk.yellow("No projects found."));
@@ -52,9 +41,9 @@ export default class ProjectList extends Command {
 
 				this.log(table.toString());
 			}
-		} catch {
+		} catch (error) {
 			// @ts-expect-error error is not defined
-			this.error(chalk.red(`Failed to list projects: ${error.message}`));
+			this.error(chalk.red(`Failed to list projects: ${error?.message}`));
 		}
 	}
 }

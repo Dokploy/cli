@@ -4,9 +4,10 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 
 import { readAuthConfig } from "../../../utils/utils.js";
+import { getProject, getProjects } from "../../../utils/shared.js";
 
 export default class DatabaseMysqlDelete extends Command {
-	static description = "Delete an application from a project.";
+	static description = "Delete a MySQL database from a project.";
 
 	static examples = [
 		"$ <%= config.bin %> mysql delete",
@@ -28,80 +29,46 @@ export default class DatabaseMysqlDelete extends Command {
 		let { projectId } = flags;
 
 		if (!projectId) {
-			// Obtener la lista de proyectos y permitir la selección
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 
-			try {
-				const response = await axios.get(`${auth.url}/api/trpc/project.all`, {
-					headers: {
-						Authorization: `Bearer ${auth.token}`,
-						"Content-Type": "application/json",
-					},
-				});
+			const projects = await getProjects(auth, this);
 
-				if (!response.data.result.data.json) {
-					this.error(chalk.red("Error fetching projects"));
-				}
-
-				const projects = response.data.result.data.json;
-
-				if (projects.length === 0) {
-					this.log(chalk.yellow("No projects found."));
-					return;
-				}
-
-				// Permitir al usuario seleccionar un proyecto
-				const answers = await inquirer.prompt([
-					{
-						choices: projects.map((project: any) => ({
-							name: project.name,
-							value: project.projectId,
-						})),
-						message: "Select a project to delete the mysql database from:",
-						name: "selectedProject",
-						type: "list",
-					},
-				]);
-
-				projectId = answers.selectedProject;
-			} catch (error) {
-				// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
-				this.error(chalk.red(`Failed to fetch project list: ${error.message}`));
+			if (projects.length === 0) {
+				this.log(chalk.yellow("No projects found."));
+				return;
 			}
+
+			const answers = await inquirer.prompt([
+				{
+					choices: projects.map((project: any) => ({
+						name: project.name,
+						value: project.projectId,
+					})),
+					message: "Select a project to delete the MySQL database from:",
+					name: "selectedProject",
+					type: "list",
+				},
+			]);
+
+			projectId = answers.selectedProject;
 		}
 
 		try {
-			const response = await axios.get(`${auth.url}/api/trpc/project.one`, {
-				headers: {
-					Authorization: `Bearer ${auth.token}`,
-					"Content-Type": "application/json",
-				},
-				params: {
-					input: JSON.stringify({
-						json: { projectId },
-					}),
-				},
-			});
+			const project = await getProject(projectId, auth, this);
 
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error fetching applications"));
-			}
-
-			const apps = response.data.result.data.json;
-
-			if (apps.mysql.length === 0) {
-				this.log(chalk.yellow("No applications found in this project."));
+			if (!project.mysql || project.mysql.length === 0) {
+				this.log(chalk.yellow("No MySQL databases found in this project."));
 				return;
 			}
 
 			// Permitir al usuario seleccionar una aplicación
 			const appAnswers = await inquirer.prompt([
 				{
-					choices: apps.mysql.map((app: any) => ({
+					choices: project.mysql.map((app: any) => ({
 						name: app.name,
 						value: app.mysqlId,
 					})),
-					message: "Select the mysql database to delete:",
+					message: "Select the MySQL database to delete:",
 					name: "selectedApp",
 					type: "list",
 				},

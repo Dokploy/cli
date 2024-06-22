@@ -9,9 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const configPath = path.join(__dirname, "..", "..", "config.json");
 
-export const readAuthConfig = async (
-	command: Command,
-): Promise<{ token: string; url: string }> => {
+export type AuthConfig = {
+	token: string;
+	url: string;
+};
+
+export const readAuthConfig = async (command: Command): Promise<AuthConfig> => {
 	if (!fs.existsSync(configPath)) {
 		command.error(
 			chalk.red(

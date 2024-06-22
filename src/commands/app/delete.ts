@@ -3,7 +3,9 @@ import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import { getProject, getProjects } from "../../utils/shared.js";
 import { readAuthConfig } from "../../utils/utils.js";
+import type { Answers } from "./create.js";
 
 export default class AppDelete extends Command {
 	static description = "Delete an application from a project.";
@@ -29,77 +31,33 @@ export default class AppDelete extends Command {
 		let { projectId } = flags;
 
 		if (!projectId) {
-			// Obtener la lista de proyectos y permitir la selección
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 
-			try {
-				const response = await axios.get(`${auth.url}/api/trpc/project.all`, {
-					headers: {
-						Authorization: `Bearer ${auth.token}`,
-						"Content-Type": "application/json",
-					},
-				});
+			const projects = await getProjects(auth, this);
 
-				if (!response.data.result.data.json) {
-					this.error(chalk.red("Error fetching projects"));
-				}
-
-				const projects = response.data.result.data.json;
-
-				if (projects.length === 0) {
-					this.log(chalk.yellow("No projects found."));
-					return;
-				}
-
-				// Permitir al usuario seleccionar un proyecto
-				const answers = await inquirer.prompt([
-					{
-						choices: projects.map((project: any) => ({
-							name: project.name,
-							value: project.projectId,
-						})),
-						message: "Select a project to delete the application from:",
-						name: "selectedProject",
-						type: "list",
-					},
-				]);
-
-				projectId = answers.selectedProject;
-			} catch (error) {
-				// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
-				this.error(chalk.red(`Failed to fetch project list: ${error.message}`));
-			}
-		}
-
-		// Obtener la lista de aplicaciones del proyecto seleccionado
-		try {
-			const response = await axios.get(`${auth.url}/api/trpc/project.one`, {
-				headers: {
-					Authorization: `Bearer ${auth.token}`,
-					"Content-Type": "application/json",
+			const { project } = await inquirer.prompt<Answers>([
+				{
+					choices: projects.map((project) => ({
+						name: project.name,
+						value: project,
+					})),
+					message: "Select a project to create the application in:",
+					name: "project",
+					type: "list",
 				},
-				params: {
-					input: JSON.stringify({
-						json: { projectId },
-					}),
-				},
-			});
+			]);
 
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error fetching applications"));
+			projectId = project.projectId;
+			const projectSelected = await getProject(projectId, auth, this);
+
+			if (projectSelected.applications.length === 0) {
+				this.error(chalk.yellow("No applications found in this project."));
 			}
 
-			const apps = response.data.result.data.json;
-
-			if (apps.applications.length === 0) {
-				this.log(chalk.yellow("No applications found in this project."));
-				return;
-			}
-
-			// Permitir al usuario seleccionar una aplicación
 			const appAnswers = await inquirer.prompt([
 				{
-					choices: apps.applications.map((app: any) => ({
+					// @ts-ignore
+					choices: projectSelected.applications.map((app) => ({
 						name: app.name,
 						value: app.applicationId,
 					})),
@@ -111,7 +69,7 @@ export default class AppDelete extends Command {
 
 			const applicationId = appAnswers.selectedApp;
 
-			// Confirmar eliminación
+			// // Confirmar eliminación
 			const confirmAnswers = await inquirer.prompt([
 				{
 					default: false,
@@ -122,11 +80,9 @@ export default class AppDelete extends Command {
 			]);
 
 			if (!confirmAnswers.confirmDelete) {
-				this.log(chalk.yellow("Application deletion cancelled."));
-				return;
+				this.error(chalk.yellow("Application deletion cancelled."));
 			}
 
-			// Eliminar la aplicación seleccionada
 			const deleteResponse = await axios.post(
 				`${auth.url}/api/trpc/application.delete`,
 				{
@@ -147,9 +103,6 @@ export default class AppDelete extends Command {
 			}
 
 			this.log(chalk.green("Application deleted successfully."));
-		} catch (error) {
-			// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
-			this.error(chalk.red(`Failed to delete application: ${error.message}`));
 		}
 	}
 }

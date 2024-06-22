@@ -3,7 +3,13 @@ import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import { type Project, getProjects } from "../../utils/shared.js";
+import { slugify } from "../../utils/slug.js";
 import { readAuthConfig } from "../../utils/utils.js";
+
+export interface Answers {
+	project: Project;
+}
 
 export default class AppCreate extends Command {
 	static description = "Create a new application within a project.";
@@ -26,110 +32,72 @@ export default class AppCreate extends Command {
 		let { projectId } = flags;
 
 		if (!projectId) {
-			// Obtener la lista de proyectos y permitir la selección
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 
-			try {
-				const response = await axios.get(`${auth.url}/api/trpc/project.all`, {
+			const projects = await getProjects(auth, this);
+
+			const { project } = await inquirer.prompt<Answers>([
+				{
+					choices: projects.map((project) => ({
+						name: project.name,
+						value: project,
+					})),
+					message: "Select a project to create the application in:",
+					name: "project",
+					type: "list",
+				},
+			]);
+
+			projectId = project.projectId;
+
+			const appDetails = await inquirer.prompt([
+				{
+					message: "Enter the application name:",
+					name: "name",
+					type: "input",
+					validate: (input) => (input ? true : "Application name is required"),
+				},
+				{
+					message: "Enter the application description (optional):",
+					name: "appDescription",
+					type: "input",
+				},
+			]);
+
+			const appName = await inquirer.prompt([
+				{
+					default: `${slugify(project.name)}-${appDetails.name}`,
+					message: "Enter the App name: (optional):",
+					name: "appName",
+					type: "input",
+					validate: (input) => (input ? true : "App name is required"),
+				},
+			]);
+
+			const response = await axios.post(
+				`${auth.url}/api/trpc/application.create`,
+				{
+					json: {
+						...appDetails,
+						appName: appName.appName,
+						projectId: project.projectId,
+					},
+				},
+				{
 					headers: {
 						Authorization: `Bearer ${auth.token}`,
 						"Content-Type": "application/json",
 					},
-				});
+				},
+			);
 
-				if (!response.data.result.data.json) {
-					this.error(chalk.red("Error fetching projects"));
-				}
-
-				const projects = response.data.result.data.json;
-
-				if (projects.length === 0) {
-					this.log(chalk.yellow("No projects found."));
-					return;
-				}
-
-				// Permitir al usuario seleccionar un proyecto
-				const answers = await inquirer.prompt([
-					{
-						choices: projects.map((project: any) => ({
-							name: project.name,
-							value: project.projectId,
-						})),
-						message: "Select a project to create the database in:",
-						name: "selectedProject",
-						type: "list",
-					},
-				]);
-
-				projectId = answers.selectedProject;
-			} catch (error) {
-				// @ts-expect-error  TODO: Fix this
-				this.error(chalk.red(`Failed to fetch project list: ${error.message}`));
+			if (response.status !== 200) {
+				this.error(chalk.red("Error creating application"));
 			}
-		}
 
-		const databases = ["postgres", "mysql", "redis", "mariadb", "mongo"];
-
-		const databaseSelect = await inquirer.prompt([
-			{
-				choices: databases.map((database: any) => ({
-					name: database,
-					value: database,
-				})),
-				message: "Select a database to create the application in:",
-				name: "selectedDatabase",
-				type: "list",
-			},
-		]);
-
-		const urlSelected = `${auth.url}/api/trpc/${databaseSelect.selectedDatabase}.create`;
-
-		// Solicitar detalles de la nueva aplicación
-		const appDetails = await inquirer.prompt([
-			{
-				message: "Enter the database name:",
-				name: "appName",
-				type: "input",
-				validate: (input) => (input ? true : "Database name is required"),
-			},
-			{
-				message: "Enter the database description (optional):",
-				name: "appDescription",
-				type: "input",
-			},
-		]);
-
-		const { appDescription, appName } = appDetails;
-
-		// Crear la aplicación en el proyecto seleccionado
-		try {
-			// const response = await axios.post(
-			// 	`${auth.url}/api/trpc/application.create`,
-			// 	{
-			// 		json: {
-			// 			description: appDescription,
-			// 			name: appName,
-			// 			projectId,
-			// 		},
-			// 	},
-			// 	{
-			// 		headers: {
-			// 			Authorization: `Bearer ${auth.token}`,
-			// 			"Content-Type": "application/json",
-			// 		},
-			// 	},
-			// );
-			// if (!response.data.result.data.json) {
-			// 	this.error(chalk.red("Error creating application"));
-			// }
-			// this.log(
-			// 	chalk.green(
-			// 		`Application '${appName}' created successfully in project ID '${projectId}'.`,
-			// 	),
-			// );
-		} catch (error) {
-			// @ts-expect-error  TODO: Fix this
-			this.error(chalk.red(`Failed to create application: ${error.message}`));
+			this.log(
+				chalk.green(`Application '${appDetails.name}' created successfully.`),
+			);
 		}
 	}
 }
