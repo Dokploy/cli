@@ -111,6 +111,7 @@ export default class ProjectInfo extends Command {
 
 			if (projectInfo.applications.length > 0) {
 				this.log(chalk.blue("\nApplications:"));
+				// @ts-ignore
 				projectInfo.applications.forEach((app, index: number) => {
 					this.log(`  ${index + 1}. ${app.name}`);
 				});
@@ -118,6 +119,7 @@ export default class ProjectInfo extends Command {
 
 			if (projectInfo.compose.length > 0) {
 				this.log(chalk.blue("\nCompose Services:"));
+				// @ts-ignore
 				projectInfo.compose.forEach((service, index: number) => {
 					this.log(`  ${index + 1}. ${service.name}`);
 				});
@@ -125,6 +127,7 @@ export default class ProjectInfo extends Command {
 
 			if (projectInfo.mariadb.length > 0) {
 				this.log(chalk.blue("\nMariaDB Databases:"));
+				// @ts-ignore
 				projectInfo.mariadb.forEach((db, index: number) => {
 					this.log(`  ${index + 1}. ${db.name}`);
 				});
@@ -132,6 +135,7 @@ export default class ProjectInfo extends Command {
 
 			if (projectInfo.mongo.length > 0) {
 				this.log(chalk.blue("\nMongoDB Databases:"));
+				// @ts-ignore
 				projectInfo.mongo.forEach((db, index: number) => {
 					this.log(`  ${index + 1}. ${db.name}`);
 				});
@@ -139,6 +143,7 @@ export default class ProjectInfo extends Command {
 
 			if (projectInfo.mysql.length > 0) {
 				this.log(chalk.blue("\nMySQL Databases:"));
+				// @ts-ignore
 				projectInfo.mysql.forEach((db, index: number) => {
 					this.log(`  ${index + 1}. ${db.name}`);
 				});
@@ -146,6 +151,7 @@ export default class ProjectInfo extends Command {
 
 			if (projectInfo.postgres.length > 0) {
 				this.log(chalk.blue("\nPostgreSQL Databases:"));
+				// @ts-ignore
 				projectInfo.postgres.forEach((db, index: number) => {
 					this.log(`  ${index + 1}. ${db.name}`);
 				});
@@ -153,6 +159,7 @@ export default class ProjectInfo extends Command {
 
 			if (projectInfo.redis.length > 0) {
 				this.log(chalk.blue("\nRedis Databases:"));
+				// @ts-ignore
 				projectInfo.redis.forEach((db, index: number) => {
 					this.log(`  ${index + 1}. ${db.name}`);
 				});
