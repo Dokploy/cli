@@ -3,6 +3,10 @@
   "description": "A CLI to manage dokploy server remotely",
   "version": "0.0.0",
   "author": "Mauricio Siu",
+  "licenses": [{
+    "type": "MIT",
+    "url": "https://github.com/Dokploy/cli/blob/master/LICENSE"
+  }],
   "bin": {
     "dokploy": "./bin/run.js"
   },
