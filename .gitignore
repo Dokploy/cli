@@ -6,6 +6,7 @@
 /tmp
 /node_modules
 oclif.manifest.json
+/config.json
 
 
 yarn.lock

@@ -36,7 +36,7 @@ export const getProjects = async (
 		}
 
 		return projects;
-	} catch {
+	} catch (error) {
 		// @ts-expect-error  TODO: Fix this
 		command.error(chalk.red(`Failed to fetch project list: ${error.message}`));
 	}
@@ -74,7 +74,7 @@ export const getProject = async (
 		}
 
 		return project;
-	} catch {
+	} catch (error) {
 		// @ts-expect-error  TODO: Fix this
 		command.error(chalk.red(`Failed to fetch project: ${error.message}`));
 	}

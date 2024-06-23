@@ -66,7 +66,7 @@ export default class ProjectCreate extends Command {
 
 		try {
 			const response = await axios.post(
-				`${auth.url}/api/trpc/project.createCLI`,
+				`${auth.url}/api/trpc/project.create`,
 				{
 					json: {
 						description,
