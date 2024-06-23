@@ -103,6 +103,11 @@ For more information about a specific command, use:
 $ dokploy [COMMAND] --help
 ```
 
+
+## Contributing
+
+If you want to contribute to Dokploy CLI, please check out our [Contributing Guide](https://github.com/Dokploy/cli/blob/main/CONTRIBUTING.md).
+
 ## Support
 
 If you encounter any issues or have any questions, please [open an issue](https://github.com/yourusername/dokploy/issues) in our GitHub repository.
