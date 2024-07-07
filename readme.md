@@ -25,7 +25,7 @@ Dokploy CLI is a powerful and versatile command-line tool designed to remotely m
 ## Installation
 
 ```sh-session
-$ npm install -g dokploy
+$ npm install -g @dokploy/cli
 ```
 
 ## Usage
