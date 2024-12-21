@@ -17,6 +17,7 @@ Dokploy CLI is a powerful and versatile command-line tool designed to remotely m
   - [Authentication](#authentication)
   - [Project Management](#project-management)
   - [Application Management](#application-management)
+  - [Environment Management](#environment-management)
   - [Database Management](#database-management)
 - [Contributing](#contributing)
 - [Support](#support)
