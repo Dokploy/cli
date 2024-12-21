@@ -74,7 +74,7 @@ export default class EnvPull extends Command {
         ]);
 
 
-        fs.writeFileSync(args.file, env)
+        fs.writeFileSync(args.file, env || "")
         this.log(chalk.green("Environment variable write to file successful."));
 
 
