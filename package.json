@@ -1,7 +1,7 @@
 {
   "name": "@dokploy/cli",
   "description": "A CLI to manage dokploy server remotely",
-  "version": "v0.2.3",
+  "version": "v0.2.4",
   "author": "Mauricio Siu",
   "licenses": [{
     "type": "MIT",
