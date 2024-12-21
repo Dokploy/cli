@@ -63,35 +63,45 @@ USAGE
 - `dokploy app:deploy`: Deploy an application.
 - `dokploy app:stop`: Stop a running application.
 
+### Enviroment Management
+
+- `dokploy env pull <file>`: Pull environment variables from Dokploy in a <file>.
+- `dokploy env push <file>`: Push environment variables to Dokploy from a <file>.
+
 ### Database Management
 
 Dokploy supports various types of databases:
 
 #### MariaDB
+
 - `dokploy database:mariadb:create`
 - `dokploy database:mariadb:delete`
 - `dokploy database:mariadb:deploy`
 - `dokploy database:mariadb:stop`
 
 #### MongoDB
+
 - `dokploy database:mongo:create`
 - `dokploy database:mongo:delete`
 - `dokploy database:mongo:deploy`
 - `dokploy database:mongo:stop`
 
 #### MySQL
+
 - `dokploy database:mysql:create`
 - `dokploy database:mysql:delete`
 - `dokploy database:mysql:deploy`
 - `dokploy database:mysql:stop`
 
 #### PostgreSQL
+
 - `dokploy database:postgres:create`
 - `dokploy database:postgres:delete`
 - `dokploy database:postgres:deploy`
 - `dokploy database:postgres:stop`
 
 #### Redis
+
 - `dokploy database:redis:create`
 - `dokploy database:redis:delete`
 - `dokploy database:redis:deploy`
@@ -102,7 +112,6 @@ For more information about a specific command, use:
 ```sh-session
 $ dokploy [COMMAND] --help
 ```
-
 
 ## Contributing
 
