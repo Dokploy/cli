@@ -20,79 +20,84 @@ export default class DatabaseMysqlDelete extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		mysqlId: Flags.string({
+			char: "i",
+			description: "ID of the MySQL database",
+			required: false,
+		}),
+		skipConfirm: Flags.boolean({
+			char: "y",
+			description: "Skip confirmation",
+			required: false,
+		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-
 		const { flags } = await this.parse(DatabaseMysqlDelete);
-		let { projectId } = flags;
+		let { projectId, mysqlId } = flags;
 
-		if (!projectId) {
+		// Modo interactivo si no se proporcionan los flags necesarios
+		if (!projectId || !mysqlId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
-
 			const projects = await getProjects(auth, this);
 
-			if (projects.length === 0) {
-				this.log(chalk.yellow("No projects found."));
-				return;
+			if (!projectId) {
+				const answers = await inquirer.prompt([
+					{
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project.projectId,
+						})),
+						message: "Select a project to delete the MySQL instance from:",
+						name: "selectedProject",
+						type: "list",
+					},
+				]);
+				projectId = answers.selectedProject;
 			}
 
-			const answers = await inquirer.prompt([
-				{
-					choices: projects.map((project: any) => ({
-						name: project.name,
-						value: project.projectId,
-					})),
-					message: "Select a project to delete the MySQL database from:",
-					name: "selectedProject",
-					type: "list",
-				},
-			]);
+			const projectSelected = await getProject(projectId, auth, this);
 
-			projectId = answers.selectedProject;
+			if (!projectSelected.mysql || projectSelected.mysql.length === 0) {
+				this.error(chalk.yellow("No MySQL instances found in this project."));
+			}
+
+			if (!mysqlId) {
+				const dbAnswers = await inquirer.prompt([
+					{
+						// @ts-ignore
+						choices: projectSelected.mysql.map((db) => ({
+							name: db.name,
+							value: db.mysqlId,
+						})),
+						message: "Select the MySQL instance to delete:",
+						name: "selectedDb",
+						type: "list",
+					},
+				]);
+				mysqlId = dbAnswers.selectedDb;
+			}
 		}
 
-		try {
-			const project = await getProject(projectId, auth, this);
-
-			if (!project.mysql || project.mysql.length === 0) {
-				this.log(chalk.yellow("No MySQL databases found in this project."));
-				return;
-			}
-
-			// Permitir al usuario seleccionar una aplicación
-			const appAnswers = await inquirer.prompt([
-				{
-					choices: project.mysql.map((app: any) => ({
-						name: app.name,
-						value: app.mysqlId,
-					})),
-					message: "Select the MySQL database to delete:",
-					name: "selectedApp",
-					type: "list",
-				},
-			]);
-
-			const mysqlId = appAnswers.selectedApp;
-
-			// Confirmar eliminación
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
 			const confirmAnswers = await inquirer.prompt([
 				{
 					default: false,
-					message: "Are you sure you want to delete this mysql database?",
+					message: "Are you sure you want to delete this MySQL instance?",
 					name: "confirmDelete",
 					type: "confirm",
 				},
 			]);
 
 			if (!confirmAnswers.confirmDelete) {
-				this.log(chalk.yellow("Application deletion cancelled."));
-				return;
+				this.error(chalk.yellow("MySQL deletion cancelled."));
 			}
+		}
 
-			// Eliminar la aplicación seleccionada
-			const deleteResponse = await axios.post(
+		try {
+			const response = await axios.post(
 				`${auth.url}/api/trpc/mysql.remove`,
 				{
 					json: {
@@ -107,14 +112,12 @@ export default class DatabaseMysqlDelete extends Command {
 				},
 			);
 
-			if (!deleteResponse.data.result.data.json) {
-				this.error(chalk.red("Error deleting application"));
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error deleting MySQL instance"));
 			}
-
-			this.log(chalk.green("Application deleted successfully."));
-		} catch (error) {
-			// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
-			this.error(chalk.red(`Failed to delete application: ${error.message}`));
+			this.log(chalk.green("MySQL instance deleted successfully."));
+		} catch (error: any) {
+			this.error(chalk.red(`Error deleting MySQL instance: ${error.message}`));
 		}
 	}
 }

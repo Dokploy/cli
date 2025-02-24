@@ -21,55 +21,68 @@ export default class AppDelete extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		applicationId: Flags.string({
+			char: 'a',
+			description: 'ID of the application to delete',
+			required: false,
+		}),
+		skipConfirm: Flags.boolean({
+			char: 'y',
+			description: 'Skip confirmation prompt',
+			default: false,
+		})
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-
 		const { flags } = await this.parse(AppDelete);
+		let { projectId, applicationId } = flags;
 
-		let { projectId } = flags;
-
-		if (!projectId) {
+		// Modo interactivo si no se proporcionan los flags necesarios
+		if (!projectId || !applicationId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
-
 			const projects = await getProjects(auth, this);
 
-			const { project } = await inquirer.prompt<Answers>([
-				{
-					choices: projects.map((project) => ({
-						name: project.name,
-						value: project,
-					})),
-					message: "Select a project to create the application in:",
-					name: "project",
-					type: "list",
-				},
-			]);
+			if (!projectId) {
+				const { project } = await inquirer.prompt<Answers>([
+					{
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project,
+						})),
+						message: "Select a project to delete the application from:",
+						name: "project",
+						type: "list",
+					},
+				]);
+				projectId = project.projectId;
+			}
 
-			projectId = project.projectId;
 			const projectSelected = await getProject(projectId, auth, this);
 
 			if (projectSelected.applications.length === 0) {
 				this.error(chalk.yellow("No applications found in this project."));
 			}
 
-			const appAnswers = await inquirer.prompt([
-				{
-					// @ts-ignore
-					choices: projectSelected.applications.map((app) => ({
-						name: app.name,
-						value: app.applicationId,
-					})),
-					message: "Select the application to delete:",
-					name: "selectedApp",
-					type: "list",
-				},
-			]);
+			if (!applicationId) {
+				const appAnswers = await inquirer.prompt([
+					{
+						// @ts-ignore
+						choices: projectSelected.applications.map((app) => ({
+							name: app.name,
+							value: app.applicationId,
+						})),
+						message: "Select the application to delete:",
+						name: "selectedApp",
+						type: "list",
+					},
+				]);
+				applicationId = appAnswers.selectedApp;
+			}
+		}
 
-			const applicationId = appAnswers.selectedApp;
-
-			// // Confirmar eliminación
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
 			const confirmAnswers = await inquirer.prompt([
 				{
 					default: false,
@@ -82,7 +95,9 @@ export default class AppDelete extends Command {
 			if (!confirmAnswers.confirmDelete) {
 				this.error(chalk.yellow("Application deletion cancelled."));
 			}
+		}
 
+		try {
 			const deleteResponse = await axios.post(
 				`${auth.url}/api/trpc/application.delete`,
 				{
@@ -103,6 +118,8 @@ export default class AppDelete extends Command {
 			}
 
 			this.log(chalk.green("Application deleted successfully."));
+		} catch (error: any) {
+			this.error(chalk.red(`Failed to delete application: ${error.message}`));
 		}
 	}
 }

@@ -13,77 +13,90 @@ export default class DatabaseMysqlStop extends Command {
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
+		const { flags } = await this.parse(DatabaseMysqlStop);
+		let { projectId, mysqlId } = flags;
 
-		console.log(chalk.blue.bold("\n  Listing all Projects \n"));
+		// Modo interactivo si no se proporcionan los flags necesarios
+		if (!projectId || !mysqlId) {
+			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
+			const projects = await getProjects(auth, this);
 
-		const projects = await getProjects(auth, this);
+			if (!projectId) {
+				const { project } = await inquirer.prompt<Answers>([
+					{
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project,
+						})),
+						message: "Select a project to stop the MySQL instance from:",
+						name: "project",
+						type: "list",
+					},
+				]);
+				projectId = project.projectId;
+			}
 
-		const { project } = await inquirer.prompt<Answers>([
-			{
-				choices: projects.map((project) => ({
-					name: project.name,
-					value: project,
-				})),
-				message: "Select a project to stop the mysql in:",
-				name: "project",
-				type: "list",
-			},
-		]);
+			const projectSelected = await getProject(projectId, auth, this);
 
-		const projectId = project.projectId;
+			if (projectSelected.mysql.length === 0) {
+				this.error(chalk.yellow("No MySQL instances found in this project."));
+			}
 
-		const projectSelected = await getProject(projectId, auth, this);
-
-		if (projectSelected.mysql.length === 0) {
-			this.error(chalk.yellow("No mysql found in this project."));
+			if (!mysqlId) {
+				const dbAnswers = await inquirer.prompt([
+					{
+						// @ts-ignore
+						choices: projectSelected.mysql.map((db) => ({
+							name: db.name,
+							value: db.mysqlId,
+						})),
+						message: "Select the MySQL instance to stop:",
+						name: "selectedDb",
+						type: "list",
+					},
+				]);
+				mysqlId = dbAnswers.selectedDb;
+			}
 		}
 
-		const appAnswers = await inquirer.prompt([
-			{
-				// @ts-ignore
-				choices: projectSelected.mysql.map((app) => ({
-					name: app.name,
-					value: app.mysqlId,
-				})),
-				message: "Select the mysql to stop:",
-				name: "selectedApp",
-				type: "list",
-			},
-		]);
-
-		const mysqlId = appAnswers.selectedApp;
-
-		const confirmAnswers = await inquirer.prompt([
-			{
-				default: false,
-				message: "Are you sure you want to stop this mysql?",
-				name: "confirmDelete",
-				type: "confirm",
-			},
-		]);
-
-		if (!confirmAnswers.confirmDelete) {
-			this.error(chalk.yellow("mysql stop cancelled."));
-		}
-
-		const response = await axios.post(
-			`${auth.url}/api/trpc/mysql.stop`,
-			{
-				json: {
-					mysqlId,
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
+			const confirmAnswers = await inquirer.prompt([
+				{
+					default: false,
+					message: "Are you sure you want to stop this MySQL instance?",
+					name: "confirmStop",
+					type: "confirm",
 				},
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${auth.token}`,
-					"Content-Type": "application/json",
-				},
-			},
-		);
+			]);
 
-		if (response.status !== 200) {
-			this.error(chalk.red("Error stopping mysql"));
+			if (!confirmAnswers.confirmStop) {
+				this.error(chalk.yellow("MySQL stop cancelled."));
+			}
 		}
-		this.log(chalk.green("Mysql stop successful."));
+
+		try {
+			const response = await axios.post(
+				`${auth.url}/api/trpc/mysql.stop`,
+				{
+					json: {
+						mysqlId,
+					},
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${auth.token}`,
+						"Content-Type": "application/json",
+					},
+				},
+			);
+
+			if (response.status !== 200) {
+				this.error(chalk.red("Error stopping MySQL instance"));
+			}
+			this.log(chalk.green("MySQL instance stopped successfully."));
+		} catch (error: any) {
+			this.error(chalk.red(`Error stopping MySQL instance: ${error.message}`));
+		}
 	}
 }

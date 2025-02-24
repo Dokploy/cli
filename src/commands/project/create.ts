@@ -1,76 +1,91 @@
 import { Command, Flags } from "@oclif/core";
 import axios from "axios";
 import chalk from "chalk";
-import inquirer, { type Answers, type QuestionCollection } from "inquirer";
-
+import inquirer from "inquirer";
 import { readAuthConfig } from "../../utils/utils.js";
 
 export default class ProjectCreate extends Command {
-	static override description =
-		"Create a new project with an optional description.";
+	static description = "Create a new project.";
 
-	static override examples = [
-		"$ <%= config.bin %> <%= command.id %> -n MyProject -d 'This is my project description'",
-		"$ <%= config.bin %> <%= command.id %> -n MyProject",
-		"$ <%= config.bin %> <%= command.id %>",
+	static examples = [
+		"$ <%= config.bin %> project create",
+		"$ <%= config.bin %> project create -n MyProject -d 'Project description'",
+		"$ <%= config.bin %> project create --name MyProject --skipConfirm",
 	];
 
-	static override flags = {
-		description: Flags.string({
-			char: "d",
-			description: "Description of the project",
-			required: false,
-		}),
+	static flags = {
 		name: Flags.string({
 			char: "n",
 			description: "Name of the project",
 			required: false,
 		}),
+		description: Flags.string({
+			char: "d",
+			description: "Description of the project",
+			required: false,
+		}),
+		skipConfirm: Flags.boolean({
+			char: "y",
+			description: "Skip confirmation prompt",
+			default: false,
+		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-
-		console.log(chalk.blue.bold("\n  Create a New Project \n"));
-
 		const { flags } = await this.parse(ProjectCreate);
+		let { name, description } = flags;
 
-		let answers: Answers = {};
+		// Modo interactivo si no se proporcionan los flags necesarios
+		if (!name) {
+			const answers = await inquirer.prompt([
+				{
+					message: "Enter the project name:",
+					name: "name",
+					type: "input",
+					validate: (input) => (input ? true : "Project name is required"),
+				},
+				{
+					message: "Enter the project description (optional):",
+					name: "description",
+					type: "input",
+					default: description || "",
+				},
+			]);
 
-		const questions: QuestionCollection[] = [];
-
-		if (!flags.name) {
-			questions.push({
-				message: chalk.green("Enter the project name:"),
-				name: "name",
-				type: "input",
-				validate: (input) => (input ? true : "Project name is required"),
-			});
+			name = answers.name;
+			description = answers.description;
 		}
 
-		if (!flags.description) {
-			questions.push({
-				default: "",
-				message: chalk.green("Enter the project description (optional):"),
-				name: "description",
-				type: "input",
-			});
-		}
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
+			const confirm = await inquirer.prompt([
+				{
+					type: 'confirm',
+					name: 'proceed',
+					message: 'Do you want to create this project?',
+					default: false,
+				},
+			]);
 
-		if (questions.length > 0) {
-			answers = await inquirer.prompt(questions);
+			if (!confirm.proceed) {
+				this.error(chalk.yellow("Project creation cancelled."));
+				return;
+			}
 		}
-
-		const name = flags.name || answers.name;
-		const description = flags.description || answers.description;
 
 		try {
+			console.log(JSON.stringify({
+				name,
+				description,
+			}, null, 2));
+
 			const response = await axios.post(
 				`${auth.url}/api/trpc/project.create`,
 				{
 					json: {
-						description,
 						name,
+						description,
 					},
 				},
 				{
@@ -82,13 +97,12 @@ export default class ProjectCreate extends Command {
 			);
 
 			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error`"));
+				this.error(chalk.red("Error creating project", response.data.result.data.json));
 			}
 
 			this.log(chalk.green(`Project '${name}' created successfully.`));
-		} catch (error) {
-			// @ts-expect-error hola
-			this.error(chalk.red(`Failed to create project: ${error.message}`));
+		} catch (error: any) {
+			this.error(chalk.red(`Error creating project: ${error.message}`));
 		}
 	}
 }

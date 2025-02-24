@@ -20,78 +20,84 @@ export default class DatabasePostgresDelete extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		postgresId: Flags.string({
+			char: "d",
+			description: "ID of the PostgreSQL database",
+			required: false,
+		}),
+		skipConfirm: Flags.boolean({
+			char: "y",
+			description: "Skip confirmation",
+			required: false,
+		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-
 		const { flags } = await this.parse(DatabasePostgresDelete);
-		let { projectId } = flags;
+		let { projectId, postgresId } = flags;
 
-		if (!projectId) {
+		// Modo interactivo si no se proporcionan los flags necesarios
+		if (!projectId || !postgresId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
-
 			const projects = await getProjects(auth, this);
 
-			if (projects.length === 0) {
-				this.log(chalk.yellow("No projects found."));
-				return;
+			if (!projectId) {
+				const answers = await inquirer.prompt([
+					{
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project.projectId,
+						})),
+						message: "Select a project to delete the PostgreSQL instance from:",
+						name: "selectedProject",
+						type: "list",
+					},
+				]);
+				projectId = answers.selectedProject;
 			}
 
-			const answers = await inquirer.prompt([
-				{
-					choices: projects.map((project: any) => ({
-						name: project.name,
-						value: project.projectId,
-					})),
-					message: "Select a project to delete the PostgreSQL database from:",
-					name: "selectedProject",
-					type: "list",
-				},
-			]);
+			const projectSelected = await getProject(projectId, auth, this);
 
-			projectId = answers.selectedProject;
+			if (!projectSelected.postgres || projectSelected.postgres.length === 0) {
+				this.error(chalk.yellow("No PostgreSQL instances found in this project."));
+			}
+
+			if (!postgresId) {
+				const dbAnswers = await inquirer.prompt([
+					{
+						// @ts-ignore
+						choices: projectSelected.postgres.map((db) => ({
+							name: db.name,
+							value: db.postgresId,
+						})),
+						message: "Select the PostgreSQL instance to delete:",
+						name: "selectedDb",
+						type: "list",
+					},
+				]);
+				postgresId = dbAnswers.selectedDb;
+			}
 		}
 
-		try {
-			const project = await getProject(projectId, auth, this);
-
-			if (!project.postgres || project.postgres.length === 0) {
-				this.log(
-					chalk.yellow("No PostgreSQL databases found in this project."),
-				);
-				return;
-			}
-
-			const appAnswers = await inquirer.prompt([
-				{
-					choices: project.postgres.map((db: any) => ({
-						name: db.name,
-						value: db.postgresId,
-					})),
-					message: "Select the PostgreSQL database to delete:",
-					name: "selectedApp",
-					type: "list",
-				},
-			]);
-
-			const postgresId = appAnswers.selectedApp;
-
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
 			const confirmAnswers = await inquirer.prompt([
 				{
 					default: false,
-					message: "Are you sure you want to delete this postgres database?",
+					message: "Are you sure you want to delete this PostgreSQL instance?",
 					name: "confirmDelete",
 					type: "confirm",
 				},
 			]);
 
 			if (!confirmAnswers.confirmDelete) {
-				this.log(chalk.yellow("Database deletion cancelled."));
-				return;
+				this.error(chalk.yellow("PostgreSQL deletion cancelled."));
 			}
+		}
 
-			const deleteResponse = await axios.post(
+		try {
+			const response = await axios.post(
 				`${auth.url}/api/trpc/postgres.remove`,
 				{
 					json: {
@@ -106,14 +112,12 @@ export default class DatabasePostgresDelete extends Command {
 				},
 			);
 
-			if (!deleteResponse.data.result.data.json) {
-				this.error(chalk.red("Error deleting PostgreSQL database"));
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error deleting PostgreSQL instance"));
 			}
-
-			this.log(chalk.green("PostgreSQL database deleted successfully."));
-		} catch (error) {
-			// @ts-expect-error - TS2339: Property 'data' does not exist on type 'AxiosError<any>'.
-			this.error(chalk.red(`Failed to delete application: ${error.message}`));
+			this.log(chalk.green("PostgreSQL instance deleted successfully."));
+		} catch (error: any) {
+			this.error(chalk.red(`Error deleting PostgreSQL instance: ${error.message}`));
 		}
 	}
 }
