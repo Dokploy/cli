@@ -20,76 +20,84 @@ export default class DatabaseMongoDelete extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		mongoId: Flags.string({
+			char: "m",
+			description: "ID of the MongoDB instance to delete",
+			required: false,
+		}),
+		skipConfirm: Flags.boolean({
+			char: "y",
+			description: "Skip confirmation prompt",
+			default: false,
+		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-
 		const { flags } = await this.parse(DatabaseMongoDelete);
-		let { projectId } = flags;
+		let { projectId, mongoId } = flags;
 
-		if (!projectId) {
+		// Modo interactivo si no se proporcionan los flags necesarios
+		if (!projectId || !mongoId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
-
 			const projects = await getProjects(auth, this);
 
-			if (projects.length === 0) {
-				this.log(chalk.yellow("No projects found."));
-				return;
+			if (!projectId) {
+				const answers = await inquirer.prompt([
+					{
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project.projectId,
+						})),
+						message: "Select a project to delete the MongoDB instance from:",
+						name: "selectedProject",
+						type: "list",
+					},
+				]);
+				projectId = answers.selectedProject;
 			}
 
-			const answers = await inquirer.prompt([
-				{
-					choices: projects.map((project: any) => ({
-						name: project.name,
-						value: project.projectId,
-					})),
-					message: "Select a project to delete the MongoDB database from:",
-					name: "selectedProject",
-					type: "list",
-				},
-			]);
+			const projectSelected = await getProject(projectId, auth, this);
 
-			projectId = answers.selectedProject;
+			if (!projectSelected.mongo || projectSelected.mongo.length === 0) {
+				this.error(chalk.yellow("No MongoDB instances found in this project."));
+			}
+
+			if (!mongoId) {
+				const dbAnswers = await inquirer.prompt([
+					{
+						// @ts-ignore
+						choices: projectSelected.mongo.map((db) => ({
+							name: db.name,
+							value: db.mongoId,
+						})),
+						message: "Select the MongoDB instance to delete:",
+						name: "selectedDb",
+						type: "list",
+					},
+				]);
+				mongoId = dbAnswers.selectedDb;
+			}
 		}
 
-		try {
-			const project = await getProject(projectId, auth, this);
-
-			if (!project.mongo || project.mongo.length === 0) {
-				this.log(chalk.yellow("No MongoDB databases found in this project."));
-				return;
-			}
-
-			const appAnswers = await inquirer.prompt([
-				{
-					choices: project.mongo.map((db: any) => ({
-						name: db.name,
-						value: db.mongoId,
-					})),
-					message: "Select the MongoDB database to delete:",
-					name: "selectedApp",
-					type: "list",
-				},
-			]);
-
-			const mongoId = appAnswers.selectedApp;
-
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
 			const confirmAnswers = await inquirer.prompt([
 				{
 					default: false,
-					message: "Are you sure you want to delete this MongoDB database?",
+					message: "Are you sure you want to delete this MongoDB instance?",
 					name: "confirmDelete",
 					type: "confirm",
 				},
 			]);
 
 			if (!confirmAnswers.confirmDelete) {
-				this.log(chalk.yellow("Database deletion cancelled."));
-				return;
+				this.error(chalk.yellow("MongoDB deletion cancelled."));
 			}
+		}
 
-			const deleteResponse = await axios.post(
+		try {
+			const response = await axios.post(
 				`${auth.url}/api/trpc/mongo.remove`,
 				{
 					json: {
@@ -104,16 +112,12 @@ export default class DatabaseMongoDelete extends Command {
 				},
 			);
 
-			if (!deleteResponse.data.result.data.json) {
-				this.error(chalk.red("Error deleting MongoDB database"));
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error deleting MongoDB instance"));
 			}
-
-			this.log(chalk.green("MongoDB database deleted successfully."));
-		} catch (error) {
-			this.error(
-				// @ts-ignore
-				chalk.red(`Failed to delete MongoDB database: ${error.message}`),
-			);
+			this.log(chalk.green("MongoDB instance deleted successfully."));
+		} catch (error: any) {
+			this.error(chalk.red(`Error deleting MongoDB instance: ${error.message}`));
 		}
 	}
 }

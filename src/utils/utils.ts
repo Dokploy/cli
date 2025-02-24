@@ -15,10 +15,19 @@ export type AuthConfig = {
 };
 
 export const readAuthConfig = async (command: Command): Promise<AuthConfig> => {
+	// Primero intentar leer desde variables de entorno
+	const envToken = process.env.DOKPLOY_AUTH_TOKEN;
+	const envUrl = process.env.DOKPLOY_URL;
+
+	if (envToken && envUrl) {
+		return { token: envToken, url: envUrl };
+	}
+
+	// Si no hay variables de entorno, usar el archivo de configuración
 	if (!fs.existsSync(configPath)) {
 		command.error(
 			chalk.red(
-				"No configuration file found. Please authenticate first using the 'authenticate' command.",
+				"No configuration file found and no environment variables set. Please authenticate first using the 'authenticate' command or set DOKPLOY_URL and DOKPLOY_AUTH_TOKEN environment variables.",
 			),
 		);
 	}
@@ -30,7 +39,7 @@ export const readAuthConfig = async (command: Command): Promise<AuthConfig> => {
 	if (!url || !token) {
 		command.error(
 			chalk.red(
-				"Incomplete authentication details. Please authenticate again using the 'authenticate' command.",
+				"Incomplete authentication details. Please authenticate again using the 'authenticate' command or set environment variables.",
 			),
 		);
 	}

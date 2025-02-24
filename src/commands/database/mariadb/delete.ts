@@ -18,73 +18,82 @@ export default class DatabaseMariadbDelete extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		mariadbId: Flags.string({
+			char: "m",
+			description: "ID of the MariaDB instance to delete",
+			required: false,
+		}),
+		skipConfirm: Flags.boolean({
+			char: "y",
+			description: "Skip confirmation prompt",
+			default: false,
+		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabaseMariadbDelete);
-		let { projectId } = flags;
+		let { projectId, mariadbId } = flags;
 
-		if (!projectId) {
+		if (!projectId || !mariadbId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
-			if (projects.length === 0) {
-				this.log(chalk.yellow("No projects found."));
-				return;
+			if (!projectId) {
+				const answers = await inquirer.prompt([
+					{
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project.projectId,
+						})),
+						message: "Select a project to delete the MariaDB instance from:",
+						name: "selectedProject",
+						type: "list",
+					},
+				]);
+				projectId = answers.selectedProject;
 			}
 
-			const answers = await inquirer.prompt([
-				{
-					type: "list",
-					name: "selectedProject",
-					message: "Select a project to delete the MariaDB database from:",
-					choices: projects.map((project: any) => ({
-						name: project.name,
-						value: project.projectId,
-					})),
-				},
-			]);
-			projectId = answers.selectedProject;
+			const projectSelected = await getProject(projectId, auth, this);
+
+			if (!projectSelected.mariadb || projectSelected.mariadb.length === 0) {
+				this.error(chalk.yellow("No MariaDB instances found in this project."));
+			}
+
+			if (!mariadbId) {
+				const dbAnswers = await inquirer.prompt([
+					{
+						// @ts-ignore
+						choices: projectSelected.mariadb.map((db) => ({
+							name: db.name,
+							value: db.mariadbId,
+						})),
+						message: "Select the MariaDB instance to delete:",
+						name: "selectedDb",
+						type: "list",
+					},
+				]);
+				mariadbId = dbAnswers.selectedDb;
+			}
 		}
 
-		try {
-			const project = await getProject(projectId, auth, this);
-
-			if (!project.mariadb || project.mariadb.length === 0) {
-				this.log(chalk.yellow("No MariaDB databases found in this project."));
-				return;
-			}
-
-			const appAnswers = await inquirer.prompt([
-				{
-					type: "list",
-					name: "selectedDb",
-					message: "Select the MariaDB database to delete:",
-					choices: project.mariadb.map((db: any) => ({
-						name: db.name,
-						value: db.mariadbId,
-					})),
-				},
-			]);
-
-			const mariadbId = appAnswers.selectedDb;
-
+		if (!flags.skipConfirm) {
 			const confirmAnswers = await inquirer.prompt([
 				{
-					type: "confirm",
-					name: "confirmDelete",
-					message: "Are you sure you want to delete this MariaDB database?",
 					default: false,
+					message: "Are you sure you want to delete this MariaDB instance?",
+					name: "confirmDelete",
+					type: "confirm",
 				},
 			]);
 
 			if (!confirmAnswers.confirmDelete) {
-				this.log(chalk.yellow("Database deletion cancelled."));
-				return;
+				this.error(chalk.yellow("MariaDB deletion cancelled."));
 			}
+		}
 
-			const deleteResponse = await axios.post(
+		try {
+			const response = await axios.post(
 				`${auth.url}/api/trpc/mariadb.remove`,
 				{
 					json: {
@@ -99,15 +108,12 @@ export default class DatabaseMariadbDelete extends Command {
 				},
 			);
 
-			if (!deleteResponse.data.result.data.json) {
-				this.error(chalk.red("Error deleting mariadb database"));
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error deleting MariaDB instance"));
 			}
-			this.log(chalk.green("MariaDB database deleted successfully."));
-		} catch (error) {
-			this.error(
-				// @ts-ignore
-				chalk.red(`Failed to delete MariaDB database: ${error.message}`),
-			);
+			this.log(chalk.green("MariaDB instance deleted successfully."));
+		} catch (error: any) {
+			this.error(chalk.red(`Error deleting MariaDB instance: ${error.message}`));
 		}
 	}
 }

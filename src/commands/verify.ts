@@ -17,28 +17,46 @@ export default class Verify extends Command {
 	async run() {
 		console.log(chalk.blue.bold("\nVerifying Authentication Token"));
 
-		if (!fs.existsSync(configPath)) {
-			this.error(
-				chalk.red(
-					"No configuration file found. Please authenticate first using `authenticate` command.",
-				),
-			);
+		let token: string;
+		let url: string;
+
+		// Verificar variables de entorno primero
+		const envToken = process.env.DOKPLOY_AUTH_TOKEN;
+		const envUrl = process.env.DOKPLOY_URL;
+
+		if (envToken && envUrl) {
+			token = envToken;
+			url = envUrl;
+			this.log(chalk.green("Using environment variables for authentication"));
+		} else {
+			// Si no hay variables de entorno, verificar archivo de configuración
+			if (!fs.existsSync(configPath)) {
+				this.error(
+					chalk.red(
+						"No configuration found. Please either:\n" +
+						"1. Authenticate using `authenticate` command\n" +
+						"2. Set DOKPLOY_URL and DOKPLOY_AUTH_TOKEN environment variables",
+					),
+				);
+			}
+
+			try {
+				const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+				token = config.token;
+				url = config.url;
+				this.log(chalk.green("Using configuration file for authentication"));
+			} catch (error) {
+				this.error(
+					chalk.red(
+						"Invalid configuration file. Please authenticate again using `authenticate` command.",
+					),
+				);
+			}
 		}
 
-		const configFileContent = fs.readFileSync(configPath, "utf8");
-		const config = JSON.parse(configFileContent);
-		const { token, url } = config;
-
-		if (!url || !token) {
-			this.error(
-				chalk.red(
-					"Incomplete authentication details. Please authenticate again using `authenticate` command.",
-				),
-			);
-		}
-
+		// Validar el token contra el servidor
 		try {
-			console.log(`\n${chalk.blue("Validating token...")}`);
+			console.log(chalk.blue("Validating token with server..."));
 
 			const response = await axios.post(
 				`${url}/api/trpc/auth.verifyToken`,
@@ -52,7 +70,7 @@ export default class Verify extends Command {
 			);
 
 			if (response.data.result.data.json) {
-				this.log(chalk.green("Token is valid."));
+				this.log(chalk.green("\n✓ Token is valid"));
 			} else {
 				this.error(
 					chalk.red(
@@ -60,10 +78,9 @@ export default class Verify extends Command {
 					),
 				);
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.error(
 				chalk.red(
-					// @ts-ignore
 					`Failed to verify token: ${error.message}. Please authenticate again using 'authenticate' command.`,
 				),
 			);

@@ -19,119 +19,212 @@ export default class DatabaseMysqlCreate extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		name: Flags.string({
+			char: "n",
+			description: "Database name",
+			required: false,
+		}),
+		databaseName: Flags.string({
+			description: "MySQL database name",
+			required: false,
+		}),
+		description: Flags.string({
+			char: "d",
+			description: "Database description",
+			required: false,
+		}),
+		databaseRootPassword: Flags.string({
+			description: "Database root password",
+			required: false,
+		}),
+		databasePassword: Flags.string({
+			description: "Database password",
+			required: false,
+		}),
+		databaseUser: Flags.string({
+			description: "Database user",
+			default: "mysql",
+		}),
+		dockerImage: Flags.string({
+			description: "Docker image",
+			default: "mysql:8",
+		}),
+		skipConfirm: Flags.boolean({
+			char: "y",
+			description: "Skip confirmation prompt",
+			default: false,
+		}),
+		appName: Flags.string({
+			description: "App name",
+			required: false,
+		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-
 		const { flags } = await this.parse(DatabaseMysqlCreate);
+		let { 
+			projectId, 
+			name, 
+			databaseName, 
+			description, 
+			databaseRootPassword,
+			databasePassword,
+			databaseUser,
+			dockerImage,
+			appName 
+		} = flags;
 
-		let { projectId } = flags;
-
-		if (!projectId) {
+		// Modo interactivo si no se proporcionan los flags necesarios	
+		if (!projectId || !name || !databaseName || !appName || !databasePassword || !databaseRootPassword) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
-
 			const projects = await getProjects(auth, this);
 
-			const { project } = await inquirer.prompt<Answers>([
-				{
-					choices: projects.map((project) => ({
-						name: project.name,
-						value: project,
-					})),
-					message: "Select a project to create the MySQL database in:",
-					name: "project",
-					type: "list",
-				},
-			]);
-
-			projectId = project.projectId;
-
-			const dbDetails = await inquirer.prompt([
-				{
-					message: "Enter the name:",
-					name: "name",
-					type: "input",
-					validate: (input) => (input ? true : "Database name is required"),
-				},
-				{
-					message: "Database name:",
-					name: "databaseName",
-					type: "input",
-					validate: (input) => (input ? true : "Database name is required"),
-				},
-				{
-					message: "Enter the database description (optional):",
-					name: "description",
-					type: "input",
-				},
-				{
-					message: "Database Root Password (optional):",
-					name: "databaseRootPassword",
-					type: "password",
-				},
-				{
-					message: "Database password (optional):",
-					name: "databasePassword",
-					type: "password",
-				},
-				{
-					default: "mysql:8",
-					message: "Docker Image (default: mysql:8):",
-					name: "dockerImage",
-					type: "input",
-				},
-				{
-					default: "mysql",
-					message: "Database User: (default: mysql):",
-					name: "databaseUser",
-					type: "input",
-				},
-			]);
-
-			const appName = await inquirer.prompt([
-				{
-					default: `${slugify(project.name)}-${dbDetails.name}`,
-					message: "Enter the App name:",
-					name: "appName",
-					type: "input",
-					validate: (input) => (input ? true : "App name is required"),
-				},
-			]);
-
-			try {
-				const response = await axios.post(
-					`${auth.url}/api/trpc/mysql.create`,
+			if (!projectId) {
+				const { project } = await inquirer.prompt<Answers>([
 					{
-						json: {
-							...dbDetails,
-							appName: appName.appName,
-							projectId: project.projectId,
-						},
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project,
+						})),
+						message: "Select a project to create the MySQL instance in:",
+						name: "project",
+						type: "list",
 					},
-					{
-						headers: {
-							Authorization: `Bearer ${auth.token}`,
-							"Content-Type": "application/json",
-						},
-					},
-				);
-
-				if (!response.data.result.data.json) {
-					this.error(chalk.red("Error creating MySQL database"));
-				}
-
-				this.log(
-					chalk.green(
-						`MySQL database '${dbDetails.name}' created successfully.`,
-					),
-				);
-			} catch (error) {
-				this.error(
-					// @ts-ignore
-					chalk.red(`Failed to create MySQL database: ${error.message}`),
-				);
+				]);
+				projectId = project.projectId;
 			}
+
+			if (!name || !databaseName || !appName || !databasePassword || !databaseRootPassword) {
+				const dbDetails = await inquirer.prompt([
+					{
+						message: "Enter the name:",
+						name: "name",
+						type: "input",
+						validate: (input) => (input ? true : "Database name is required"),
+						default: name,
+					},
+					{
+						message: "Database name:",
+						name: "databaseName",
+						type: "input",
+						validate: (input) => (input ? true : "Database name is required"),
+						default: databaseName,
+					},
+					{
+						message: "Enter the database description (optional):",
+						name: "description",
+						type: "input",
+						default: description,
+					},
+					{
+						message: "Database Root Password:",
+						name: "databaseRootPassword",
+						type: "password",
+						default: databaseRootPassword,
+					},
+					{
+						message: "Database password:",
+						name: "databasePassword",
+						type: "password",
+						default: databasePassword,
+					},
+					{
+						default: dockerImage || "mysql:8",
+						message: "Docker Image (default: mysql:8):",
+						name: "dockerImage",
+						type: "input",
+					},
+					{
+						default: databaseUser || "mysql",
+						message: "Database User: (default: mysql):",
+						name: "databaseUser",
+						type: "input",
+					},
+				]);
+
+				name = dbDetails.name;
+				databaseName = dbDetails.databaseName;
+				description = dbDetails.description;
+				databaseRootPassword = dbDetails.databaseRootPassword;
+				databasePassword = dbDetails.databasePassword;
+				dockerImage = dbDetails.dockerImage;
+				databaseUser = dbDetails.databaseUser;
+
+				const appNamePrompt = await inquirer.prompt([
+					{
+						default: appName || `${slugify(name)}`,
+						message: "Enter the App name:",
+						name: "appName",
+						type: "input",
+						validate: (input) => (input ? true : "App name is required"),
+					},
+				]);
+
+				appName = appNamePrompt.appName;
+			}
+		}
+
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
+			const confirm = await inquirer.prompt([
+				{
+					type: 'confirm',
+					name: 'proceed',
+					message: 'Do you want to create this MySQL instance?',
+					default: false,
+				},
+			]);
+
+			if (!confirm.proceed) {
+				this.error(chalk.yellow("MySQL creation cancelled."));
+				return;
+			}
+		}
+
+		try {
+			console.log(JSON.stringify({
+				name,
+				databaseName,
+				description,
+				databaseRootPassword,
+				databasePassword,
+				databaseUser,
+				dockerImage,
+				appName,
+				projectId,
+			}, null, 2));
+
+			const response = await axios.post(
+				`${auth.url}/api/trpc/mysql.create`,
+				{
+					json: {
+						name,
+						databaseName,
+						description,
+						databaseRootPassword,
+						databasePassword,
+						databaseUser,
+						dockerImage,
+						appName,
+						projectId,
+					},
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${auth.token}`,
+						"Content-Type": "application/json",
+					},
+				},
+			);
+
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error creating MySQL instance", response.data.result.data.json));
+			}
+
+			this.log(chalk.green(`MySQL instance '${name}' created successfully.`));
+		} catch (error: any) {
+			this.error(chalk.red(`Error creating MySQL instance: ${error.message}`));
 		}
 	}
 }

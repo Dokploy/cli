@@ -8,7 +8,7 @@ import { getProjects } from "../../../utils/shared.js";
 import type { Answers } from "../../app/create.js";
 
 export default class DatabaseRedisCreate extends Command {
-	static description = "Create a new Redis database within a project.";
+	static description = "Create a new Redis instance within a project.";
 
 	static examples = ["$ <%= config.bin %> redis create"];
 
@@ -18,102 +18,169 @@ export default class DatabaseRedisCreate extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		name: Flags.string({
+			char: "n",
+			description: "Instance name",
+			required: false,
+		}),
+		description: Flags.string({
+			char: "d",
+			description: "Instance description",
+			required: false,
+		}),
+		databasePassword: Flags.string({
+			description: "Redis password",
+			required: false,
+		}),
+		dockerImage: Flags.string({
+			description: "Docker image",
+			default: "redis:7",
+		}),
+		skipConfirm: Flags.boolean({
+			char: "y",
+			description: "Skip confirmation prompt",
+			default: false,
+		}),
+		appName: Flags.string({
+			description: "App name",
+			required: false,
+		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-
 		const { flags } = await this.parse(DatabaseRedisCreate);
+		let { 
+			projectId, 
+			name, 
+			description, 
+			databasePassword,
+			dockerImage,
+			appName 
+		} = flags;
 
-		let { projectId } = flags;
-
-		if (!projectId) {
+		// Modo interactivo si no se proporcionan los flags necesarios
+		if (!projectId || !name || !appName || !databasePassword) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
-
 			const projects = await getProjects(auth, this);
 
-			const { project } = await inquirer.prompt<Answers>([
-				{
-					choices: projects.map((project) => ({
-						name: project.name,
-						value: project,
-					})),
-					message: "Select a project to create the Redis database in:",
-					name: "project",
-					type: "list",
-				},
-			]);
-
-			projectId = project.projectId;
-
-			const dbDetails = await inquirer.prompt([
-				{
-					message: "Enter the name:",
-					name: "name",
-					type: "input",
-					validate: (input) => (input ? true : "Database name is required"),
-				},
-				{
-					message: "Enter the database description (optional):",
-					name: "description",
-					type: "input",
-				},
-				{
-					message: "Database password (optional):",
-					name: "databasePassword",
-					type: "password",
-				},
-				{
-					default: "redis:7",
-					message: "Docker Image (default: redis:7):",
-					name: "dockerImage",
-					type: "input",
-				},
-			]);
-
-			const appName = await inquirer.prompt([
-				{
-					default: `${slugify(project.name)}-${dbDetails.name}`,
-					message: "Enter the App name:",
-					name: "appName",
-					type: "input",
-					validate: (input) => (input ? true : "App name is required"),
-				},
-			]);
-
-			try {
-				const response = await axios.post(
-					`${auth.url}/api/trpc/redis.create`,
+			if (!projectId) {
+				const { project } = await inquirer.prompt<Answers>([
 					{
-						json: {
-							...dbDetails,
-							appName: appName.appName,
-							projectId: project.projectId,
-						},
+						choices: projects.map((project) => ({
+							name: project.name,
+							value: project,
+						})),
+						message: "Select a project to create the Redis instance in:",
+						name: "project",
+						type: "list",
 					},
-					{
-						headers: {
-							Authorization: `Bearer ${auth.token}`,
-							"Content-Type": "application/json",
-						},
-					},
-				);
-
-				if (!response.data.result.data.json) {
-					this.error(chalk.red("Error creating Redis database"));
-				}
-
-				this.log(
-					chalk.green(
-						`Redis database '${dbDetails.name}' created successfully.`,
-					),
-				);
-			} catch (error) {
-				this.error(
-					// @ts-ignore
-					chalk.red(`Failed to create Redis database: ${error.message}`),
-				);
+				]);
+				projectId = project.projectId;
 			}
+
+			if (!name || !appName || !databasePassword) {
+				const redisDetails = await inquirer.prompt([
+					{
+						message: "Enter the name:",
+						name: "name",
+						type: "input",
+						validate: (input) => (input ? true : "Instance name is required"),
+						default: name,
+					},
+					{
+						message: "Enter the instance description (optional):",
+						name: "description",
+						type: "input",
+						default: description,
+					},
+					{
+						message: "Redis password:",
+						name: "databasePassword",
+						type: "password",
+						default: databasePassword,
+					},
+					{
+						default: dockerImage || "redis:7",
+						message: "Docker Image (default: redis:7):",
+						name: "dockerImage",
+						type: "input",
+					},
+				]);
+
+				name = redisDetails.name;
+				description = redisDetails.description;
+				databasePassword = redisDetails.databasePassword;
+				dockerImage = redisDetails.dockerImage;
+
+				const appNamePrompt = await inquirer.prompt([
+					{
+						default: appName || `${slugify(name)}`,
+						message: "Enter the App name:",
+						name: "appName",
+						type: "input",
+						validate: (input) => (input ? true : "App name is required"),
+					},
+				]);
+
+				appName = appNamePrompt.appName;
+			}
+		}
+
+		// Confirmar si no se especifica --skipConfirm
+		if (!flags.skipConfirm) {
+			const confirm = await inquirer.prompt([
+				{
+					type: 'confirm',
+					name: 'proceed',
+					message: 'Do you want to create this Redis instance?',
+					default: false,
+				},
+			]);
+
+			if (!confirm.proceed) {
+				this.error(chalk.yellow("Redis creation cancelled."));
+				return;
+			}
+		}
+
+		try {
+			console.log(JSON.stringify({
+				name,
+				description,
+				databasePassword,
+				dockerImage,
+				appName,
+				projectId,
+			}, null, 2));
+
+			const response = await axios.post(
+				`${auth.url}/api/trpc/redis.create`,
+				{
+					json: {
+						name,
+						description,
+						databasePassword,
+						dockerImage,
+						appName,
+						projectId,
+					},
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${auth.token}`,
+						"Content-Type": "application/json",
+					},
+				},
+			);
+
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error creating Redis instance", response.data.result.data.json));
+			}
+
+			this.log(chalk.green(`Redis instance '${name}' created successfully.`));
+		} catch (error: any) {
+			this.error(chalk.red(`Error creating Redis instance: ${error.message}`));
 		}
 	}
 }
