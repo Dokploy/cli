@@ -83,12 +83,11 @@ export default class Authenticate extends Command {
 		try {
 			console.log(`\n${chalk.blue("Validating server...")}`);
 
-			await axios.post(
-				`${url}/api/trpc/auth.verifyToken`,
-				{},
+			await axios.get(
+				`${url}/api/trpc/user.get`,
 				{
 					headers: {
-						Authorization: `Bearer ${token}`,
+						"x-api-key": token,
 						"Content-Type": "application/json",
 					},
 				},
@@ -104,3 +103,7 @@ export default class Authenticate extends Command {
 		}
 	}
 }
+// curl -X 'GET' \
+//   'https://panel.jinza.app/api/project.all' \
+//   -H 'accept: application/json' \
+//   -H 'x-api-key: EawCkTREMhxoAqvCxJFZurgCGoDZPjYHHrLgUPghRjJTpXLaahFdhCOGfABZXTRP'

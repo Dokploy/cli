@@ -145,15 +145,6 @@ export default class DatabaseRedisCreate extends Command {
 		}
 
 		try {
-			console.log(JSON.stringify({
-				name,
-				description,
-				databasePassword,
-				dockerImage,
-				appName,
-				projectId,
-			}, null, 2));
-
 			const response = await axios.post(
 				`${auth.url}/api/trpc/redis.create`,
 				{
@@ -168,7 +159,7 @@ export default class DatabaseRedisCreate extends Command {
 				},
 				{
 					headers: {
-						Authorization: `Bearer ${auth.token}`,
+						"x-api-key": auth.token,
 						"Content-Type": "application/json",
 					},
 				},

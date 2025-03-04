@@ -182,17 +182,6 @@ export default class DatabaseMariadbCreate extends Command {
 		}
 
 		try {
-			console.log(JSON.stringify({
-				name,
-				databaseName,
-				description,
-				databaseRootPassword,
-				databasePassword,
-				databaseUser,
-				dockerImage,
-				appName,
-				projectId,
-			}, null, 2));
 			const response = await axios.post(
 				`${auth.url}/api/trpc/mariadb.create`,
 				{
@@ -210,7 +199,7 @@ export default class DatabaseMariadbCreate extends Command {
 				},
 				{
 					headers: {
-						Authorization: `Bearer ${auth.token}`,
+						"x-api-key": auth.token,
 						"Content-Type": "application/json",
 					},
 				},

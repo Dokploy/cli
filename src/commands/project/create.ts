@@ -75,10 +75,6 @@ export default class ProjectCreate extends Command {
 		}
 
 		try {
-			console.log(JSON.stringify({
-				name,
-				description,
-			}, null, 2));
 
 			const response = await axios.post(
 				`${auth.url}/api/trpc/project.create`,
@@ -90,7 +86,7 @@ export default class ProjectCreate extends Command {
 				},
 				{
 					headers: {
-						Authorization: `Bearer ${auth.token}`,
+						"x-api-key": auth.token,
 						"Content-Type": "application/json",
 					},
 				},

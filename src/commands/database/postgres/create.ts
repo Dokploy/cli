@@ -169,16 +169,6 @@ export default class DatabasePostgresCreate extends Command {
 		}
 
 		try {
-			console.log(JSON.stringify({
-				name,
-				databaseName,
-				description,
-				databasePassword,
-				databaseUser,
-				dockerImage,
-				appName,
-				projectId,
-			}, null, 2));
 
 			const response = await axios.post(
 				`${auth.url}/api/trpc/postgres.create`,
@@ -196,7 +186,7 @@ export default class DatabasePostgresCreate extends Command {
 				},
 				{
 					headers: {
-						Authorization: `Bearer ${auth.token}`,
+						"x-api-key": auth.token,
 						"Content-Type": "application/json",
 					},
 				},

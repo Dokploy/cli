@@ -58,12 +58,11 @@ export default class Verify extends Command {
 		try {
 			console.log(chalk.blue("Validating token with server..."));
 
-			const response = await axios.post(
-				`${url}/api/trpc/auth.verifyToken`,
-				{},
+			const response = await axios.get(
+				`${url}/api/trpc/user.get`,
 				{
 					headers: {
-						Authorization: `Bearer ${token}`,
+						"x-api-key": token,
 						"Content-Type": "application/json",
 					},
 				},

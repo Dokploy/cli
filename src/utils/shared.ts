@@ -19,7 +19,7 @@ export const getProjects = async (
 	try {
 		const response = await axios.get(`${auth.url}/api/trpc/project.all`, {
 			headers: {
-				Authorization: `Bearer ${auth.token}`,
+				"x-api-key": auth.token,
 				"Content-Type": "application/json",
 			},
 		});
@@ -53,7 +53,7 @@ export const getProject = async (
 		}
 		const response = await axios.get(`${auth.url}/api/trpc/project.one`, {
 			headers: {
-				Authorization: `Bearer ${auth.token}`,
+				"x-api-key": auth.token,
 				"Content-Type": "application/json",
 			},
 			params: {

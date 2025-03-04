@@ -106,7 +106,7 @@ export default class DatabaseMysqlDelete extends Command {
 				},
 				{
 					headers: {
-						Authorization: `Bearer ${auth.token}`,
+						"x-api-key": auth.token,
 						"Content-Type": "application/json",
 					},
 				},
