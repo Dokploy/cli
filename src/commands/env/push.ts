@@ -84,7 +84,7 @@ export default class EnvPush extends Command {
         const {result: {serviceType, service}} = await inquirer.prompt<any>([
             {
                 choices,
-                message: "Select a service to pull the environment variables:",
+                message: "Select a service to push the environment variables:",
                 name: "result",
                 type: "list",
             },
