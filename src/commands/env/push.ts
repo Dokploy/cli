@@ -59,12 +59,24 @@ export default class EnvPush extends Command {
         const projectId = project.projectId;
         const projectSelected = await getProject(projectId, auth, this);
 
+        const {environment} = await inquirer.prompt<any>([
+            {
+                choices: projectSelected.environments.map((environment: any) => ({
+                    name: environment.name,
+                    value: environment,
+                })),
+                message: "Select the environment:",
+                name: "environment",
+                type: "list",
+            },
+        ]);
+
         const choices = [
-            ...projectSelected.applications.map((app: any) => ({
+            ...environment.applications.map((app: any) => ({
                 name: `${app.name} (Application)`,
                 value: {serviceType: 'app', service: app},
             })),
-            ...projectSelected.compose.map((compose: any) => ({
+            ...environment.compose.map((compose: any) => ({
                 name: `${compose.name} (Compose)`,
                 value: {serviceType: 'compose', service: compose}
             })),
