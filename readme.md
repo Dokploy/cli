@@ -57,6 +57,11 @@ USAGE
 - `dokploy project:info`: Get information about an existing project.
 - `dokploy project:list`: List all projects.
 
+### Environment Management
+
+- `dokploy environment:create`: Create a new environment.
+- `dokploy environment:delete`: Delete an existing environment.
+
 ### Application Management
 
 - `dokploy app:create`: Create a new application.
