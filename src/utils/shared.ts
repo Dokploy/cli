@@ -5,11 +5,44 @@ import chalk from "chalk";
 
 import type { AuthConfig } from "./utils.js";
 
+export type Application = {
+	applicationId: string;
+	name: string;
+	// Add other application properties as needed
+};
+
+export type Database = {
+	mariadbId?: string;
+	mongoId?: string;
+	mysqlId?: string;
+	postgresId?: string;
+	redisId?: string;
+	name: string;
+	// Add other database properties as needed
+};
+
+export type Environment = {
+	name: string;
+	environmentId: string;
+	description: string;
+	createdAt: string;
+	env: string;
+	projectId: string;
+	applications: Application[];
+	mariadb: Database[];
+	mongo: Database[];
+	mysql: Database[];
+	postgres: Database[];
+	redis: Database[];
+	compose: any[];
+};
+
 export type Project = {
 	adminId: string;
 	name: string;
 	projectId?: string | undefined;
 	description?: string | undefined;
+	environments?: Environment[];
 };
 
 export const getProjects = async (

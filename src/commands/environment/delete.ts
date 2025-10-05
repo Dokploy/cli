@@ -1,15 +1,19 @@
 import { Command, Flags } from "@oclif/core";
-import { readAuthConfig } from "../../../utils/utils.js";
-import chalk from "chalk";
-import { getProject, getProjects, type Database } from "../../../utils/shared.js";
-import inquirer from "inquirer";
-import type { Answers } from "../../app/create.js";
 import axios from "axios";
+import chalk from "chalk";
+import inquirer from "inquirer";
 
-export default class DatabaseMongoDeploy extends Command {
-	static description = "Deploy an mongo to a project.";
+import { getProjects } from "../../utils/shared.js";
+import { readAuthConfig } from "../../utils/utils.js";
+import type { Answers } from "../app/create.js";
 
-	static examples = ["$ <%= config.bin %> app deploy"];
+export default class EnvironmentDelete extends Command {
+	static description = "Delete an environment from a project.";
+
+	static examples = [
+		"$ <%= config.bin %> environment delete",
+		"$ <%= config.bin %> environment delete -p <projectId>",
+	];
 
 	static flags = {
 		projectId: Flags.string({
@@ -19,12 +23,7 @@ export default class DatabaseMongoDeploy extends Command {
 		}),
 		environmentId: Flags.string({
 			char: "e",
-			description: "ID of the environment",
-			required: false,
-		}),
-		mongoId: Flags.string({
-			char: "m",
-			description: "ID of the MongoDB instance to deploy",
+			description: "ID of the environment to delete",
 			required: false,
 		}),
 		skipConfirm: Flags.boolean({
@@ -36,16 +35,15 @@ export default class DatabaseMongoDeploy extends Command {
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
-		const { flags } = await this.parse(DatabaseMongoDeploy);
-		let { projectId, environmentId, mongoId } = flags;
+		const { flags } = await this.parse(EnvironmentDelete);
+		let { projectId, environmentId } = flags;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
-		if (!projectId || !environmentId || !mongoId) {
+		if (!projectId || !environmentId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
 			let selectedProject;
-			let selectedEnvironment;
 
 			// 1. Seleccionar proyecto
 			if (!projectId) {
@@ -55,7 +53,7 @@ export default class DatabaseMongoDeploy extends Command {
 							name: project.name,
 							value: project,
 						})),
-						message: "Select a project to deploy the MongoDB instance from:",
+						message: "Select a project to delete the environment from:",
 						name: "project",
 						type: "list",
 					},
@@ -78,35 +76,12 @@ export default class DatabaseMongoDeploy extends Command {
 							name: `${env.name} (${env.description})`,
 							value: env,
 						})),
-						message: "Select an environment:",
+						message: "Select an environment to delete:",
 						name: "environment",
 						type: "list",
 					},
 				]);
-				selectedEnvironment = environment;
 				environmentId = environment.environmentId;
-			} else {
-				selectedEnvironment = selectedProject?.environments?.find(e => e.environmentId === environmentId);
-			}
-
-			// 3. Seleccionar MongoDB del environment
-			if (!mongoId) {
-				if (!selectedEnvironment?.mongo || selectedEnvironment.mongo.length === 0) {
-					this.error(chalk.yellow("No MongoDB instances found in this environment."));
-				}
-
-				const dbAnswers = await inquirer.prompt([
-					{
-						choices: selectedEnvironment.mongo.map((db: Database) => ({
-							name: db.name,
-							value: db.mongoId,
-						})),
-						message: "Select the MongoDB instance to deploy:",
-						name: "selectedDb",
-						type: "list",
-					},
-				]);
-				mongoId = dbAnswers.selectedDb;
 			}
 		}
 
@@ -115,23 +90,23 @@ export default class DatabaseMongoDeploy extends Command {
 			const confirmAnswers = await inquirer.prompt([
 				{
 					default: false,
-					message: "Are you sure you want to deploy this MongoDB instance?",
-					name: "confirmDeploy",
+					message: "Are you sure you want to delete this environment? This action cannot be undone.",
+					name: "confirmDelete",
 					type: "confirm",
 				},
 			]);
 
-			if (!confirmAnswers.confirmDeploy) {
-				this.error(chalk.yellow("MongoDB deployment cancelled."));
+			if (!confirmAnswers.confirmDelete) {
+				this.error(chalk.yellow("Environment deletion cancelled."));
 			}
 		}
 
 		try {
 			const response = await axios.post(
-				`${auth.url}/api/trpc/mongo.deploy`,
+				`${auth.url}/api/trpc/environment.remove`,
 				{
 					json: {
-						mongoId,
+						environmentId,
 					},
 				},
 				{
@@ -142,12 +117,13 @@ export default class DatabaseMongoDeploy extends Command {
 				},
 			);
 
-			if (response.status !== 200) {
-				this.error(chalk.red("Error deploying MongoDB instance"));
+			if (!response.data.result.data.json) {
+				this.error(chalk.red("Error deleting environment"));
 			}
-			this.log(chalk.green("MongoDB instance deployed successfully."));
+
+			this.log(chalk.green("Environment deleted successfully."));
 		} catch (error: any) {
-			this.error(chalk.red(`Error deploying MongoDB instance: ${error.message}`));
+			this.error(chalk.red(`Error deleting environment: ${error.message}`));
 		}
 	}
 }

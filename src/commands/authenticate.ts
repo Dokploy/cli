@@ -103,7 +103,3 @@ export default class Authenticate extends Command {
 		}
 	}
 }
-// curl -X 'GET' \
-//   'https://panel.jinza.app/api/project.all' \
-//   -H 'accept: application/json' \
-//   -H 'x-api-key: EawCkTREMhxoAqvCxJFZurgCGoDZPjYHHrLgUPghRjJTpXLaahFdhCOGfABZXTRP'
