@@ -53,12 +53,24 @@ export default class EnvPull extends Command {
         const projectId = project.projectId;
         const projectSelected = await getProject(projectId, auth, this);
 
+        const {environment} = await inquirer.prompt<any>([
+            {
+                choices: projectSelected.environments.map((environment: any) => ({
+                    name: environment.name,
+                    value: environment,
+                })),
+                message: "Select the environment:",
+                name: "environment",
+                type: "list",
+            },
+        ]);
+
         const choices = [
-            ...projectSelected.applications.map((app: any) => ({
+            ...environment.applications.map((app: any) => ({
                 name: `${app.name} (Application)`,
                 value: app.env,
             })),
-            ...projectSelected.compose.map((compose: any) => ({
+            ...environment.compose.map((compose: any) => ({
                 name: `${compose.name} (Compose)`,
                 value: compose.env,
             })),
