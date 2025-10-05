@@ -11,6 +11,16 @@ export type Application = {
 	// Add other application properties as needed
 };
 
+export type Database = {
+	mariadbId?: string;
+	mongoId?: string;
+	mysqlId?: string;
+	postgresId?: string;
+	redisId?: string;
+	name: string;
+	// Add other database properties as needed
+};
+
 export type Environment = {
 	name: string;
 	environmentId: string;
@@ -19,11 +29,11 @@ export type Environment = {
 	env: string;
 	projectId: string;
 	applications: Application[];
-	mariadb: any[];
-	mongo: any[];
-	mysql: any[];
-	postgres: any[];
-	redis: any[];
+	mariadb: Database[];
+	mongo: Database[];
+	mysql: Database[];
+	postgres: Database[];
+	redis: Database[];
 	compose: any[];
 };
 

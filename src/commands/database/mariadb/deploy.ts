@@ -1,7 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { readAuthConfig } from "../../../utils/utils.js";
 import chalk from "chalk";
-import { getProject, getProjects } from "../../../utils/shared.js";
+import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import inquirer from "inquirer";
 import type { Answers } from "../../app/create.js";
 import axios from "axios";
@@ -15,6 +15,11 @@ export default class DatabaseMariadbDeploy extends Command {
 		projectId: Flags.string({
 			char: "p",
 			description: "ID of the project",
+			required: false,
+		}),
+		environmentId: Flags.string({
+			char: "e",
+			description: "ID of the environment",
 			required: false,
 		}),
 		mariadbId: Flags.string({
@@ -32,13 +37,17 @@ export default class DatabaseMariadbDeploy extends Command {
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabaseMariadbDeploy);
-		let { projectId, mariadbId } = flags;
+		let { projectId, environmentId, mariadbId } = flags;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
-		if (!projectId || !mariadbId) {
+		if (!projectId || !environmentId || !mariadbId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
+			let selectedProject;
+			let selectedEnvironment;
+
+			// 1. Seleccionar proyecto
 			if (!projectId) {
 				const { project } = await inquirer.prompt<Answers>([
 					{
@@ -51,20 +60,44 @@ export default class DatabaseMariadbDeploy extends Command {
 						type: "list",
 					},
 				]);
+				selectedProject = project;
 				projectId = project.projectId;
+			} else {
+				selectedProject = projects.find(p => p.projectId === projectId);
 			}
 
-			const projectSelected = await getProject(projectId, auth, this);
+			// 2. Seleccionar environment del proyecto
+			if (!environmentId) {
+				if (!selectedProject?.environments || selectedProject.environments.length === 0) {
+					this.error(chalk.yellow("No environments found in this project."));
+				}
 
-			if (projectSelected.mariadb.length === 0) {
-				this.error(chalk.yellow("No MariaDB instances found in this project."));
+				const { environment } = await inquirer.prompt([
+					{
+						choices: selectedProject.environments.map((env) => ({
+							name: `${env.name} (${env.description})`,
+							value: env,
+						})),
+						message: "Select an environment:",
+						name: "environment",
+						type: "list",
+					},
+				]);
+				selectedEnvironment = environment;
+				environmentId = environment.environmentId;
+			} else {
+				selectedEnvironment = selectedProject?.environments?.find(e => e.environmentId === environmentId);
 			}
 
+			// 3. Seleccionar MariaDB del environment
 			if (!mariadbId) {
+				if (!selectedEnvironment?.mariadb || selectedEnvironment.mariadb.length === 0) {
+					this.error(chalk.yellow("No MariaDB instances found in this environment."));
+				}
+
 				const dbAnswers = await inquirer.prompt([
 					{
-						// @ts-ignore
-						choices: projectSelected.mariadb.map((db) => ({
+						choices: selectedEnvironment.mariadb.map((db: Database) => ({
 							name: db.name,
 							value: db.mariadbId,
 						})),

@@ -3,7 +3,7 @@ import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
-import { getProject, getProjects } from "../../../utils/shared.js";
+import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import { readAuthConfig } from "../../../utils/utils.js";
 
 export default class DatabaseMariadbDelete extends Command {
@@ -16,6 +16,11 @@ export default class DatabaseMariadbDelete extends Command {
 		projectId: Flags.string({
 			char: "p",
 			description: "ID of the project",
+			required: false,
+		}),
+		environmentId: Flags.string({
+			char: "e",
+			description: "ID of the environment",
 			required: false,
 		}),
 		mariadbId: Flags.string({
@@ -33,12 +38,16 @@ export default class DatabaseMariadbDelete extends Command {
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabaseMariadbDelete);
-		let { projectId, mariadbId } = flags;
+		let { projectId, environmentId, mariadbId } = flags;
 
-		if (!projectId || !mariadbId) {
+		if (!projectId || !environmentId || !mariadbId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
+			let selectedProject;
+			let selectedEnvironment;
+
+			// 1. Seleccionar proyecto
 			if (!projectId) {
 				const answers = await inquirer.prompt([
 					{
@@ -51,30 +60,54 @@ export default class DatabaseMariadbDelete extends Command {
 						type: "list",
 					},
 				]);
+				selectedProject = projects.find(p => p.projectId === answers.selectedProject);
 				projectId = answers.selectedProject;
+			} else {
+				selectedProject = projects.find(p => p.projectId === projectId);
 			}
 
-			const projectSelected = await getProject(projectId, auth, this);
+			// 2. Seleccionar environment del proyecto
+			if (!environmentId) {
+				if (!selectedProject?.environments || selectedProject.environments.length === 0) {
+					this.error(chalk.yellow("No environments found in this project."));
+				}
 
-			if (!projectSelected.mariadb || projectSelected.mariadb.length === 0) {
-				this.error(chalk.yellow("No MariaDB instances found in this project."));
-			}
+				const { environment } = await inquirer.prompt([
+						{
+							choices: selectedProject.environments.map((env) => ({
+								name: `${env.name} (${env.description})`,
+								value: env,
+							})),
+							message: "Select an environment:",
+							name: "environment",
+							type: "list",
+						},
+					]);
+					selectedEnvironment = environment;
+					environmentId = environment.environmentId;
+				} else {
+					selectedEnvironment = selectedProject?.environments?.find(e => e.environmentId === environmentId);
+				}
 
+			// 3. Seleccionar MariaDB del environment
 			if (!mariadbId) {
+				if (!selectedEnvironment?.mariadb || selectedEnvironment.mariadb.length === 0) {
+					this.error(chalk.yellow("No MariaDB instances found in this environment."));
+				}
+
 				const dbAnswers = await inquirer.prompt([
-					{
-						// @ts-ignore
-						choices: projectSelected.mariadb.map((db) => ({
-							name: db.name,
-							value: db.mariadbId,
-						})),
-						message: "Select the MariaDB instance to delete:",
-						name: "selectedDb",
-						type: "list",
-					},
-				]);
-				mariadbId = dbAnswers.selectedDb;
-			}
+						{
+							choices: selectedEnvironment.mariadb.map((db: Database) => ({
+								name: db.name,
+								value: db.mariadbId,
+							})),
+							message: "Select the MariaDB instance to delete:",
+							name: "selectedDb",
+							type: "list",
+						},
+					]);
+					mariadbId = dbAnswers.selectedDb;
+				}
 		}
 
 		if (!flags.skipConfirm) {

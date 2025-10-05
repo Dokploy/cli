@@ -4,7 +4,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import { slugify } from "../../../utils/slug.js";
 import { readAuthConfig } from "../../../utils/utils.js";
-import { getProjects } from "../../../utils/shared.js";
+import { getProjects, type Database } from "../../../utils/shared.js";
 import type { Answers } from "../../app/create.js";
 export default class DatabasePostgresCreate extends Command {
 	static description = "Create a new PostgreSQL database within a project.";
@@ -15,6 +15,11 @@ export default class DatabasePostgresCreate extends Command {
 		projectId: Flags.string({
 			char: "p",
 			description: "ID of the project",
+			required: false,
+		}),
+		environmentId: Flags.string({
+			char: "e",
+			description: "ID of the environment",
 			required: false,
 		}),
 		name: Flags.string({
@@ -59,6 +64,7 @@ export default class DatabasePostgresCreate extends Command {
 		const { flags } = await this.parse(DatabasePostgresCreate);
 		let { 
 			projectId, 
+			environmentId,
 			name, 
 			databaseName, 
 			description, 
@@ -69,10 +75,13 @@ export default class DatabasePostgresCreate extends Command {
 		} = flags;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
-		if (!projectId || !name || !databaseName || !appName || !databasePassword) {
+		if (!projectId || !environmentId || !name || !databaseName || !appName || !databasePassword) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
+			let selectedProject;
+
+			// 1. Seleccionar proyecto
 			if (!projectId) {
 				const { project } = await inquirer.prompt<Answers>([
 					{
@@ -85,8 +94,31 @@ export default class DatabasePostgresCreate extends Command {
 						type: "list",
 					},
 				]);
+				selectedProject = project;
 				projectId = project.projectId;
+			} else {
+				selectedProject = projects.find(p => p.projectId === projectId);
 			}
+
+			// 2. Seleccionar environment del proyecto
+			if (!environmentId) {
+				if (!selectedProject?.environments || selectedProject.environments.length === 0) {
+					this.error(chalk.yellow("No environments found in this project."));
+				}
+
+				const { environment } = await inquirer.prompt([
+						{
+							choices: selectedProject.environments.map((env) => ({
+								name: `${env.name} (${env.description})`,
+								value: env,
+							})),
+							message: "Select an environment:",
+							name: "environment",
+							type: "list",
+						},
+					]);
+					environmentId = environment.environmentId;
+				}
 
 			if (!name || !databaseName || !appName || !databasePassword) {
 				const dbDetails = await inquirer.prompt([
@@ -182,6 +214,7 @@ export default class DatabasePostgresCreate extends Command {
 						dockerImage,
 						appName,
 						projectId,
+					environmentId,
 					},
 				},
 				{
