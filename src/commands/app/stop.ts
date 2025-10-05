@@ -2,7 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import { readAuthConfig } from "../../utils/utils.js";
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { getProject, getProjects } from "../../utils/shared.js";
+import { getProject, getProjects, type Application } from "../../utils/shared.js";
 import type { Answers } from "./create.js";
 import axios from "axios";
 
@@ -15,6 +15,11 @@ export default class AppStop extends Command {
 		projectId: Flags.string({
 			char: 'p',
 			description: 'ID of the project',
+			required: false,
+		}),
+		environmentId: Flags.string({
+			char: 'e',
+			description: 'ID of the environment',
 			required: false,
 		}),
 		applicationId: Flags.string({
@@ -32,13 +37,17 @@ export default class AppStop extends Command {
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(AppStop);
-		let { projectId, applicationId } = flags;
+		let { projectId, environmentId, applicationId } = flags;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
-		if (!projectId || !applicationId) {
+		if (!projectId || !environmentId || !applicationId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
+			let selectedProject;
+			let selectedEnvironment;
+
+			// 1. Seleccionar proyecto
 			if (!projectId) {
 				const { project } = await inquirer.prompt<Answers>([
 					{
@@ -51,19 +60,44 @@ export default class AppStop extends Command {
 						type: "list",
 					},
 				]);
+				selectedProject = project;
 				projectId = project.projectId;
+			} else {
+				selectedProject = projects.find(p => p.projectId === projectId);
 			}
 
-			const projectSelected = await getProject(projectId, auth, this);
+			// 2. Seleccionar environment del proyecto
+			if (!environmentId) {
+				if (!selectedProject?.environments || selectedProject.environments.length === 0) {
+					this.error(chalk.yellow("No environments found in this project."));
+				}
 
-			if (projectSelected.applications.length === 0) {
-				this.error(chalk.yellow("No applications found in this project."));
+				const { environment } = await inquirer.prompt([
+					{
+						choices: selectedProject.environments.map((env) => ({
+							name: `${env.name} (${env.description})`,
+							value: env,
+						})),
+						message: "Select an environment:",
+						name: "environment",
+						type: "list",
+					},
+				]);
+				selectedEnvironment = environment;
+				environmentId = environment.environmentId;
+			} else {
+				selectedEnvironment = selectedProject?.environments?.find(e => e.environmentId === environmentId);
 			}
 
+			// 3. Seleccionar application del environment
 			if (!applicationId) {
+				if (!selectedEnvironment?.applications || selectedEnvironment.applications.length === 0) {
+					this.error(chalk.yellow("No applications found in this environment."));
+				}
+
 				const appAnswers = await inquirer.prompt([
 					{
-						choices: projectSelected.applications.map((app: { name: string; applicationId: string }) => ({
+						choices: selectedEnvironment.applications.map((app: Application) => ({
 							name: app.name,
 							value: app.applicationId,
 						})),

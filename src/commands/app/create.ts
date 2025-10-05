@@ -22,6 +22,11 @@ export default class AppCreate extends Command {
 			description: "ID of the project",
 			required: false,
 		}),
+		environmentId: Flags.string({
+			char: "e",
+			description: "ID of the environment",
+			required: false,
+		}),
 		name: Flags.string({
 			char: "n",
 			description: "Application name",
@@ -46,13 +51,16 @@ export default class AppCreate extends Command {
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(AppCreate);
-		let { projectId, name, description, appName } = flags;
+		let { projectId, environmentId, name, description, appName } = flags;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
-		if (!projectId || !name || !appName) {
+		if (!projectId || !environmentId || !name || !appName) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
+			let selectedProject;
+
+			// 1. Seleccionar proyecto
 			if (!projectId) {
 				const { project } = await inquirer.prompt<Answers>([
 					{
@@ -65,7 +73,30 @@ export default class AppCreate extends Command {
 						type: "list",
 					},
 				]);
+				selectedProject = project;
 				projectId = project.projectId;
+			} else {
+				selectedProject = projects.find(p => p.projectId === projectId);
+			}
+
+			// 2. Seleccionar environment del proyecto
+			if (!environmentId) {
+				if (!selectedProject?.environments || selectedProject.environments.length === 0) {
+					this.error(chalk.yellow("No environments found in this project."));
+				}
+
+				const { environment } = await inquirer.prompt([
+					{
+						choices: selectedProject.environments.map((env) => ({
+							name: `${env.name} (${env.description})`,
+							value: env,
+						})),
+						message: "Select an environment:",
+						name: "environment",
+						type: "list",
+					},
+				]);
+				environmentId = environment.environmentId;
 			}
 
 			if (!name || !appName) {
@@ -128,6 +159,7 @@ export default class AppCreate extends Command {
 						appDescription: description,
 						appName,
 						projectId,
+						environmentId,
 					},
 				},
 				{
