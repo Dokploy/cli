@@ -3,10 +3,12 @@
   "description": "A CLI to manage dokploy server remotely",
   "version": "v0.2.8",
   "author": "Mauricio Siu",
-  "licenses": [{
-    "type": "MIT",
-    "url": "https://github.com/Dokploy/cli/blob/master/LICENSE"
-  }],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Dokploy/cli/blob/master/LICENSE"
+    }
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -16,6 +18,7 @@
   "bugs": "https://github.com/Dokploy/cli/issues",
   "dependencies": {
     "@oclif/core": "^3",
+    "@oclif/plugin-autocomplete": "^3",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-plugins": "^5",
     "axios": "^1.7.2",
@@ -49,6 +52,7 @@
   "files": [
     "/bin",
     "/dist",
+    "/scripts",
     "/oclif.manifest.json"
   ],
   "homepage": "https://github.com/Dokploy/cli",
@@ -63,6 +67,7 @@
     "dirname": "dokploy",
     "commands": "./dist/commands",
     "plugins": [
+      "@oclif/plugin-autocomplete",
       "@oclif/plugin-help",
       "@oclif/plugin-plugins"
     ],
@@ -71,6 +76,9 @@
       "hello": {
         "description": "Say hello to the world and others"
       }
+    },
+    "hooks": {
+      "init": "./dist/hooks/init/hide-commands"
     }
   },
   "repository": "Dokploy/cli",
@@ -82,7 +90,8 @@
     "prepack": "oclif manifest && oclif readme",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
-    "publish" :"npm publish"
+    "publish": "npm publish",
+    "postinstall": "node scripts/postinstall.mjs"
   },
   "types": "dist/index.d.ts"
 }
