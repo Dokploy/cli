@@ -61,7 +61,8 @@ export default class DatabaseRedisCreate extends Command {
 			description, 
 			databasePassword,
 			dockerImage,
-			appName 
+			appName,
+			environmentId,
 		} = flags;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
