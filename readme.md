@@ -12,111 +12,236 @@ Dokploy CLI is a powerful and versatile command-line tool designed to remotely m
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
+- [Authentication](#authentication)
+- [Quick Start](#quick-start)
 - [Commands](#commands)
-  - [Authentication](#authentication)
   - [Project Management](#project-management)
-  - [Application Management](#application-management)
   - [Environment Management](#environment-management)
+  - [Application Management](#application-management)
+  - [Environment Variables](#environment-variables)
   - [Database Management](#database-management)
 - [Contributing](#contributing)
-- [Support](#support)
 - [License](#license)
 
 ## Installation
 
 ```sh-session
-$ npm install -g @dokploy/cli
+npm install -g @dokploy/cli
 ```
 
-## Usage
+## Authentication
+
+Before using the CLI, authenticate with your Dokploy server:
 
 ```sh-session
-$ dokploy COMMAND
-running command...
+# Interactive authentication
+dokploy authenticate
 
-$ dokploy --version
-dokploy/0.0.0 darwin-arm64 node-v18.18.0
+# Verify authentication
+dokploy verify
+```
 
-$ dokploy --help [COMMAND]
-USAGE
-  $ dokploy COMMAND
-...
+Alternatively, set environment variables:
+
+```sh-session
+export DOKPLOY_URL="https://your-dokploy-server.com"
+export DOKPLOY_AUTH_TOKEN="your-api-token"
+```
+
+## Quick Start
+
+```sh-session
+# List all projects
+dokploy project list
+
+# List environments in a project
+dokploy environment list -p <projectId>
+
+# List apps/services in an environment
+dokploy app list -p <projectId> -e <environmentId>
+
+# Pull environment variables
+dokploy env pull .env.local -a <appId>
+
+# Set a single environment variable
+dokploy env set DATABASE_URL "postgres://localhost/db" -a <appId>
 ```
 
 ## Commands
 
-### Authentication
-
-- `dokploy authenticate`: Authenticate with the Dokploy server.
-- `dokploy verify`: Verify current authentication.
-
 ### Project Management
 
-- `dokploy project:create`: Create a new project.
-- `dokploy project:info`: Get information about an existing project.
-- `dokploy project:list`: List all projects.
+| Command | Description |
+|---------|-------------|
+| `dokploy project list` | List all projects with IDs |
+| `dokploy project info` | Get detailed project information |
+| `dokploy project info -p <id>` | Get project info by ID |
+| `dokploy project create` | Create a new project |
 
 ### Environment Management
 
-- `dokploy environment:create`: Create a new environment.
-- `dokploy environment:delete`: Delete an existing environment.
+| Command | Description |
+|---------|-------------|
+| `dokploy environment list` | List environments (interactive) |
+| `dokploy environment list -p <projectId>` | List environments for a project |
+| `dokploy environment create` | Create a new environment |
+| `dokploy environment delete` | Delete an environment |
 
 ### Application Management
 
-- `dokploy app:create`: Create a new application.
-- `dokploy app:delete`: Delete an existing application.
-- `dokploy app:deploy`: Deploy an application.
-- `dokploy app:stop`: Stop a running application.
+| Command | Description |
+|---------|-------------|
+| `dokploy app list` | List apps/services (interactive) |
+| `dokploy app list -p <projectId> -e <envId>` | List apps in an environment |
+| `dokploy app create` | Create a new application |
+| `dokploy app deploy` | Deploy an application |
+| `dokploy app stop` | Stop an application |
+| `dokploy app delete` | Delete an application |
 
-### Enviroment Management
+### Environment Variables
 
-- `dokploy env pull <file>`: Pull environment variables from Dokploy in a <file>.
-- `dokploy env push <file>`: Push environment variables to Dokploy from a <file>.
+#### Pull Environment Variables
+
+Download environment variables from a service to a local file.
+
+```sh-session
+# Interactive mode
+dokploy env pull .env.local
+
+# Using app ID (recommended)
+dokploy env pull .env.local -a <appId>
+
+# Using project/environment/service name
+dokploy env pull .env.local -p <projectId> -e <envId> -s <serviceName>
+
+# Skip confirmation prompt
+dokploy env pull .env.local -a <appId> -y
+```
+
+#### Push Environment Variables
+
+Upload a local .env file to a service (replaces all variables).
+
+```sh-session
+# Interactive mode
+dokploy env push .env.local
+
+# Note: This replaces ALL environment variables on the service
+```
+
+#### Get Single Variable
+
+Get the value of a single environment variable.
+
+```sh-session
+# Using app ID
+dokploy env get DATABASE_URL -a <appId>
+
+# Interactive mode
+dokploy env get DATABASE_URL
+```
+
+#### Set Single Variable
+
+Set or update a single environment variable.
+
+```sh-session
+# Using app ID
+dokploy env set DATABASE_URL "postgres://localhost/db" -a <appId>
+
+# Skip confirmation
+dokploy env set DATABASE_URL "postgres://localhost/db" -a <appId> -y
+
+# Interactive mode
+dokploy env set DATABASE_URL "postgres://localhost/db"
+```
 
 ### Database Management
 
-Dokploy supports various types of databases:
-
-#### MariaDB
-
-- `dokploy database:mariadb:create`
-- `dokploy database:mariadb:delete`
-- `dokploy database:mariadb:deploy`
-- `dokploy database:mariadb:stop`
-
-#### MongoDB
-
-- `dokploy database:mongo:create`
-- `dokploy database:mongo:delete`
-- `dokploy database:mongo:deploy`
-- `dokploy database:mongo:stop`
-
-#### MySQL
-
-- `dokploy database:mysql:create`
-- `dokploy database:mysql:delete`
-- `dokploy database:mysql:deploy`
-- `dokploy database:mysql:stop`
+Dokploy supports multiple database types. Each has the same set of commands:
 
 #### PostgreSQL
 
-- `dokploy database:postgres:create`
-- `dokploy database:postgres:delete`
-- `dokploy database:postgres:deploy`
-- `dokploy database:postgres:stop`
+```sh-session
+dokploy database postgres create
+dokploy database postgres delete
+dokploy database postgres deploy
+dokploy database postgres stop
+```
+
+#### MySQL
+
+```sh-session
+dokploy database mysql create
+dokploy database mysql delete
+dokploy database mysql deploy
+dokploy database mysql stop
+```
+
+#### MariaDB
+
+```sh-session
+dokploy database mariadb create
+dokploy database mariadb delete
+dokploy database mariadb deploy
+dokploy database mariadb stop
+```
+
+#### MongoDB
+
+```sh-session
+dokploy database mongo create
+dokploy database mongo delete
+dokploy database mongo deploy
+dokploy database mongo stop
+```
 
 #### Redis
 
-- `dokploy database:redis:create`
-- `dokploy database:redis:delete`
-- `dokploy database:redis:deploy`
-- `dokploy database:redis:stop`
+```sh-session
+dokploy database redis create
+dokploy database redis delete
+dokploy database redis deploy
+dokploy database redis stop
+```
 
-For more information about a specific command, use:
+## Command Help
+
+For detailed help on any command:
 
 ```sh-session
-$ dokploy [COMMAND] --help
+dokploy --help
+dokploy <command> --help
+dokploy <command> <subcommand> --help
+```
+
+## Common Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--projectId` | `-p` | Project ID |
+| `--environmentId` | `-e` | Environment ID |
+| `--appId` | `-a` | Application or Compose service ID |
+| `--serviceName` | `-s` | Service name |
+| `--skipConfirm` | `-y` | Skip confirmation prompts |
+
+## Workflow Example
+
+```sh-session
+# 1. List projects to get project ID
+dokploy project list
+
+# 2. List environments to get environment ID
+dokploy environment list -p WjxJrruxsH40dLEmtfhTl
+
+# 3. List apps to get app ID
+dokploy app list -p WjxJrruxsH40dLEmtfhTl -e WEj2NHHTRragIFLsLcOZp
+
+# 4. Pull env vars using app ID
+dokploy env pull .env.local -a qYa4KSujD73axxLuXcfYt -y
+
+# 5. Or set a single variable
+dokploy env set API_KEY "secret123" -a qYa4KSujD73axxLuXcfYt -y
 ```
 
 ## Contributing
