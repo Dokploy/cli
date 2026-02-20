@@ -23,7 +23,8 @@
     "cli-table3": "^0.6.5",
     "inquirer": "^9.2.23",
     "slugify": "^1.6.6",
-    "superjson": "^2.2.1"
+    "superjson": "^2.2.1",
+    "ws": "^8.17.0"
   },
   "devDependencies": {
     "@oclif/prettier-config": "^0.2.1",
@@ -32,6 +33,7 @@
     "@types/inquirer": "9.0.7",
     "@types/mocha": "^10",
     "@types/node": "^18",
+    "@types/ws": "^8.5.10",
     "chai": "^4",
     "eslint": "^8",
     "eslint-config-oclif": "^5",

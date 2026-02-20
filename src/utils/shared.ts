@@ -8,6 +8,8 @@ import type { AuthConfig } from "./utils.js";
 export type Application = {
 	applicationId: string;
 	name: string;
+	appName: string;
+	serverId: string | null;
 	// Add other application properties as needed
 };
 
@@ -110,5 +112,78 @@ export const getProject = async (
 	} catch (error) {
 		// @ts-expect-error  TODO: Fix this
 		command.error(chalk.red(`Failed to fetch project: ${error.message}`));
+	}
+};
+
+export type Server = {
+	serverId: string;
+	name: string;
+	ipAddress: string;
+	port: number;
+	username: string;
+	sshKeyId: string | null;
+};
+
+export const getServer = async (
+	serverId: string,
+	auth: AuthConfig,
+	command: Command,
+): Promise<Server> => {
+	try {
+		const response = await axios.get(
+			`${auth.url}/api/trpc/server.one`,
+			{
+				headers: {
+					"x-api-key": auth.token,
+					"Content-Type": "application/json",
+				},
+				params: {
+					input: JSON.stringify({
+						json: { serverId },
+					}),
+				},
+			},
+		);
+
+		if (!response.data.result.data.json) {
+			command.error(chalk.red("Error fetching server"));
+		}
+
+		return response.data.result.data.json;
+	} catch (error) {
+		// @ts-expect-error  TODO: Fix this
+		command.error(chalk.red(`Failed to fetch server: ${error.message}`));
+	}
+};
+
+export const getApplication = async (
+	applicationId: string,
+	auth: AuthConfig,
+	command: Command,
+): Promise<Application> => {
+	try {
+		const response = await axios.get(
+			`${auth.url}/api/trpc/application.one`,
+			{
+				headers: {
+					"x-api-key": auth.token,
+					"Content-Type": "application/json",
+				},
+				params: {
+					input: JSON.stringify({
+						json: { applicationId },
+					}),
+				},
+			},
+		);
+
+		if (!response.data.result.data.json) {
+			command.error(chalk.red("Error fetching application"));
+		}
+
+		return response.data.result.data.json;
+	} catch (error) {
+		// @ts-expect-error  TODO: Fix this
+		command.error(chalk.red(`Failed to fetch application: ${error.message}`));
 	}
 };
