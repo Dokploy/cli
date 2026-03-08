@@ -1,5 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import { readAuthConfig } from "../../../utils/utils.js";
+import { readLocalConfig } from "../../../utils/local-config.js";
 import chalk from "chalk";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import inquirer from "inquirer";
@@ -38,6 +39,10 @@ export default class DatabaseRedisDeploy extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabaseRedisDeploy);
 		let { projectId, environmentId, redisId } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId || !redisId) {

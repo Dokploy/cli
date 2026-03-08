@@ -13,6 +13,7 @@ Dokploy CLI is a powerful and versatile command-line tool designed to remotely m
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Project Configuration](#project-configuration)
 - [Commands](#commands)
   - [Authentication](#authentication)
   - [Project Management](#project-management)
@@ -43,6 +44,34 @@ USAGE
   $ dokploy COMMAND
 ...
 ```
+
+## Project Configuration
+
+You can create a `.dokploy.json` file in any project directory to set default values for project, environment, and application. This lets you skip interactive prompts when running commands.
+
+```sh-session
+$ cd ~/my-app
+$ dokploy init
+```
+
+This walks you through selecting a project, environment, and (optionally) an application, then writes a `.dokploy.json` file:
+
+```json
+{
+  "projectId": "abc123",
+  "environmentId": "def456",
+  "applicationId": "ghi789"
+}
+```
+
+Now commands run from that directory (or any subdirectory) will use these defaults automatically:
+
+```sh-session
+$ dokploy app deploy -y      # deploys the configured application
+$ dokploy env pull .env.local # pulls env vars without prompts
+```
+
+Flags passed on the command line always take priority over `.dokploy.json` values.
 
 ## Commands
 

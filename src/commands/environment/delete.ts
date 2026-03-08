@@ -5,6 +5,7 @@ import inquirer from "inquirer";
 
 import { getProjects } from "../../utils/shared.js";
 import { readAuthConfig } from "../../utils/utils.js";
+import { readLocalConfig } from "../../utils/local-config.js";
 import type { Answers } from "../app/create.js";
 
 export default class EnvironmentDelete extends Command {
@@ -37,6 +38,10 @@ export default class EnvironmentDelete extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(EnvironmentDelete);
 		let { projectId, environmentId } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId) {

@@ -5,6 +5,7 @@ import inquirer from "inquirer";
 
 import { getProjects } from "../../utils/shared.js";
 import { readAuthConfig } from "../../utils/utils.js";
+import { readLocalConfig } from "../../utils/local-config.js";
 import type { Answers } from "../app/create.js";
 
 export default class EnvironmentCreate extends Command {
@@ -39,6 +40,9 @@ export default class EnvironmentCreate extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(EnvironmentCreate);
 		let { projectId, name, description } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !name) {

@@ -5,6 +5,7 @@ import inquirer from "inquirer";
 import {readAuthConfig} from "../../utils/utils.js";
 import {getProject, getProjects} from "../../utils/shared.js";
 import {Answers} from "../app/create.js";
+import { readLocalConfig } from "../../utils/local-config.js";
 import axios from "axios";
 
 export default class EnvPush extends Command {
@@ -42,34 +43,50 @@ export default class EnvPush extends Command {
 
         const fileContent = fs.readFileSync(args.file, 'utf-8');
         const auth = await readAuthConfig(this);
-        console.log(chalk.blue.bold("\n  Listing all Projects \n"));
+        const localConfig = readLocalConfig();
 
-        const projects = await getProjects(auth, this);
-        const {project} = await inquirer.prompt<Answers>([
-            {
-                choices: projects.map((project) => ({
-                    name: project.name,
-                    value: project,
-                })),
-                message: "Select the project:",
-                name: "project",
-                type: "list",
-            },
-        ]);
-        const projectId = project.projectId;
+        let projectId = localConfig.projectId;
+        let environment: any;
+
+        if (!projectId) {
+            console.log(chalk.blue.bold("\n  Listing all Projects \n"));
+            const projects = await getProjects(auth, this);
+            const {project} = await inquirer.prompt<Answers>([
+                {
+                    choices: projects.map((project) => ({
+                        name: project.name,
+                        value: project,
+                    })),
+                    message: "Select the project:",
+                    name: "project",
+                    type: "list",
+                },
+            ]);
+            projectId = project.projectId;
+        }
+
         const projectSelected = await getProject(projectId, auth, this);
 
-        const {environment} = await inquirer.prompt<any>([
-            {
-                choices: projectSelected.environments.map((environment: any) => ({
-                    name: environment.name,
-                    value: environment,
-                })),
-                message: "Select the environment:",
-                name: "environment",
-                type: "list",
-            },
-        ]);
+        if (localConfig.environmentId) {
+            environment = projectSelected.environments.find(
+                (e: any) => e.environmentId === localConfig.environmentId
+            );
+        }
+
+        if (!environment) {
+            const envAnswer = await inquirer.prompt<any>([
+                {
+                    choices: projectSelected.environments.map((environment: any) => ({
+                        name: environment.name,
+                        value: environment,
+                    })),
+                    message: "Select the environment:",
+                    name: "environment",
+                    type: "list",
+                },
+            ]);
+            environment = envAnswer.environment;
+        }
 
         const choices = [
             ...environment.applications.map((app: any) => ({

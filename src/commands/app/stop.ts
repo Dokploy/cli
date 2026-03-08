@@ -4,6 +4,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import { getProject, getProjects, type Application } from "../../utils/shared.js";
 import type { Answers } from "./create.js";
+import { readLocalConfig } from "../../utils/local-config.js";
 import axios from "axios";
 
 export default class AppStop extends Command {
@@ -38,6 +39,11 @@ export default class AppStop extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(AppStop);
 		let { projectId, environmentId, applicationId } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
+		if (!applicationId && localConfig.applicationId) applicationId = localConfig.applicationId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId || !applicationId) {

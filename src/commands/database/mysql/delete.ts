@@ -4,6 +4,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 
 import { readAuthConfig } from "../../../utils/utils.js";
+import { readLocalConfig } from "../../../utils/local-config.js";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 
 export default class DatabaseMysqlDelete extends Command {
@@ -41,6 +42,10 @@ export default class DatabaseMysqlDelete extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabaseMysqlDelete);
 		let { projectId, environmentId, mysqlId } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId || !mysqlId) {
