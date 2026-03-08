@@ -68,6 +68,7 @@ USAGE
 - `dokploy app:delete`: Delete an existing application.
 - `dokploy app:deploy`: Deploy an application.
 - `dokploy app:stop`: Stop a running application.
+- `dokploy app:logs`: View application logs (supports streaming, filtering, and search).
 
 ### Enviroment Management
 
