@@ -6,6 +6,7 @@ import inquirer from "inquirer";
 import { type Project, getProjects } from "../../utils/shared.js";
 import { slugify } from "../../utils/slug.js";
 import { readAuthConfig } from "../../utils/utils.js";
+import { readLocalConfig } from "../../utils/local-config.js";
 
 export interface Answers {
 	project: Project;
@@ -52,6 +53,10 @@ export default class AppCreate extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(AppCreate);
 		let { projectId, environmentId, name, description, appName } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId || !name || !appName) {

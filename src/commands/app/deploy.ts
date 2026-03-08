@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { getProject, getProjects, type Application } from "../../utils/shared.js";
 import inquirer from "inquirer";
 import type { Answers } from "./create.js";
+import { readLocalConfig } from "../../utils/local-config.js";
 import axios from "axios";
 
 export default class AppDeploy extends Command {
@@ -42,6 +43,11 @@ export default class AppDeploy extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(AppDeploy);
 		let { projectId, applicationId, environmentId } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
+		if (!applicationId && localConfig.applicationId) applicationId = localConfig.applicationId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !applicationId || !environmentId) {

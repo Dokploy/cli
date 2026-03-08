@@ -5,6 +5,7 @@ import inquirer from "inquirer";
 
 import { slugify } from "../../../utils/slug.js";
 import { readAuthConfig } from "../../../utils/utils.js";
+import { readLocalConfig } from "../../../utils/local-config.js";
 import { getProjects, type Database } from "../../../utils/shared.js";
 import type { Answers } from "../../app/create.js";
 
@@ -81,7 +82,11 @@ export default class DatabaseMysqlCreate extends Command {
 			appName 
 		} = flags;
 
-		// Modo interactivo si no se proporcionan los flags necesarios	
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
+
+		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId || !name || !databaseName || !appName || !databasePassword || !databaseRootPassword) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);

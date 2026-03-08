@@ -4,6 +4,7 @@ import inquirer from "inquirer";
 import axios from "axios";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import { readAuthConfig } from "../../../utils/utils.js";
+import { readLocalConfig } from "../../../utils/local-config.js";
 import type { Answers } from "../../app/create.js";
 
 export default class DatabaseMysqlStop extends Command {
@@ -38,6 +39,10 @@ export default class DatabaseMysqlStop extends Command {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabaseMysqlStop);
 		let { projectId, environmentId, mysqlId } = flags;
+
+		const localConfig = readLocalConfig();
+		if (!projectId && localConfig.projectId) projectId = localConfig.projectId;
+		if (!environmentId && localConfig.environmentId) environmentId = localConfig.environmentId;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId || !mysqlId) {
