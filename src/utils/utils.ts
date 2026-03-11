@@ -1,6 +1,7 @@
 import type { Command } from "@oclif/core";
 
 import chalk from "chalk";
+import "./http.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,7 +21,7 @@ export const readAuthConfig = async (command: Command): Promise<AuthConfig> => {
 	const envUrl = process.env.DOKPLOY_URL;
 
 	if (envToken && envUrl) {
-		return { token: envToken, url: envUrl };
+		return { token: envToken.trim(), url: envUrl.trim().replace(/\/+$/, "") };
 	}
 
 	// Si no hay variables de entorno, usar el archivo de configuración
@@ -44,5 +45,5 @@ export const readAuthConfig = async (command: Command): Promise<AuthConfig> => {
 		);
 	}
 
-	return { token, url };
+	return { token: token.trim(), url: url.trim().replace(/\/+$/, "") };
 };
