@@ -3,23 +3,40 @@ import axios from "axios";
 import chalk from "chalk";
 import * as crypto from "node:crypto";
 import * as http from "node:http";
-import { readAuthConfig, type AuthConfig } from "../../utils/utils.js";
+
+import { type AuthConfig, readAuthConfig } from "../../utils/utils.js";
 
 type GitProviderRecord = {
 	gitProviderId: string;
+	github: {
+		githubAppName: string;
+		githubId: string;
+		githubInstallationId: null | string;
+	} | null;
 	name: string;
 	providerType: string;
-	github: {
-		githubId: string;
-		githubAppName: string;
-		githubInstallationId: string | null;
-	} | null;
 };
 
 type FullProvider = {
+	gitProvider: { gitProviderId: string; name: string };
 	githubId: string;
-	gitProvider: { name: string; gitProviderId: string };
 };
+
+export function buildRedirectPage(action: string, manifestHtmlSafe: string): string {
+	return [
+		"<!DOCTYPE html>",
+		"<html>",
+		"<head><title>Connecting to GitHub...</title></head>",
+		"<body>",
+		'<p style="font-family:sans-serif">Redirecting to GitHub to create the Dokploy app...</p>',
+		`<form id="f" action="${action}" method="post">`,
+		`  <input type="hidden" name="manifest" value="${manifestHtmlSafe}">`,
+		"</form>",
+		'<script>document.getElementById("f").submit();</script>',
+		"</body>",
+		"</html>",
+	].join("\n");
+}
 
 export default class GithubConnect extends Command {
 	static description =
@@ -50,15 +67,16 @@ export default class GithubConnect extends Command {
 		try {
 			const userResponse = await axios.get(`${baseUrl}/api/trpc/user.get`, {
 				headers: {
-					"x-api-key": auth.token,
 					"Content-Type": "application/json",
+					"x-api-key": auth.token,
 				},
 			});
 			const member = userResponse.data.result.data.json;
 			userId = member.userId;
 			organizationId = member.organizationId;
-		} catch (error: any) {
-			this.error(chalk.red(`Failed to fetch user info: ${error.message}`));
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error);
+			this.error(chalk.red(`Failed to fetch user info: ${message}`));
 		}
 
 		// 2. Snapshot existing git providers (to detect the new one after creation)
@@ -66,24 +84,24 @@ export default class GithubConnect extends Command {
 
 		// 3. Build GitHub App manifest (mirrors the web UI flow)
 		const appName = `Dokploy-${new Date().toISOString().split("T")[0]}-${crypto.randomBytes(4).toString("hex")}`;
+		/* eslint-disable camelcase, perfectionist/sort-objects */
 		const manifest = {
-			redirect_url: `${baseUrl}/api/providers/github/setup?organizationId=${organizationId}&userId=${userId}`,
 			name: appName,
 			url: baseUrl,
-			hook_attributes: {
-				url: `${baseUrl}/api/deploy/github`,
-			},
+			redirect_url: `${baseUrl}/api/providers/github/setup?organizationId=${organizationId}&userId=${userId}`,
+			hook_attributes: { url: `${baseUrl}/api/deploy/github` },
 			callback_urls: [`${baseUrl}/api/providers/github/setup`],
 			public: false,
 			request_oauth_on_install: true,
 			default_permissions: {
 				contents: "read",
-				metadata: "read",
 				emails: "read",
+				metadata: "read",
 				pull_requests: "write",
 			},
 			default_events: ["pull_request", "push"],
 		};
+		/* eslint-enable camelcase, perfectionist/sort-objects */
 
 		// 4. Serve an auto-submitting form and open the browser
 		const port = await this.getAvailablePort();
@@ -93,27 +111,17 @@ export default class GithubConnect extends Command {
 
 		const manifestJson = JSON.stringify(manifest);
 		const manifestHtmlSafe = manifestJson
-			.replace(/&/g, "&amp;")
-			.replace(/"/g, "&quot;");
+			.replaceAll("&", "&amp;")
+			.replaceAll('"', "&quot;");
 
 		const server = http.createServer((_req, res) => {
 			res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-			res.end(`<!DOCTYPE html>
-<html>
-<head><title>Connecting to GitHub...</title></head>
-<body>
-  <p style="font-family:sans-serif">Redirecting to GitHub to create the Dokploy app...</p>
-  <form id="f" action="${githubFormAction}" method="post">
-    <input type="hidden" name="manifest" value="${manifestHtmlSafe}">
-  </form>
-  <script>document.getElementById('f').submit();</script>
-</body>
-</html>`);
+			res.end(buildRedirectPage(githubFormAction, manifestHtmlSafe));
 		});
 
-		await new Promise<void>((resolve) =>
-			server.listen(port, "127.0.0.1", resolve),
-		);
+		await new Promise<void>((resolve) => {
+			server.listen(port, "127.0.0.1", resolve);
+		});
 
 		this.log(chalk.blue.bold("\n── Step 1/2: Create GitHub App ─────────────────\n"));
 		this.log(
@@ -131,8 +139,9 @@ export default class GithubConnect extends Command {
 		let newProvider: GitProviderRecord | null = null;
 		const phase1Timeout = Date.now() + 5 * 60 * 1000;
 
+		/* eslint-disable no-await-in-loop */
 		while (Date.now() < phase1Timeout) {
-			await new Promise((r) => setTimeout(r, 3000));
+			await new Promise((r) => { setTimeout(r, 3000); });
 			process.stdout.write(".");
 
 			try {
@@ -153,6 +162,7 @@ export default class GithubConnect extends Command {
 				// Network hiccup – keep polling
 			}
 		}
+		/* eslint-enable no-await-in-loop */
 
 		server.close();
 		process.stdout.write("\n");
@@ -165,7 +175,7 @@ export default class GithubConnect extends Command {
 			);
 		}
 
-		const { githubId, githubAppName } = newProvider.github;
+		const { githubAppName, githubId } = newProvider.github;
 		this.log(chalk.green(`\n✓ GitHub App created: ${newProvider.name}`));
 
 		// 6. Phase 2 – open the installation URL and wait for githubInstallationId
@@ -180,8 +190,9 @@ export default class GithubConnect extends Command {
 		const phase2Timeout = Date.now() + 5 * 60 * 1000;
 		let installed = false;
 
+		/* eslint-disable no-await-in-loop */
 		while (Date.now() < phase2Timeout) {
-			await new Promise((r) => setTimeout(r, 3000));
+			await new Promise((r) => { setTimeout(r, 3000); });
 			process.stdout.write(".");
 
 			try {
@@ -194,6 +205,7 @@ export default class GithubConnect extends Command {
 				// Network hiccup – keep polling
 			}
 		}
+		/* eslint-enable no-await-in-loop */
 
 		process.stdout.write("\n");
 
@@ -211,28 +223,36 @@ export default class GithubConnect extends Command {
 		this.log(chalk.dim(`  ID:       ${githubId}`));
 	}
 
-	/** Returns all git providers including partial ones (no installation required). */
+	/**
+	 * Returns all git providers including partial ones (no installation required).
+	 * @param auth - authenticated config with url and token
+	 * @returns list of git provider records
+	 */
 	private async fetchAllGitProviders(auth: AuthConfig): Promise<GitProviderRecord[]> {
 		const response = await axios.get(
 			`${auth.url}/api/trpc/gitProvider.getAll`,
 			{
 				headers: {
-					"x-api-key": auth.token,
 					"Content-Type": "application/json",
+					"x-api-key": auth.token,
 				},
 			},
 		);
 		return response.data.result.data.json ?? [];
 	}
 
-	/** Returns only fully configured providers (creation + installation complete). */
+	/**
+	 * Returns only fully configured providers (creation + installation complete).
+	 * @param auth - authenticated config with url and token
+	 * @returns list of full provider records
+	 */
 	private async fetchFullProviders(auth: AuthConfig): Promise<FullProvider[]> {
 		const response = await axios.get(
 			`${auth.url}/api/trpc/github.githubProviders`,
 			{
 				headers: {
-					"x-api-key": auth.token,
 					"Content-Type": "application/json",
+					"x-api-key": auth.token,
 				},
 			},
 		);
