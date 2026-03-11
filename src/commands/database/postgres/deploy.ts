@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
-import { readAuthConfig } from "../../../utils/utils.js";
-import chalk from "chalk";
-import { getProject, getProjects, type Database } from "../../../utils/shared.js";
-import inquirer from "inquirer";
-import type { Answers } from "../../app/create.js";
 import axios from "axios";
+import chalk from "chalk";
+import inquirer from "inquirer";
+
+import { type Database, getProject, getProjects } from "../../../utils/shared.js";
+import { readAuthConfig } from "../../../utils/utils.js";
 
 export default class DatabasePostgresDeploy extends Command {
 	static description = "Deploy a PostgreSQL instance to a project.";
@@ -12,11 +12,6 @@ export default class DatabasePostgresDeploy extends Command {
 	static examples = ["$ <%= config.bin %> postgres deploy"];
 
 	static flags = {
-		projectId: Flags.string({
-			char: "p",
-			description: "ID of the project",
-			required: false,
-		}),
 		environmentId: Flags.string({
 			char: "e",
 			description: "ID of the environment",
@@ -27,54 +22,50 @@ export default class DatabasePostgresDeploy extends Command {
 			description: "ID of the PostgreSQL instance to deploy",
 			required: false,
 		}),
+		projectId: Flags.string({
+			char: "p",
+			description: "ID of the project",
+			required: false,
+		}),
 		skipConfirm: Flags.boolean({
 			char: "y",
-			description: "Skip confirmation prompt",
 			default: false,
+			description: "Skip confirmation prompt",
 		}),
 	};
 
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabasePostgresDeploy);
-		let { projectId, environmentId, postgresId } = flags;
+		let { environmentId, postgresId, projectId } = flags;
 
-		// Modo interactivo si no se proporcionan los flags necesarios
 		if (!projectId || !environmentId || !postgresId) {
 			console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 			const projects = await getProjects(auth, this);
 
-			let selectedProject;
-			let selectedEnvironment;
-
-			// 1. Seleccionar proyecto
 			if (!projectId) {
-				const { project } = await inquirer.prompt<Answers>([
+				const { project } = await inquirer.prompt<{ project: { name: string; projectId: string } }>([
 					{
-						choices: projects.map((project) => ({
-							name: project.name,
-							value: project,
-						})),
+						choices: projects.map((p) => ({ name: p.name, value: p })),
 						message: "Select a project to deploy the PostgreSQL instance from:",
 						name: "project",
 						type: "list",
 					},
 				]);
-				selectedProject = project;
 				projectId = project.projectId;
-			} else {
-				selectedProject = projects.find(p => p.projectId === projectId);
 			}
 
-			// 2. Seleccionar environment del proyecto
+			// Fetch full project data (includes name + appName for all services)
+			const projectDetails = await getProject(projectId, auth, this);
+
 			if (!environmentId) {
-				if (!selectedProject?.environments || selectedProject.environments.length === 0) {
+				if (!projectDetails.environments || projectDetails.environments.length === 0) {
 					this.error(chalk.yellow("No environments found in this project."));
 				}
 
-				const { environment } = await inquirer.prompt([
+				const { environment } = await inquirer.prompt<{ environment: { environmentId: string; name: string } }>([
 					{
-						choices: selectedProject.environments.map((env) => ({
+						choices: projectDetails.environments.map((env: { description: string; environmentId: string; name: string }) => ({
 							name: `${env.name} (${env.description})`,
 							value: env,
 						})),
@@ -83,22 +74,22 @@ export default class DatabasePostgresDeploy extends Command {
 						type: "list",
 					},
 				]);
-				selectedEnvironment = environment;
 				environmentId = environment.environmentId;
-			} else {
-				selectedEnvironment = selectedProject?.environments?.find(e => e.environmentId === environmentId);
 			}
 
-			// 3. Seleccionar PostgreSQL del environment
 			if (!postgresId) {
-				if (!selectedEnvironment?.postgres || selectedEnvironment.postgres.length === 0) {
+				const selectedEnv = projectDetails.environments.find(
+					(e: { environmentId: string }) => e.environmentId === environmentId,
+				);
+
+				if (!selectedEnv?.postgres || selectedEnv.postgres.length === 0) {
 					this.error(chalk.yellow("No PostgreSQL instances found in this environment."));
 				}
 
-				const dbAnswers = await inquirer.prompt([
+				const { selectedDb } = await inquirer.prompt<{ selectedDb: string }>([
 					{
-						choices: selectedEnvironment.postgres.map((db: Database) => ({
-							name: db.name,
+						choices: selectedEnv.postgres.map((db: Database) => ({
+							name: `${db.appName}:${db.name}`,
 							value: db.postgresId,
 						})),
 						message: "Select the PostgreSQL instance to deploy:",
@@ -106,13 +97,12 @@ export default class DatabasePostgresDeploy extends Command {
 						type: "list",
 					},
 				]);
-				postgresId = dbAnswers.selectedDb;
+				postgresId = selectedDb;
 			}
 		}
 
-		// Confirmar si no se especifica --skipConfirm
 		if (!flags.skipConfirm) {
-			const confirmAnswers = await inquirer.prompt([
+			const { confirmDeploy } = await inquirer.prompt<{ confirmDeploy: boolean }>([
 				{
 					default: false,
 					message: "Are you sure you want to deploy this PostgreSQL instance?",
@@ -121,7 +111,7 @@ export default class DatabasePostgresDeploy extends Command {
 				},
 			]);
 
-			if (!confirmAnswers.confirmDeploy) {
+			if (!confirmDeploy) {
 				this.error(chalk.yellow("PostgreSQL deployment cancelled."));
 			}
 		}
@@ -129,15 +119,11 @@ export default class DatabasePostgresDeploy extends Command {
 		try {
 			const response = await axios.post(
 				`${auth.url}/api/trpc/postgres.deploy`,
-				{
-					json: {
-						postgresId,
-					},
-				},
+				{ json: { postgresId } },
 				{
 					headers: {
-						"x-api-key": auth.token,
 						"Content-Type": "application/json",
+						"x-api-key": auth.token,
 					},
 				},
 			);
@@ -145,9 +131,11 @@ export default class DatabasePostgresDeploy extends Command {
 			if (response.status !== 200) {
 				this.error(chalk.red("Error deploying PostgreSQL instance"));
 			}
+
 			this.log(chalk.green("PostgreSQL instance deployed successfully."));
-		} catch (error: any) {
-			this.error(chalk.red(`Error deploying PostgreSQL instance: ${error.message}`));
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error);
+			this.error(chalk.red(`Error deploying PostgreSQL instance: ${message}`));
 		}
 	}
 }

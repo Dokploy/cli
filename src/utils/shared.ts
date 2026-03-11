@@ -12,12 +12,13 @@ export type Application = {
 };
 
 export type Database = {
+	appName: string;
 	mariadbId?: string;
 	mongoId?: string;
 	mysqlId?: string;
+	name: string;
 	postgresId?: string;
 	redisId?: string;
-	name: string;
 	// Add other database properties as needed
 };
 
