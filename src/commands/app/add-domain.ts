@@ -20,7 +20,7 @@ type DomainInput = {
 
 export default class AppAddDomain extends Command {
 	static override description =
-		"Add a domain to an application. Supports custom domains or auto-generated traefik.me domains.";
+		"Add a domain to an application. Supports custom domains (with optional HTTPS/Let's Encrypt) or auto-generated traefik.me domains (free, no DNS setup required, no SSL).";
 
 	static override examples = [
 		"<%= config.bin %> app add-domain",
@@ -89,6 +89,8 @@ export default class AppAddDomain extends Command {
 		let customCertResolver: string | undefined;
 
 		if (domainMode === "traefik") {
+			this.log(chalk.yellow("\n  ℹ traefik.me domains are free and require no DNS setup,"));
+			this.log(chalk.yellow("    but do not support HTTPS/SSL certificates.\n"));
 			host = await this.generateTraefikDomain(auth, application);
 			this.log(chalk.dim(`  Generated: ${host}`));
 		} else {
