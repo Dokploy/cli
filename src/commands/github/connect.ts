@@ -21,6 +21,22 @@ type FullProvider = {
 	gitProvider: { name: string; gitProviderId: string };
 };
 
+export function buildRedirectPage(action: string, manifestHtmlSafe: string): string {
+	return [
+		"<!DOCTYPE html>",
+		"<html>",
+		"<head><title>Connecting to GitHub...</title></head>",
+		"<body>",
+		'<p style="font-family:sans-serif">Redirecting to GitHub to create the Dokploy app...</p>',
+		`<form id="f" action="${action}" method="post">`,
+		`  <input type="hidden" name="manifest" value="${manifestHtmlSafe}">`,
+		"</form>",
+		'<script>document.getElementById("f").submit();</script>',
+		"</body>",
+		"</html>",
+	].join("\n");
+}
+
 export default class GithubConnect extends Command {
 	static description =
 		"Connect a GitHub account as a git provider via GitHub App.";
@@ -98,7 +114,7 @@ export default class GithubConnect extends Command {
 
 		const server = http.createServer((_req, res) => {
 			res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-			res.end(this.buildRedirectPage(githubFormAction, manifestHtmlSafe));
+			res.end(buildRedirectPage(githubFormAction, manifestHtmlSafe));
 		});
 
 		await new Promise<void>((resolve) =>
@@ -229,21 +245,6 @@ export default class GithubConnect extends Command {
 		return response.data.result.data.json ?? [];
 	}
 
-	private buildRedirectPage(action: string, manifestHtmlSafe: string): string {
-		return [
-			"<!DOCTYPE html>",
-			"<html>",
-			"<head><title>Connecting to GitHub...</title></head>",
-			"<body>",
-			'<p style="font-family:sans-serif">Redirecting to GitHub to create the Dokploy app...</p>',
-			`<form id="f" action="${action}" method="post">`,
-			`  <input type="hidden" name="manifest" value="${manifestHtmlSafe}">`,
-			"</form>",
-			'<script>document.getElementById("f").submit();</script>',
-			"</body>",
-			"</html>",
-		].join("\n");
-	}
 
 	private getAvailablePort(): Promise<number> {
 		return new Promise((resolve, reject) => {
