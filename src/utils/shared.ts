@@ -6,9 +6,10 @@ import chalk from "chalk";
 import type { AuthConfig } from "./utils.js";
 
 export type Application = {
+	appName: string;
 	applicationId: string;
 	name: string;
-	// Add other application properties as needed
+	serverId?: string | null;
 };
 
 export type Database = {
