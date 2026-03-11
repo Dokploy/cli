@@ -55,13 +55,14 @@ export default class DatabaseRedisCreate extends Command {
 	public async run(): Promise<void> {
 		const auth = await readAuthConfig(this);
 		const { flags } = await this.parse(DatabaseRedisCreate);
-		let { 
-			projectId, 
-			name, 
-			description, 
+		let {
+			projectId,
+			environmentId,
+			name,
+			description,
 			databasePassword,
 			dockerImage,
-			appName 
+			appName
 		} = flags;
 
 		// Modo interactivo si no se proporcionan los flags necesarios
