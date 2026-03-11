@@ -98,17 +98,7 @@ export default class GithubConnect extends Command {
 
 		const server = http.createServer((_req, res) => {
 			res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-			res.end(`<!DOCTYPE html>
-<html>
-<head><title>Connecting to GitHub...</title></head>
-<body>
-  <p style="font-family:sans-serif">Redirecting to GitHub to create the Dokploy app...</p>
-  <form id="f" action="${githubFormAction}" method="post">
-    <input type="hidden" name="manifest" value="${manifestHtmlSafe}">
-  </form>
-  <script>document.getElementById('f').submit();</script>
-</body>
-</html>`);
+			res.end(this.buildRedirectPage(githubFormAction, manifestHtmlSafe));
 		});
 
 		await new Promise<void>((resolve) =>
@@ -237,6 +227,22 @@ export default class GithubConnect extends Command {
 			},
 		);
 		return response.data.result.data.json ?? [];
+	}
+
+	private buildRedirectPage(action: string, manifestHtmlSafe: string): string {
+		return [
+			"<!DOCTYPE html>",
+			"<html>",
+			"<head><title>Connecting to GitHub...</title></head>",
+			"<body>",
+			'<p style="font-family:sans-serif">Redirecting to GitHub to create the Dokploy app...</p>',
+			`<form id="f" action="${action}" method="post">`,
+			`  <input type="hidden" name="manifest" value="${manifestHtmlSafe}">`,
+			"</form>",
+			'<script>document.getElementById("f").submit();</script>',
+			"</body>",
+			"</html>",
+		].join("\n");
 	}
 
 	private getAvailablePort(): Promise<number> {
