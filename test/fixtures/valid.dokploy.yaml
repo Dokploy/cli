@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Project
+name: test-project
+description: "A test project"
+
+environments:
+  - name: production
+    description: "Production env"
+
+    applications:
+      - name: web-api
+        sourceType: github
+        buildType: dockerfile
+        repository: org/api
+        owner: org
+        branch: main
+        buildPath: /
+        dockerfile: Dockerfile
+        replicas: 1
+        autoDeploy: true
+        domains:
+          - host: api.example.com
+            port: 3000
+            https: true
+            certificateType: letsencrypt
+        ports:
+          - publishedPort: 8080
+            targetPort: 3000
+            protocol: tcp
+            publishMode: host
+        mounts:
+          - type: volume
+            mountPath: /data
+            volumeName: api-data
+        redirects:
+          - regex: "^/old/(.*)"
+            replacement: "/new/$1"
+            permanent: true
+        security:
+          - username: admin
+            password: secret123
+        schedules:
+          - name: cleanup
+            cronExpression: "0 2 * * *"
+            command: "rm -rf /tmp/logs"
+            shellType: bash
+            enabled: true
+
+    compose:
+      - name: monitoring
+        sourceType: raw
+        composeType: docker-compose
+        composePath: ./docker-compose.yml
+        domains:
+          - host: grafana.example.com
+            port: 3000
+            https: true
+            serviceName: grafana
+
+    postgres:
+      - name: main-db
+        dockerImage: postgres:16
+        databaseName: myapp
+        databaseUser: admin
+        databasePassword: securepass123
+
+    mysql:
+      - name: mysql-db
+        dockerImage: mysql:8
+        databaseName: myapp
+        databaseUser: admin
+        databasePassword: securepass123
+        databaseRootPassword: rootpass123
+
+    mariadb:
+      - name: maria-db
+        dockerImage: mariadb:11
+        databaseName: myapp
+        databaseUser: admin
+        databasePassword: securepass123
+        databaseRootPassword: rootpass123
+
+    mongo:
+      - name: mongo-db
+        dockerImage: mongo:7
+        databaseUser: admin
+        databasePassword: securepass123
+
+    redis:
+      - name: cache
+        dockerImage: redis:7
+        databasePassword: redispass123
