@@ -19,6 +19,7 @@ Dokploy CLI is a powerful and versatile command-line tool designed to remotely m
   - [Application Management](#application-management)
   - [Environment Management](#environment-management)
   - [Database Management](#database-management)
+- [Declarative Apply](#declarative-apply)
 - [Contributing](#contributing)
 - [Support](#support)
 - [License](#license)
@@ -117,6 +118,54 @@ For more information about a specific command, use:
 
 ```sh-session
 $ dokploy [COMMAND] --help
+```
+
+## Declarative Apply
+
+The `apply` command lets you manage your entire Dokploy infrastructure from a single YAML file — projects, environments, applications, and databases — in a declarative, idempotent way.
+
+### Commands
+
+```sh-session
+# Apply your configuration
+$ dokploy apply -f dokploy.yaml
+
+# Preview what would change without making any modifications
+$ dokploy apply -f dokploy.yaml --dry-run
+
+# Apply with detailed output for each resource
+$ dokploy apply -f dokploy.yaml --verbose
+```
+
+### YAML Schema Overview
+
+A `dokploy.yaml` file has the following top-level structure:
+
+```yaml
+apiVersion: v1
+kind: Project
+name: <project-name>
+description: <optional description>
+
+environments:
+  - name: <environment-name>
+    applications:   # Web apps and APIs
+      - name: ...
+        domains: []
+        mounts: []
+    postgres: []    # PostgreSQL databases
+    mysql: []       # MySQL databases
+    mariadb: []     # MariaDB databases
+    mongo: []       # MongoDB databases
+    redis: []       # Redis instances
+```
+
+See [`examples/dokploy.yaml`](examples/dokploy.yaml) for a complete working example.
+
+Environment variables are managed separately using:
+
+```sh-session
+$ dokploy env push -f .env
 ```
 
 ## Contributing
