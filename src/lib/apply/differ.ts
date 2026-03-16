@@ -10,7 +10,7 @@ const IGNORED_FIELDS = new Set([
   "appName", "applicationStatus", "composeStatus", "createdAt",
   "refreshToken", "uniqueConfigKey",
   "domains", "ports", "mounts", "redirects", "security", "schedules",
-  "serverName",
+  "serverName", "_resolvedServerId",
 ]);
 
 export function diffResource(
