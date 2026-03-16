@@ -1,6 +1,5 @@
 import { stringify } from "yaml";
 import type { AuthConfig } from "../../utils/utils.js";
-import { getProject } from "../../utils/shared.js";
 import * as api from "./api-client.js";
 
 // Fields to always strip from any resource
@@ -222,10 +221,7 @@ export async function exportProject(
     }
   }
 
-  // Fetch the full project with environments and nested resources
-  // getProject requires a Command instance but we don't have one here,
-  // so we use the api-client directly via a simple trpc call
-  const project = await fetchProject(auth, projectId);
+  const project = await api.getProject(auth, projectId);
 
   const config: Record<string, unknown> = {
     apiVersion: "v1",
@@ -280,16 +276,3 @@ export async function exportProject(
   return stringify(config, { lineWidth: 0 });
 }
 
-async function fetchProject(auth: AuthConfig, projectId: string): Promise<any> {
-  const { default: axios } = await import("axios");
-  const response = await axios.get(`${auth.url}/api/trpc/project.one`, {
-    headers: {
-      "x-api-key": auth.token,
-      "Content-Type": "application/json",
-    },
-    params: {
-      input: JSON.stringify({ json: { projectId } }),
-    },
-  });
-  return response.data.result.data.json;
-}
