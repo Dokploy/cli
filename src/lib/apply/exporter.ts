@@ -38,6 +38,22 @@ const STRIP_FIELDS = new Set([
   "serviceType",
   // Schedule internal
   "scheduleType", "script",
+  // Relation objects from .one endpoints (not serializable to YAML)
+  "environment", "server", "deployments", "registry",
+  "github", "gitlab", "gitea", "bitbucket",
+  "previewDeployments", "buildRegistry", "rollbackRegistry",
+  "backups", "domains", "ports", "mounts", "redirects", "security", "schedules",
+  // Runtime/computed fields
+  "hasGitProviderAccess", "uniqueConfigKey",
+  // Git provider-specific paths (only relevant for that provider)
+  "gitlabBuildPath", "gitlabPathNamespace", "gitlabProjectId",
+  "gitlabRepository", "gitlabOwner", "gitlabBranch",
+  "giteaRepository", "giteaOwner", "giteaBranch", "giteaBuildPath",
+  "bitbucketRepository", "bitbucketRepositorySlug",
+  "bitbucketOwner", "bitbucketBranch", "bitbucketBuildPath",
+  "customGitUrl", "customGitBranch", "customGitBuildPath",
+  // Build settings not relevant when using docker source
+  "buildSecrets",
 ]);
 
 // Fields with default values that should be omitted when at default
@@ -55,6 +71,13 @@ const DEFAULTS: Record<string, unknown> = {
   previewHttps: false,
   previewPath: "/",
   previewLimit: 3,
+  previewCertificateType: "none",
+  // Domain defaults
+  https: false,
+  path: "/",
+  internalPath: "/",
+  stripPath: false,
+  certificateType: "none",
 };
 
 export function cleanResource(
@@ -97,24 +120,27 @@ async function exportApplication(
   app: any,
   serverMap?: Map<string, string>,
 ): Promise<Record<string, unknown>> {
-  const cleaned = cleanResource(app, serverMap);
+  // Fetch full application details including child resources
+  const fullApp = await api.getApplication(auth, app.applicationId);
+  const cleaned = cleanResource(fullApp, serverMap);
 
-  const [domains, ports, mounts, redirects, security, schedules] =
-    await Promise.all([
-      api.listDomainsByApplicationId(auth, app.applicationId),
-      api.listPortsByApplicationId(auth, app.applicationId),
-      api.listMountsByServiceId(auth, app.applicationId, "application"),
-      api.listRedirectsByApplicationId(auth, app.applicationId),
-      api.listSecurityByApplicationId(auth, app.applicationId),
-      api.listSchedulesByApplicationId(auth, app.applicationId),
-    ]);
+  // Strip build-related fields when using docker image source
+  if (fullApp.sourceType === "docker") {
+    delete cleaned.dockerfile;
+    delete cleaned.dockerContextPath;
+    delete cleaned.dockerBuildStage;
+    delete cleaned.buildType;
+    delete cleaned.buildArgs;
+  }
 
-  if (domains.length > 0) cleaned.domains = cleanChildResources(domains);
-  if (ports.length > 0) cleaned.ports = cleanChildResources(ports);
-  if (mounts.length > 0) cleaned.mounts = cleanChildResources(mounts);
-  if (redirects.length > 0) cleaned.redirects = cleanChildResources(redirects);
-  if (security.length > 0) cleaned.security = cleanChildResources(security);
-  if (schedules.length > 0) cleaned.schedules = cleanChildResources(schedules);
+  // Extract child resources from the full response
+  const childTypes = ["domains", "ports", "mounts", "redirects", "security", "schedules"] as const;
+  for (const childType of childTypes) {
+    const children = fullApp[childType];
+    if (Array.isArray(children) && children.length > 0) {
+      cleaned[childType] = cleanChildResources(children);
+    }
+  }
 
   return cleaned;
 }
@@ -124,20 +150,27 @@ async function exportCompose(
   compose: any,
   serverMap?: Map<string, string>,
 ): Promise<Record<string, unknown>> {
-  const cleaned = cleanResource(compose, serverMap);
+  // Fetch full compose details including child resources
+  const fullCompose = await api.getCompose(auth, compose.composeId);
+  const cleaned = cleanResource(fullCompose, serverMap);
 
-  const [domains, mounts, schedules] = await Promise.all([
-    api.listDomainsByComposeId(auth, compose.composeId),
-    api.listMountsByServiceId(auth, compose.composeId, "compose"),
-    api.listSchedulesByComposeId(auth, compose.composeId),
-  ]);
-
-  if (domains.length > 0) cleaned.domains = cleanChildResources(domains);
-  if (mounts.length > 0) cleaned.mounts = cleanChildResources(mounts);
-  if (schedules.length > 0) cleaned.schedules = cleanChildResources(schedules);
+  for (const childType of ["domains", "mounts", "schedules"] as const) {
+    const children = fullCompose[childType];
+    if (Array.isArray(children) && children.length > 0) {
+      cleaned[childType] = cleanChildResources(children);
+    }
+  }
 
   return cleaned;
 }
+
+const DB_GETTER: Record<string, (auth: AuthConfig, id: string) => Promise<any>> = {
+  postgres: api.getPostgres,
+  mysql: api.getMysql,
+  mariadb: api.getMariadb,
+  mongo: api.getMongo,
+  redis: api.getRedis,
+};
 
 async function exportDatabase(
   auth: AuthConfig,
@@ -145,13 +178,25 @@ async function exportDatabase(
   serviceType: string,
   serverMap?: Map<string, string>,
 ): Promise<Record<string, unknown>> {
-  const cleaned = cleanResource(db, serverMap);
-
   const idField = `${serviceType}Id`;
   const serviceId = db[idField];
-  if (serviceId) {
-    const mounts = await api.listMountsByServiceId(auth, serviceId, serviceType);
-    if (mounts.length > 0) cleaned.mounts = cleanChildResources(mounts);
+
+  // Fetch full database details including mounts
+  const getter = DB_GETTER[serviceType] as ((auth: AuthConfig, id: string) => Promise<any>) | undefined;
+  const fullDb = getter && serviceId ? await getter(auth, serviceId) : db;
+  const cleaned = cleanResource(fullDb, serverMap);
+
+  // Filter out auto-created default mounts (created by Dokploy when the database is created)
+  // Auto-created mounts use volume name pattern: ${appName}-data
+  const appName = fullDb.appName as string | undefined;
+  const mounts = (fullDb.mounts ?? []).filter((m: any) => {
+    if (appName && m.type === "volume" && m.volumeName === `${appName}-data`) {
+      return false; // Skip auto-created default mount
+    }
+    return true;
+  });
+  if (mounts.length > 0) {
+    cleaned.mounts = cleanChildResources(mounts);
   }
 
   return cleaned;

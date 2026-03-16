@@ -16,7 +16,7 @@ const portSchema = z.object({
   publishedPort: z.number().int().positive(),
   targetPort: z.number().int().positive(),
   protocol: z.enum(["tcp", "udp"]),
-  publishMode: z.enum(["host", "ingress"]).optional().default("host"),
+  publishMode: z.enum(["host", "ingress"]).optional().default("ingress"),
 });
 
 const mountSchema = z.object({

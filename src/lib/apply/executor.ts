@@ -25,7 +25,8 @@ export async function executePlan(
       countAction(result, envAction.type);
     } catch (err: any) {
       result.failed++;
-      result.errors.push({ resource: `Environment "${envAction.name}"`, error: err.message });
+      const detail = err.response?.data ? JSON.stringify(err.response.data).slice(0, 200) : err.message;
+      result.errors.push({ resource: `Environment "${envAction.name}"`, error: detail });
       continue;
     }
 
@@ -69,7 +70,8 @@ async function executeProjectAction(auth: AuthConfig, action: Action): Promise<s
       name: action.config.name as string,
       description: action.config.description as string | undefined,
     });
-    return result.projectId;
+    // createProject returns { project: {...}, environment: {...} }
+    return result.project?.projectId ?? result.projectId;
   }
   if (action.type === "update") {
     await api.updateProject(auth, {
@@ -83,6 +85,12 @@ async function executeProjectAction(auth: AuthConfig, action: Action): Promise<s
 
 async function executeEnvironmentAction(auth: AuthConfig, action: Action, projectId: string): Promise<string> {
   if (action.type === "create") {
+    // Check if environment already exists (e.g., auto-created default "production")
+    const existing = await api.listEnvironments(auth, projectId);
+    const match = existing.find((e: any) => e.name === action.config.name);
+    if (match) {
+      return match.environmentId;
+    }
     const result = await api.createEnvironment(auth, {
       name: action.config.name as string,
       description: action.config.description as string | undefined,
@@ -287,7 +295,15 @@ async function executeChildAction(
         break;
       case "mount": {
         const serviceType = parentResourceType;
-        await api.createMount(auth, { ...config, serviceType, serviceId: parentId });
+        try {
+          await api.createMount(auth, { ...config, serviceType, serviceId: parentId });
+        } catch (err: any) {
+          // Mount may already exist (auto-created by database service) - ignore duplicates
+          if (err.response?.status === 400 || err.response?.status === 409) {
+            return;
+          }
+          throw err;
+        }
         break;
       }
       case "redirect":

@@ -142,30 +142,26 @@ async function buildResourceActions(
 
     action.children = [];
     if (remoteApp) {
+      // Fetch full app details with all child resources
+      const fullApp = await api.getApplication(auth, remoteApp.applicationId);
       if (domains) {
-        const remoteDomains = await api.listDomainsByApplicationId(auth, remoteApp.applicationId);
-        action.children.push(...diffChildren("domain", domains, remoteDomains, (d) => d.host as string));
+        action.children.push(...diffChildren("domain", domains, fullApp.domains ?? [], (d) => d.host as string));
       }
       if (ports) {
-        const remotePorts = await api.listPortsByApplicationId(auth, remoteApp.applicationId);
-        action.children.push(...diffChildren("port", ports, remotePorts,
+        action.children.push(...diffChildren("port", ports, fullApp.ports ?? [],
           (p) => `${p.publishedPort}:${p.protocol}`));
       }
       if (mounts) {
-        const remoteMounts = await api.listMountsByServiceId(auth, remoteApp.applicationId, "application");
-        action.children.push(...diffChildren("mount", mounts, remoteMounts, (m) => m.mountPath as string));
+        action.children.push(...diffChildren("mount", mounts, fullApp.mounts ?? [], (m) => m.mountPath as string));
       }
       if (redirects) {
-        const remoteRedirects = await api.listRedirectsByApplicationId(auth, remoteApp.applicationId);
-        action.children.push(...diffChildren("redirect", redirects, remoteRedirects, (r) => r.regex as string));
+        action.children.push(...diffChildren("redirect", redirects, fullApp.redirects ?? [], (r) => r.regex as string));
       }
       if (security) {
-        const remoteSecurity = await api.listSecurityByApplicationId(auth, remoteApp.applicationId);
-        action.children.push(...diffChildren("security", security, remoteSecurity, (s) => s.username as string));
+        action.children.push(...diffChildren("security", security, fullApp.security ?? [], (s) => s.username as string));
       }
       if (schedules) {
-        const remoteSchedules = await api.listSchedulesByApplicationId(auth, remoteApp.applicationId);
-        action.children.push(...diffChildren("schedule", schedules, remoteSchedules, (s) => s.name as string));
+        action.children.push(...diffChildren("schedule", schedules, fullApp.schedules ?? [], (s) => s.name as string));
       }
     } else {
       if (domains) action.children.push(...domains.map((d: any) => createAction("domain", d.host, d)));
@@ -188,18 +184,17 @@ async function buildResourceActions(
 
     action.children = [];
     if (remoteCompose) {
+      // Fetch full compose details with all child resources
+      const fullCompose = await api.getCompose(auth, remoteCompose.composeId);
       if (domains) {
-        const remoteDomains = await api.listDomainsByComposeId(auth, remoteCompose.composeId);
-        action.children.push(...diffChildren("domain", domains, remoteDomains,
+        action.children.push(...diffChildren("domain", domains, fullCompose.domains ?? [],
           (d) => `${d.host}:${d.serviceName ?? ""}`));
       }
       if (mounts) {
-        const remoteMounts = await api.listMountsByServiceId(auth, remoteCompose.composeId, "compose");
-        action.children.push(...diffChildren("mount", mounts, remoteMounts, (m) => m.mountPath as string));
+        action.children.push(...diffChildren("mount", mounts, fullCompose.mounts ?? [], (m) => m.mountPath as string));
       }
       if (schedules) {
-        const remoteSchedules = await api.listSchedulesByComposeId(auth, remoteCompose.composeId);
-        action.children.push(...diffChildren("schedule", schedules, remoteSchedules, (s) => s.name as string));
+        action.children.push(...diffChildren("schedule", schedules, fullCompose.schedules ?? [], (s) => s.name as string));
       }
     } else {
       if (domains) action.children.push(...domains.map((d: any) => createAction("domain", `${d.host}:${d.serviceName ?? ""}`, d)));
@@ -221,8 +216,13 @@ async function buildResourceActions(
       action.children = [];
       const idField = `${dbType}Id`;
       if (remoteDB && mounts) {
-        const remoteMounts = await api.listMountsByServiceId(auth, remoteDB[idField], dbType);
-        action.children.push(...diffChildren("mount", mounts, remoteMounts, (m) => m.mountPath as string));
+        // Fetch full DB details with mounts from the .one endpoint
+        const dbGetter: Record<string, (auth: AuthConfig, id: string) => Promise<any>> = {
+          postgres: api.getPostgres, mysql: api.getMysql, mariadb: api.getMariadb,
+          mongo: api.getMongo, redis: api.getRedis,
+        };
+        const fullDB = await dbGetter[dbType](auth, remoteDB[idField]);
+        action.children.push(...diffChildren("mount", mounts, fullDB.mounts ?? [], (m) => m.mountPath as string));
       } else if (mounts) {
         action.children.push(...mounts.map((m: any) => createAction("mount", m.mountPath, m)));
       }

@@ -106,12 +106,33 @@ export async function updateRedis(auth: AuthConfig, input: Record<string, unknow
   return trpcMutation(auth, "redis.update", input);
 }
 
-export async function listDomainsByApplicationId(auth: AuthConfig, applicationId: string) {
-  return trpcQuery(auth, "domain.byApplicationId", { applicationId }) as Promise<any[]>;
+// Fetch full service details (includes child resources like domains, ports, mounts, etc.)
+export async function getApplication(auth: AuthConfig, applicationId: string) {
+  return trpcQuery(auth, "application.one", { applicationId });
 }
 
-export async function listDomainsByComposeId(auth: AuthConfig, composeId: string) {
-  return trpcQuery(auth, "domain.byComposeId", { composeId }) as Promise<any[]>;
+export async function getCompose(auth: AuthConfig, composeId: string) {
+  return trpcQuery(auth, "compose.one", { composeId });
+}
+
+export async function getPostgres(auth: AuthConfig, postgresId: string) {
+  return trpcQuery(auth, "postgres.one", { postgresId });
+}
+
+export async function getMysql(auth: AuthConfig, mysqlId: string) {
+  return trpcQuery(auth, "mysql.one", { mysqlId });
+}
+
+export async function getMariadb(auth: AuthConfig, mariadbId: string) {
+  return trpcQuery(auth, "mariadb.one", { mariadbId });
+}
+
+export async function getMongo(auth: AuthConfig, mongoId: string) {
+  return trpcQuery(auth, "mongo.one", { mongoId });
+}
+
+export async function getRedis(auth: AuthConfig, redisId: string) {
+  return trpcQuery(auth, "redis.one", { redisId });
 }
 
 export async function createDomain(auth: AuthConfig, input: Record<string, unknown>) {
@@ -122,10 +143,6 @@ export async function updateDomain(auth: AuthConfig, input: Record<string, unkno
   return trpcMutation(auth, "domain.update", input);
 }
 
-export async function listPortsByApplicationId(auth: AuthConfig, applicationId: string) {
-  return trpcQuery(auth, "port.byApplicationId", { applicationId }) as Promise<any[]>;
-}
-
 export async function createPort(auth: AuthConfig, input: Record<string, unknown>) {
   return trpcMutation(auth, "port.create", input);
 }
@@ -134,32 +151,20 @@ export async function updatePort(auth: AuthConfig, input: Record<string, unknown
   return trpcMutation(auth, "port.update", input);
 }
 
-export async function listMountsByServiceId(auth: AuthConfig, serviceId: string, serviceType: string) {
-  return trpcQuery(auth, "mount.listByServiceId", { serviceId, serviceType }) as Promise<any[]>;
-}
-
 export async function createMount(auth: AuthConfig, input: Record<string, unknown>) {
-  return trpcMutation(auth, "mount.create", input);
+  return trpcMutation(auth, "mounts.create", input);
 }
 
 export async function updateMount(auth: AuthConfig, input: Record<string, unknown> & { mountId: string }) {
-  return trpcMutation(auth, "mount.update", input);
-}
-
-export async function listRedirectsByApplicationId(auth: AuthConfig, applicationId: string) {
-  return trpcQuery(auth, "redirect.byApplicationId", { applicationId }) as Promise<any[]>;
+  return trpcMutation(auth, "mounts.update", input);
 }
 
 export async function createRedirect(auth: AuthConfig, input: Record<string, unknown>) {
-  return trpcMutation(auth, "redirect.create", input);
+  return trpcMutation(auth, "redirects.create", input);
 }
 
 export async function updateRedirect(auth: AuthConfig, input: Record<string, unknown> & { redirectId: string }) {
-  return trpcMutation(auth, "redirect.update", input);
-}
-
-export async function listSecurityByApplicationId(auth: AuthConfig, applicationId: string) {
-  return trpcQuery(auth, "security.byApplicationId", { applicationId }) as Promise<any[]>;
+  return trpcMutation(auth, "redirects.update", input);
 }
 
 export async function createSecurity(auth: AuthConfig, input: Record<string, unknown>) {
@@ -168,14 +173,6 @@ export async function createSecurity(auth: AuthConfig, input: Record<string, unk
 
 export async function updateSecurity(auth: AuthConfig, input: Record<string, unknown> & { securityId: string }) {
   return trpcMutation(auth, "security.update", input);
-}
-
-export async function listSchedulesByApplicationId(auth: AuthConfig, applicationId: string) {
-  return trpcQuery(auth, "schedule.byApplicationId", { applicationId }) as Promise<any[]>;
-}
-
-export async function listSchedulesByComposeId(auth: AuthConfig, composeId: string) {
-  return trpcQuery(auth, "schedule.byComposeId", { composeId }) as Promise<any[]>;
 }
 
 export async function createSchedule(auth: AuthConfig, input: Record<string, unknown>) {
