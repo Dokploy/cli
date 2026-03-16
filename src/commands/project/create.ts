@@ -1,7 +1,7 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
+import * as api from "../../utils/api.js";
 import { readAuthConfig } from "../../utils/utils.js";
 
 export default class ProjectCreate extends Command {
@@ -75,27 +75,7 @@ export default class ProjectCreate extends Command {
 		}
 
 		try {
-
-			const response = await axios.post(
-				`${auth.url}/api/trpc/project.create`,
-				{
-					json: {
-						name,
-						description,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error creating project", response.data.result.data.json));
-			}
-
+			await api.createProject(auth, { name: name!, description });
 			this.log(chalk.green(`Project '${name}' created successfully.`));
 		} catch (error: any) {
 			this.error(chalk.red(`Error creating project: ${error.message}`));

@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { slugify } from "../../../utils/slug.js";
 import { readAuthConfig } from "../../../utils/utils.js";
 import { getProjects, type Database } from "../../../utils/shared.js";
+import * as api from "../../../utils/api.js";
 import type { Answers } from "../../app/create.js";
 
 export default class DatabaseRedisCreate extends Command {
@@ -177,30 +177,15 @@ export default class DatabaseRedisCreate extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/redis.create`,
-				{
-					json: {
-						name,
-						description,
-						databasePassword,
-						dockerImage,
-						appName,
-						projectId,
-						environmentId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error creating Redis instance", response.data.result.data.json));
-			}
+			await api.createRedis(auth, {
+				name,
+				description,
+				databasePassword,
+				dockerImage,
+				appName,
+				projectId,
+				environmentId,
+			});
 
 			this.log(chalk.green(`Redis instance '${name}' created successfully.`));
 		} catch (error: any) {

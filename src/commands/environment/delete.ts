@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import * as api from "../../utils/api.js";
 import { getProjects } from "../../utils/shared.js";
 import { readAuthConfig } from "../../utils/utils.js";
 import type { Answers } from "../app/create.js";
@@ -102,25 +102,7 @@ export default class EnvironmentDelete extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/environment.remove`,
-				{
-					json: {
-						environmentId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error deleting environment"));
-			}
-
+			await api.removeEnvironment(auth, environmentId!);
 			this.log(chalk.green("Environment deleted successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deleting environment: ${error.message}`));

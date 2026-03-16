@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import inquirer from "inquirer";
 import type { Answers } from "../../app/create.js";
-import axios from "axios";
+import * as api from "../../../utils/api.js";
 
 export default class DatabaseMariadbDeploy extends Command {
 	static description = "Deploy an mariadb to a project.";
@@ -127,24 +127,8 @@ export default class DatabaseMariadbDeploy extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mariadb.deploy`,
-				{
-					json: {
-						mariadbId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
+			await api.deployMariadb(auth, mariadbId!);
 
-			if (response.status !== 200) {
-				this.error(chalk.red("Error deploying MariaDB instance"));
-			}
 			this.log(chalk.green("MariaDB instance deployed successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deploying MariaDB instance: ${error.message}`));

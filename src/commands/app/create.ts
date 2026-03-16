@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import * as api from "../../utils/api.js";
 import { type Project, getProjects } from "../../utils/shared.js";
 import { slugify } from "../../utils/slug.js";
 import { readAuthConfig } from "../../utils/utils.js";
@@ -151,28 +151,11 @@ export default class AppCreate extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/application.create`,
-				{
-					json: {
-						name,
-						appDescription: description,
-						appName,
-						projectId,
-						environmentId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				this.error(chalk.red("Error creating application"));
-			}
+			await api.createApplication(auth, {
+				name: name!,
+				description,
+				environmentId: environmentId!,
+			});
 
 			this.log(chalk.green(`Application '${name}' created successfully.`));
 		} catch (error: any) {

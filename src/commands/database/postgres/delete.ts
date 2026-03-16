@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
 import { readAuthConfig } from "../../../utils/utils.js";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
+import * as api from "../../../utils/api.js";
 
 export default class DatabasePostgresDelete extends Command {
 	static description = "Delete a PostgreSQL database from a project.";
@@ -130,24 +130,7 @@ export default class DatabasePostgresDelete extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/postgres.remove`,
-				{
-					json: {
-						postgresId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error deleting PostgreSQL instance"));
-			}
+			await api.removePostgres(auth, postgresId!);
 			this.log(chalk.green("PostgreSQL instance deleted successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deleting PostgreSQL instance: ${error.message}`));

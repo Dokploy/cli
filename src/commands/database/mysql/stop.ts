@@ -1,7 +1,8 @@
 import { Command, Flags } from "@oclif/core";
 import chalk from "chalk";
 import inquirer from "inquirer";
-import axios from "axios";
+
+import * as api from "../../../utils/api.js";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import { readAuthConfig } from "../../../utils/utils.js";
 import type { Answers } from "../../app/create.js";
@@ -127,24 +128,7 @@ export default class DatabaseMysqlStop extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mysql.stop`,
-				{
-					json: {
-						mysqlId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				this.error(chalk.red("Error stopping MySQL instance"));
-			}
+			await api.stopMysql(auth, mysqlId!);
 			this.log(chalk.green("MySQL instance stopped successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error stopping MySQL instance: ${error.message}`));

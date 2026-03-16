@@ -190,3 +190,87 @@ export async function createSchedule(auth: AuthConfig, input: Record<string, unk
 export async function updateSchedule(auth: AuthConfig, input: Record<string, unknown> & { scheduleId: string }) {
   return trpcMutation(auth, "schedule.update", input);
 }
+
+// Auth
+export async function getUser(auth: AuthConfig) {
+  return trpcQuery(auth, "user.get");
+}
+
+// Environment
+export async function removeEnvironment(auth: AuthConfig, environmentId: string) {
+  return trpcMutation(auth, "environment.remove", { environmentId });
+}
+
+// Application lifecycle
+export async function deleteApplication(auth: AuthConfig, applicationId: string) {
+  return trpcMutation(auth, "application.delete", { applicationId });
+}
+
+export async function deployApplication(auth: AuthConfig, applicationId: string) {
+  return trpcMutation(auth, "application.deploy", { applicationId });
+}
+
+export async function stopApplication(auth: AuthConfig, applicationId: string) {
+  return trpcMutation(auth, "application.stop", { applicationId });
+}
+
+// Database lifecycle
+export async function deployPostgres(auth: AuthConfig, postgresId: string) {
+  return trpcMutation(auth, "postgres.deploy", { postgresId });
+}
+
+export async function removePostgres(auth: AuthConfig, postgresId: string) {
+  return trpcMutation(auth, "postgres.remove", { postgresId });
+}
+
+export async function stopPostgres(auth: AuthConfig, postgresId: string) {
+  return trpcMutation(auth, "postgres.stop", { postgresId });
+}
+
+export async function deployMysql(auth: AuthConfig, mysqlId: string) {
+  return trpcMutation(auth, "mysql.deploy", { mysqlId });
+}
+
+export async function removeMysql(auth: AuthConfig, mysqlId: string) {
+  return trpcMutation(auth, "mysql.remove", { mysqlId });
+}
+
+export async function stopMysql(auth: AuthConfig, mysqlId: string) {
+  return trpcMutation(auth, "mysql.stop", { mysqlId });
+}
+
+export async function deployMariadb(auth: AuthConfig, mariadbId: string) {
+  return trpcMutation(auth, "mariadb.deploy", { mariadbId });
+}
+
+export async function removeMariadb(auth: AuthConfig, mariadbId: string) {
+  return trpcMutation(auth, "mariadb.remove", { mariadbId });
+}
+
+export async function stopMariadb(auth: AuthConfig, mariadbId: string) {
+  return trpcMutation(auth, "mariadb.stop", { mariadbId });
+}
+
+export async function deployMongo(auth: AuthConfig, mongoId: string) {
+  return trpcMutation(auth, "mongo.deploy", { mongoId });
+}
+
+export async function removeMongo(auth: AuthConfig, mongoId: string) {
+  return trpcMutation(auth, "mongo.remove", { mongoId });
+}
+
+export async function stopMongo(auth: AuthConfig, mongoId: string) {
+  return trpcMutation(auth, "mongo.stop", { mongoId });
+}
+
+export async function deployRedis(auth: AuthConfig, redisId: string) {
+  return trpcMutation(auth, "redis.deploy", { redisId });
+}
+
+export async function removeRedis(auth: AuthConfig, redisId: string) {
+  return trpcMutation(auth, "redis.remove", { redisId });
+}
+
+export async function stopRedis(auth: AuthConfig, redisId: string) {
+  return trpcMutation(auth, "redis.stop", { redisId });
+}

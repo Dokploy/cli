@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import inquirer from "inquirer";
 import type { Answers } from "../../app/create.js";
-import axios from "axios";
+import * as api from "../../../utils/api.js";
 
 export default class DatabaseMongoDeploy extends Command {
 	static description = "Deploy an mongo to a project.";
@@ -127,24 +127,7 @@ export default class DatabaseMongoDeploy extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mongo.deploy`,
-				{
-					json: {
-						mongoId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				this.error(chalk.red("Error deploying MongoDB instance"));
-			}
+			await api.deployMongo(auth, mongoId!);
 			this.log(chalk.green("MongoDB instance deployed successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deploying MongoDB instance: ${error.message}`));

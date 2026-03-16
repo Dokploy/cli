@@ -1,10 +1,11 @@
 import { Command, Flags } from "@oclif/core";
-import { readAuthConfig } from "../../../utils/utils.js";
 import chalk from "chalk";
-import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import inquirer from "inquirer";
+
+import * as api from "../../../utils/api.js";
+import { readAuthConfig } from "../../../utils/utils.js";
+import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import type { Answers } from "../../app/create.js";
-import axios from "axios";
 
 export default class DatabaseMysqlDeploy extends Command {
 	static description = "Deploy an mysql to a project.";
@@ -127,24 +128,7 @@ export default class DatabaseMysqlDeploy extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mysql.deploy`,
-				{
-					json: {
-						mysqlId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				this.error(chalk.red("Error deploying MySQL instance"));
-			}
+			await api.deployMysql(auth, mysqlId!);
 			this.log(chalk.green("MySQL instance deployed successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deploying MySQL instance: ${error.message}`));

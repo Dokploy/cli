@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import * as api from "../../../utils/api.js";
 import { slugify } from "../../../utils/slug.js";
 import { readAuthConfig } from "../../../utils/utils.js";
 import { getProjects, type Database } from "../../../utils/shared.js";
@@ -215,34 +215,18 @@ export default class DatabaseMysqlCreate extends Command {
 		}
 
 		try {
-
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mysql.create`,
-				{
-					json: {
-						name,
-						databaseName,
-						description,
-						databaseRootPassword,
-						databasePassword,
-						databaseUser,
-						dockerImage,
-						appName,
-						projectId,
-						environmentId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error creating MySQL instance", response.data.result.data.json));
-			}
+			await api.createMysql(auth, {
+				name,
+				databaseName,
+				description,
+				databaseRootPassword,
+				databasePassword,
+				databaseUser,
+				dockerImage,
+				appName,
+				projectId,
+				environmentId,
+			});
 
 			this.log(chalk.green(`MySQL instance '${name}' created successfully.`));
 		} catch (error: any) {

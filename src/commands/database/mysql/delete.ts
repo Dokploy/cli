@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import * as api from "../../../utils/api.js";
 import { readAuthConfig } from "../../../utils/utils.js";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 
@@ -130,24 +130,7 @@ export default class DatabaseMysqlDelete extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mysql.remove`,
-				{
-					json: {
-						mysqlId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error deleting MySQL instance"));
-			}
+			await api.removeMysql(auth, mysqlId!);
 			this.log(chalk.green("MySQL instance deleted successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deleting MySQL instance: ${error.message}`));
