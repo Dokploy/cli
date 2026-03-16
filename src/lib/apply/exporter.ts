@@ -27,7 +27,7 @@ const STRIP_FIELDS = new Set([
   "previewWildcard", "previewRequireCollaboratorPermissions",
   // Other internal fields
   "rollbackActive", "cleanCache", "createEnvFile",
-  "enabled", "subtitle", "title", "railpackVersion", "herokuVersion",
+  "subtitle", "title", "railpackVersion", "herokuVersion",
   "publishDirectory", "isStaticSpa", "watchPaths",
   "suffix", "randomize", "isolatedDeployment", "isolatedDeploymentsVolume",
   "enableSubmodules", "dropBuildPath", "username", "password",
@@ -72,6 +72,8 @@ const DEFAULTS: Record<string, unknown> = {
   previewPath: "/",
   previewLimit: 3,
   previewCertificateType: "none",
+  // Schedule defaults
+  enabled: true,
   // Domain defaults
   https: false,
   path: "/",

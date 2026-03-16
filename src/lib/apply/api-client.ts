@@ -46,6 +46,10 @@ export async function createEnvironment(auth: AuthConfig, input: { name: string;
   return trpcMutation(auth, "environment.create", input);
 }
 
+export async function updateEnvironment(auth: AuthConfig, input: { environmentId: string; name?: string; description?: string }) {
+  return trpcMutation(auth, "environment.update", input);
+}
+
 export async function listServers(auth: AuthConfig) {
   return trpcQuery(auth, "server.all") as Promise<any[]>;
 }

@@ -71,7 +71,11 @@ async function executeProjectAction(auth: AuthConfig, action: Action): Promise<s
       description: action.config.description as string | undefined,
     });
     // createProject returns { project: {...}, environment: {...} }
-    return result.project?.projectId ?? result.projectId;
+    const projectId = result.project?.projectId ?? result.projectId;
+    if (!projectId) {
+      throw new Error("createProject response missing projectId");
+    }
+    return projectId;
   }
   if (action.type === "update") {
     await api.updateProject(auth, {
@@ -97,6 +101,13 @@ async function executeEnvironmentAction(auth: AuthConfig, action: Action, projec
       projectId,
     });
     return result.environmentId;
+  }
+  if (action.type === "update") {
+    await api.updateEnvironment(auth, {
+      environmentId: action.remoteId!,
+      name: action.config.name as string,
+      description: action.config.description as string | undefined,
+    });
   }
   return action.remoteId!;
 }
@@ -299,7 +310,8 @@ async function executeChildAction(
           await api.createMount(auth, { ...config, serviceType, serviceId: parentId });
         } catch (err: any) {
           // Mount may already exist (auto-created by database service) - ignore duplicates
-          if (err.response?.status === 400 || err.response?.status === 409) {
+          const msg = err.response?.data?.error?.json?.message ?? "";
+          if (err.response?.status === 409 || (err.response?.status === 400 && msg.includes("already"))) {
             return;
           }
           throw err;
