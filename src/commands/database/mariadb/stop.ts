@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
 import chalk from "chalk";
 import inquirer from "inquirer";
-import axios from "axios";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import { readAuthConfig } from "../../../utils/utils.js";
 import type { Answers } from "../../app/create.js";
+import * as api from "../../../utils/api.js";
 
 export default class DatabaseMariadbStop extends Command {
 	static description = "Stop an mariadb from a project.";
@@ -127,24 +127,8 @@ export default class DatabaseMariadbStop extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mariadb.stop`,
-				{
-					json: {
-						mariadbId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
+			await api.stopMariadb(auth, mariadbId!);
 
-			if (response.status !== 200) {
-				this.error(chalk.red("Error stopping MariaDB instance"));
-			}
 			this.log(chalk.green("MariaDB instance stopped successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error stopping MariaDB instance: ${error.message}`));

@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import inquirer from "inquirer";
 import type { Answers } from "../../app/create.js";
-import axios from "axios";
+import * as api from "../../../utils/api.js";
 
 export default class DatabasePostgresStop extends Command {
 	static description = "Stop a PostgreSQL instance in a project.";
@@ -127,24 +127,7 @@ export default class DatabasePostgresStop extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/postgres.stop`,
-				{
-					json: {
-						postgresId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				this.error(chalk.red("Error stopping PostgreSQL instance"));
-			}
+			await api.stopPostgres(auth, postgresId!);
 			this.log(chalk.green("PostgreSQL instance stopped successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error stopping PostgreSQL instance: ${error.message}`));

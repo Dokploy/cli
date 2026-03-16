@@ -1,6 +1,6 @@
 import { Command } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
+import * as api from "../utils/api.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -58,17 +58,9 @@ export default class Verify extends Command {
 		try {
 			console.log(chalk.blue("Validating token with server..."));
 
-			const response = await axios.get(
-				`${url}/api/trpc/user.get`,
-				{
-					headers: {
-						"x-api-key": token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
+			const user = await api.getUser({ url, token });
 
-			if (response.data.result.data.json) {
+			if (user) {
 				this.log(chalk.green("\n✓ Token is valid"));
 			} else {
 				this.error(

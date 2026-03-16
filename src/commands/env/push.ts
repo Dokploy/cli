@@ -5,7 +5,7 @@ import inquirer from "inquirer";
 import {readAuthConfig} from "../../utils/utils.js";
 import {getProject, getProjects} from "../../utils/shared.js";
 import {Answers} from "../app/create.js";
-import axios from "axios";
+import * as api from "../../utils/api.js";
 
 export default class EnvPush extends Command {
     static override args = {
@@ -91,53 +91,15 @@ export default class EnvPush extends Command {
 
         ]);
 
-        if (serviceType === 'app') {
-            const {applicationId} = service;
-            const response = await axios.post(
-                `${auth.url}/api/trpc/application.update`,
-                {
-                    json: {
-                        applicationId,
-                        env: fileContent
-                    }
-                }, {
-
-                    headers: {
-                        "x-api-key": auth.token,
-                        "Content-Type": "application/json",
-                    },
-                }
-            )
-            if (response.status !== 200) {
-                this.error(chalk.red("Error stopping application"));
+        try {
+            if (serviceType === 'app') {
+                await api.updateApplication(auth, { applicationId: service.applicationId, env: fileContent });
+            } else if (serviceType === 'compose') {
+                await api.updateCompose(auth, { composeId: service.composeId, env: fileContent });
             }
             this.log(chalk.green("Environment variable push successful."));
-
+        } catch (error: any) {
+            this.error(chalk.red(`Error pushing environment variables: ${error.message}`));
         }
-
-        if (serviceType === 'compose') {
-            const {composeId} = service;
-            const response = await axios.post(
-                `${auth.url}/api/trpc/compose.update`,
-                {
-                    json: {
-                        composeId,
-                        env: fileContent
-                    }
-                }, {
-                    headers: {
-                        "x-api-key": auth.token,
-                        "Content-Type": "application/json",
-                    },
-                }
-            )
-            if (response.status !== 200) {
-                this.error(chalk.red("Error stopping application"));
-            }
-            this.log(chalk.green("Environment variable push successful."));
-
-        }
-
-
     }
 }

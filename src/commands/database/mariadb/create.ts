@@ -1,11 +1,11 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { readAuthConfig } from "../../../utils/utils.js";
 import { getProjects, type Database } from "../../../utils/shared.js";
 import { slugify } from "../../../utils/slug.js";
 import type { Answers } from "../../app/create.js";
+import * as api from "../../../utils/api.js";
 
 export default class DatabaseMariadbCreate extends Command {
 	static description = "Create a new MariaDB database within a project.";
@@ -214,33 +214,18 @@ export default class DatabaseMariadbCreate extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mariadb.create`,
-				{
-					json: {
-						name,
-						databaseName,
-						description,
-						databaseRootPassword,
-						databasePassword,
-						databaseUser,
-						dockerImage,
-						appName,
-						projectId,
-						environmentId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error creating MariaDB instance", response.data.result.data.json));
-			}
+			await api.createMariadb(auth, {
+				name,
+				databaseName,
+				description,
+				databaseRootPassword,
+				databasePassword,
+				databaseUser,
+				dockerImage,
+				appName,
+				projectId,
+				environmentId,
+			});
 
 			this.log(chalk.green(`MariaDB instance '${name}' created successfully.`));
 		} catch (error: any) {

@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import { readAuthConfig } from "../../../utils/utils.js";
+import * as api from "../../../utils/api.js";
 
 export default class DatabaseMariadbDelete extends Command {
 	static description = "Delete a MariaDB database from a project.";
@@ -126,24 +126,8 @@ export default class DatabaseMariadbDelete extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mariadb.remove`,
-				{
-					json: {
-						mariadbId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
+			await api.removeMariadb(auth, mariadbId!);
 
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error deleting MariaDB instance"));
-			}
 			this.log(chalk.green("MariaDB instance deleted successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deleting MariaDB instance: ${error.message}`));

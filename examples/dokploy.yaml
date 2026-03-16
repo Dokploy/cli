@@ -1,0 +1,54 @@
+# Example dokploy.yaml — declarative infrastructure config
+# Docs: https://github.com/Dokploy/dokploy/issues/3872
+#
+# Usage:
+#   dokploy apply -f dokploy.yaml              # Apply changes
+#   dokploy apply -f dokploy.yaml --dry-run    # Preview changes
+#   dokploy apply -f dokploy.yaml --verbose    # Detailed output
+#
+# Env vars are managed separately:
+#   dokploy env push -f .env                   # Push env vars to a service
+
+apiVersion: v1
+kind: Project
+name: my-project
+description: "My application stack"
+
+environments:
+  - name: production
+    description: "Production environment"
+
+    applications:
+      - name: web-api
+        sourceType: github
+        buildType: dockerfile
+        repository: my-org/api
+        owner: my-org
+        branch: main
+        dockerfile: Dockerfile
+        replicas: 1
+        autoDeploy: true
+
+        domains:
+          - host: api.example.com
+            port: 3000
+            https: true
+            certificateType: letsencrypt
+
+        mounts:
+          - type: volume
+            mountPath: /app/data
+            volumeName: api-data
+
+    postgres:
+      - name: main-db
+        dockerImage: postgres:16
+        databaseName: myapp
+        databaseUser: admin
+        databasePassword: change-me-in-production
+        externalPort: 5432
+
+    redis:
+      - name: cache
+        dockerImage: redis:7
+        databasePassword: change-me-in-production

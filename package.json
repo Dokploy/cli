@@ -3,10 +3,12 @@
   "description": "A CLI to manage dokploy server remotely",
   "version": "v0.2.8",
   "author": "Mauricio Siu",
-  "licenses": [{
-    "type": "MIT",
-    "url": "https://github.com/Dokploy/cli/blob/master/LICENSE"
-  }],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Dokploy/cli/blob/master/LICENSE"
+    }
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -23,7 +25,9 @@
     "cli-table3": "^0.6.5",
     "inquirer": "^9.2.23",
     "slugify": "^1.6.6",
-    "superjson": "^2.2.1"
+    "superjson": "^2.2.1",
+    "yaml": "^2.8.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@oclif/prettier-config": "^0.2.1",
@@ -82,7 +86,7 @@
     "prepack": "oclif manifest && oclif readme",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
-    "publish" :"npm publish"
+    "publish": "npm publish"
   },
   "types": "dist/index.d.ts"
 }

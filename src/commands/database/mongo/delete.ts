@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
 import { readAuthConfig } from "../../../utils/utils.js";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
+import * as api from "../../../utils/api.js";
 
 export default class DatabaseMongoDelete extends Command {
 	static description = "Delete a MongoDB database from a project.";
@@ -130,24 +130,7 @@ export default class DatabaseMongoDelete extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/mongo.remove`,
-				{
-					json: {
-						mongoId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error deleting MongoDB instance"));
-			}
+			await api.removeMongo(auth, mongoId!);
 			this.log(chalk.green("MongoDB instance deleted successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deleting MongoDB instance: ${error.message}`));

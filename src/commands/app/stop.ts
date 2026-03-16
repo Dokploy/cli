@@ -1,10 +1,11 @@
 import { Command, Flags } from "@oclif/core";
-import { readAuthConfig } from "../../utils/utils.js";
 import chalk from "chalk";
 import inquirer from "inquirer";
+
+import * as api from "../../utils/api.js";
 import { getProject, getProjects, type Application } from "../../utils/shared.js";
+import { readAuthConfig } from "../../utils/utils.js";
 import type { Answers } from "./create.js";
-import axios from "axios";
 
 export default class AppStop extends Command {
 	static description = "Stop an application from a project.";
@@ -127,24 +128,7 @@ export default class AppStop extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/application.stop`,
-				{
-					json: {
-						applicationId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				this.error(chalk.red("Error stopping application"));
-			}
+			await api.stopApplication(auth, applicationId!);
 			this.log(chalk.green("Application stop successful."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error stopping application: ${error.message}`));

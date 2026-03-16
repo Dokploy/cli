@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import * as api from "../../utils/api.js";
 import { getProject, getProjects, type Application } from "../../utils/shared.js";
 import { readAuthConfig } from "../../utils/utils.js";
 import type { Answers } from "./create.js";
@@ -131,25 +131,7 @@ export default class AppDelete extends Command {
 		}
 
 		try {
-			const deleteResponse = await axios.post(
-				`${auth.url}/api/trpc/application.delete`,
-				{
-					json: {
-						applicationId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!deleteResponse.data.result.data.json) {
-				this.error(chalk.red("Error deleting application"));
-			}
-
+			await api.deleteApplication(auth, applicationId!);
 			this.log(chalk.green("Application deleted successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Failed to delete application: ${error.message}`));

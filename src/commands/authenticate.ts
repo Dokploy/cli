@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
+import * as api from "../utils/api.js";
 import inquirer, { type Answers, type QuestionCollection } from "inquirer";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -83,15 +83,7 @@ export default class Authenticate extends Command {
 		try {
 			console.log(`\n${chalk.blue("Validating server...")}`);
 
-			await axios.get(
-				`${url}/api/trpc/user.get`,
-				{
-					headers: {
-						"x-api-key": token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
+			await api.getUser({ url, token });
 
 			fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 			this.log(chalk.green("Authentication details saved successfully."));

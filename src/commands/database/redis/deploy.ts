@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { getProject, getProjects, type Database } from "../../../utils/shared.js";
 import inquirer from "inquirer";
 import type { Answers } from "../../app/create.js";
-import axios from "axios";
+import * as api from "../../../utils/api.js";
 
 export default class DatabaseRedisDeploy extends Command {
 	static description = "Deploy a Redis instance to a project.";
@@ -127,24 +127,7 @@ export default class DatabaseRedisDeploy extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/redis.deploy`,
-				{
-					json: {
-						redisId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (response.status !== 200) {
-				this.error(chalk.red("Error deploying Redis instance"));
-			}
+			await api.deployRedis(auth, redisId!);
 			this.log(chalk.green("Redis instance deployed successfully."));
 		} catch (error: any) {
 			this.error(chalk.red(`Error deploying Redis instance: ${error.message}`));

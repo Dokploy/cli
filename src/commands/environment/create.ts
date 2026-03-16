@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import axios from "axios";
 import chalk from "chalk";
 import inquirer from "inquirer";
 
+import * as api from "../../utils/api.js";
 import { getProjects } from "../../utils/shared.js";
 import { readAuthConfig } from "../../utils/utils.js";
 import type { Answers } from "../app/create.js";
@@ -102,27 +102,7 @@ export default class EnvironmentCreate extends Command {
 		}
 
 		try {
-			const response = await axios.post(
-				`${auth.url}/api/trpc/environment.create`,
-				{
-					json: {
-						name,
-						description,
-						projectId,
-					},
-				},
-				{
-					headers: {
-						"x-api-key": auth.token,
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (!response.data.result.data.json) {
-				this.error(chalk.red("Error creating environment"));
-			}
-
+			await api.createEnvironment(auth, { name: name!, description, projectId: projectId! });
 			this.log(chalk.green(`Environment '${name}' created successfully.`));
 		} catch (error: any) {
 			this.error(chalk.red(`Error creating environment: ${error.message}`));
