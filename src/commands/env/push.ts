@@ -18,7 +18,27 @@ export default class EnvPush extends Command {
         '<%= config.bin %> <%= command.id %> .env.stage.local',
     ]
 
-    static override flags = {}
+    static override flags = {
+        composeId: Flags.string({
+            description: "ID of the compose service to push env vars to",
+            required: false,
+        }),
+        environmentId: Flags.string({
+            char: "e",
+            description: "ID of the environment",
+            required: false,
+        }),
+        projectId: Flags.string({
+            char: "p",
+            description: "ID of the project",
+            required: false,
+        }),
+        yes: Flags.boolean({
+            char: "y",
+            default: false,
+            description: "Skip confirmation prompt",
+        }),
+    }
 
     public async run(): Promise<void> {
         const {args, flags} = await this.parse(EnvPush)
@@ -28,48 +48,78 @@ export default class EnvPush extends Command {
             return;
         }
 
-        const {override} = await inquirer.prompt<any>([
-            {
-                message: `This command will override entire remote environment variables. Do you want to continue?`,
-                name: "override",
-                default: false,
-                type: "confirm",
-            },
-        ]);
-        if (!override) {
-            return
+        if (!flags.yes) {
+            const {override} = await inquirer.prompt<any>([
+                {
+                    message: `This command will override entire remote environment variables. Do you want to continue?`,
+                    name: "override",
+                    default: false,
+                    type: "confirm",
+                },
+            ]);
+            if (!override) {
+                return
+            }
         }
 
         const fileContent = fs.readFileSync(args.file, 'utf-8');
         const auth = await readAuthConfig(this);
+
+        // Non-interactive path: composeId provided directly
+        if (flags.composeId) {
+            const response = await axios.post(
+                `${auth.url}/api/trpc/compose.update`,
+                { json: { composeId: flags.composeId, env: fileContent } },
+                { headers: { "x-api-key": auth.token, "Content-Type": "application/json" } }
+            );
+            if (response.status !== 200) {
+                this.error(chalk.red("Error pushing environment variables"));
+            }
+            this.log(chalk.green("Environment variable push successful."));
+            return;
+        }
+
         console.log(chalk.blue.bold("\n  Listing all Projects \n"));
 
         const projects = await getProjects(auth, this);
-        const {project} = await inquirer.prompt<Answers>([
-            {
-                choices: projects.map((project) => ({
-                    name: project.name,
-                    value: project,
-                })),
-                message: "Select the project:",
-                name: "project",
-                type: "list",
-            },
-        ]);
-        const projectId = project.projectId;
+
+        let projectId = flags.projectId;
+        if (!projectId) {
+            const {project} = await inquirer.prompt<Answers>([
+                {
+                    choices: projects.map((project) => ({
+                        name: project.name,
+                        value: project,
+                    })),
+                    message: "Select the project:",
+                    name: "project",
+                    type: "list",
+                },
+            ]);
+            projectId = project.projectId;
+        }
+
         const projectSelected = await getProject(projectId, auth, this);
 
-        const {environment} = await inquirer.prompt<any>([
-            {
-                choices: projectSelected.environments.map((environment: any) => ({
-                    name: environment.name,
-                    value: environment,
-                })),
-                message: "Select the environment:",
-                name: "environment",
-                type: "list",
-            },
-        ]);
+        let environmentId = flags.environmentId;
+        let environment: any;
+        if (!environmentId) {
+            const result = await inquirer.prompt<any>([
+                {
+                    choices: projectSelected.environments.map((env: any) => ({
+                        name: env.name,
+                        value: env,
+                    })),
+                    message: "Select the environment:",
+                    name: "environment",
+                    type: "list",
+                },
+            ]);
+            environment = result.environment;
+            environmentId = environment.environmentId;
+        } else {
+            environment = projectSelected.environments.find((e: any) => e.environmentId === environmentId);
+        }
 
         const choices = [
             ...environment.applications.map((app: any) => ({
@@ -95,49 +145,26 @@ export default class EnvPush extends Command {
             const {applicationId} = service;
             const response = await axios.post(
                 `${auth.url}/api/trpc/application.update`,
-                {
-                    json: {
-                        applicationId,
-                        env: fileContent
-                    }
-                }, {
-
-                    headers: {
-                        "x-api-key": auth.token,
-                        "Content-Type": "application/json",
-                    },
-                }
+                { json: { applicationId, env: fileContent } },
+                { headers: { "x-api-key": auth.token, "Content-Type": "application/json" } }
             )
             if (response.status !== 200) {
-                this.error(chalk.red("Error stopping application"));
+                this.error(chalk.red("Error pushing environment variables"));
             }
             this.log(chalk.green("Environment variable push successful."));
-
         }
 
         if (serviceType === 'compose') {
             const {composeId} = service;
             const response = await axios.post(
                 `${auth.url}/api/trpc/compose.update`,
-                {
-                    json: {
-                        composeId,
-                        env: fileContent
-                    }
-                }, {
-                    headers: {
-                        "x-api-key": auth.token,
-                        "Content-Type": "application/json",
-                    },
-                }
+                { json: { composeId, env: fileContent } },
+                { headers: { "x-api-key": auth.token, "Content-Type": "application/json" } }
             )
             if (response.status !== 200) {
-                this.error(chalk.red("Error stopping application"));
+                this.error(chalk.red("Error pushing environment variables"));
             }
             this.log(chalk.green("Environment variable push successful."));
-
         }
-
-
     }
 }
