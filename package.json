@@ -52,5 +52,8 @@
     "test": "vitest run",
     "publish": "npm publish"
   },
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
 }
