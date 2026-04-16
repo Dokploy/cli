@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+env:
+  COREPACK_ENABLE_STRICT: 0
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -22,7 +25,7 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      - run: pnpm install
+      - run: pnpm install --ignore-scripts
       - run: pnpm run build
 
       - name: Check if version already exists
