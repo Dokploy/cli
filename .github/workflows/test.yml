@@ -1,22 +1,30 @@
 name: tests
+
 on:
   push:
     branches-ignore: [main]
   workflow_dispatch:
 
+env:
+  COREPACK_ENABLE_STRICT: 0
+
 jobs:
-  unit-tests:
+  test:
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest']
-        node_version: [lts/-1, lts/*, latest]
+        os: [ubuntu-latest, windows-latest]
+        node_version: [lts/*, latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+        with:
+          version: latest
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node_version }}
           cache: pnpm
-      - run: pnpm install
+      - run: pnpm install --ignore-scripts
       - run: pnpm run build
+      - run: pnpm run test

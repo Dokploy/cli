@@ -11,5 +11,4 @@ oclif.manifest.json
 
 yarn.lock
 package-lock.json
-
-
+.env
