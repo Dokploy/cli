@@ -30,31 +30,34 @@ jobs:
         id: version-check
         run: |
           package_version=$(node -p "require('./package.json').version")
-          exists=$(gh api repos/${{ github.repository }}/releases/tags/v$package_version >/dev/null 2>&1 && echo "true" || echo "")
+          echo "version=$package_version" >> $GITHUB_OUTPUT
 
-          if [ -n "$exists" ]; then
-            echo "Version v$package_version already exists"
-            echo "skipped=true" >> $GITHUB_OUTPUT
+          if gh api repos/${{ github.repository }}/releases/tags/v$package_version >/dev/null 2>&1; then
+            echo "GitHub release v$package_version already exists, skipping"
+            echo "release_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "Version v$package_version does not exist"
-            echo "skipped=false" >> $GITHUB_OUTPUT
-            echo "tag=v$package_version" >> $GITHUB_OUTPUT
+            echo "release_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+          if npm view @dokploy/cli@$package_version version >/dev/null 2>&1; then
+            echo "npm version $package_version already exists, skipping"
+            echo "npm_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "npm_exists=false" >> $GITHUB_OUTPUT
           fi
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - name: Create Github Release
-        if: steps.version-check.outputs.skipped == 'false'
-        uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
+      - name: Create GitHub Release
+        if: steps.version-check.outputs.release_exists == 'false'
+        uses: softprops/action-gh-release@v2
         with:
-          name: ${{ steps.version-check.outputs.tag }}
-          tag: ${{ steps.version-check.outputs.tag }}
-          commit: ${{ github.ref_name }}
-          token: ${{ github.token }}
-          skipIfReleaseExists: true
+          tag_name: v${{ steps.version-check.outputs.version }}
+          name: v${{ steps.version-check.outputs.version }}
+          generate_release_notes: true
 
       - name: Publish to npm
-        if: steps.version-check.outputs.skipped == 'false'
+        if: steps.version-check.outputs.npm_exists == 'false'
         run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
