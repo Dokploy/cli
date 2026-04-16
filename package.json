@@ -49,8 +49,7 @@
     "prebuild": "pnpm run generate",
     "dev": "tsx src/index.ts",
     "lint": "biome check --write .",
-    "test": "vitest run",
-    "publish": "npm publish"
+    "test": "vitest run"
   },
   "types": "dist/index.d.ts",
   "pnpm": {
