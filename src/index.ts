@@ -22,7 +22,9 @@ program
 registerAuthCommand(program);
 registerGeneratedCommands(program);
 
-program.parseAsync(process.argv).catch((err) => {
+const argv = process.argv.filter((arg) => arg !== "--");
+
+program.parseAsync(argv).catch((err) => {
 	console.error(chalk.red(err.message));
 	process.exit(1);
 });

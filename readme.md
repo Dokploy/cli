@@ -1,123 +1,136 @@
 # Dokploy CLI
 
-<!-- ![Dokploy Logo](https://via.placeholder.com/150x150.png?text=Dokploy+CLI) -->
-
-Dokploy CLI is a powerful and versatile command-line tool designed to remotely manage your Dokploy server. It simplifies the process of creating, deploying, and managing applications and databases.
-
-<!-- [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/dokploy.svg)](https://npmjs.org/package/dokploy)
-[![Downloads/week](https://img.shields.io/npm/dw/dokploy.svg)](https://npmjs.org/package/dokploy)
-[![License](https://img.shields.io/npm/l/dokploy.svg)](https://github.com/yourusername/dokploy/blob/master/package.json) -->
-
-## Table of Contents
-
-- [Installation](#installation)
-- [Usage](#usage)
-- [Commands](#commands)
-  - [Authentication](#authentication)
-  - [Project Management](#project-management)
-  - [Application Management](#application-management)
-  - [Environment Management](#environment-management)
-  - [Database Management](#database-management)
-- [Contributing](#contributing)
-- [Support](#support)
-- [License](#license)
+Dokploy CLI is a command-line tool to manage your Dokploy server remotely. It provides **449 commands** auto-generated from the Dokploy OpenAPI spec, covering every API endpoint.
 
 ## Installation
 
-```sh-session
-$ npm install -g @dokploy/cli
+```bash
+npm install -g @dokploy/cli
 ```
+
+## Authentication
+
+### Option 1: Using the `auth` command
+
+```bash
+dokploy auth -u https://panel.dokploy.com -t YOUR_API_KEY
+```
+
+### Option 2: Environment variables
+
+```bash
+export DOKPLOY_URL="https://panel.dokploy.com"
+export DOKPLOY_API_KEY="YOUR_API_KEY"
+```
+
+### Option 3: `.env` file
+
+Create a `.env` file in your working directory:
+
+```env
+DOKPLOY_URL="https://panel.dokploy.com"
+DOKPLOY_API_KEY="YOUR_API_KEY"
+```
+
+The CLI loads it automatically. Shell environment variables take priority over the `.env` file.
 
 ## Usage
 
-```sh-session
-$ dokploy COMMAND
-running command...
-
-$ dokploy --version
-dokploy/0.0.0 darwin-arm64 node-v18.18.0
-
-$ dokploy --help [COMMAND]
-USAGE
-  $ dokploy COMMAND
-...
+```bash
+dokploy <group> <action> [options]
 ```
 
-## Commands
+### Examples
 
-### Authentication
+```bash
+# List all projects
+dokploy project all
 
-- `dokploy authenticate`: Authenticate with the Dokploy server.
-- `dokploy verify`: Verify current authentication.
+# Get a specific project
+dokploy project one --projectId abc123
 
-### Project Management
+# Create an application
+dokploy application create --name "my-app" --environmentId env123
 
-- `dokploy project:create`: Create a new project.
-- `dokploy project:info`: Get information about an existing project.
-- `dokploy project:list`: List all projects.
+# Deploy an application
+dokploy application deploy --applicationId app123
 
-### Environment Management
+# Create a postgres database
+dokploy postgres create --name "my-db" --environmentId env123
 
-- `dokploy environment:create`: Create a new environment.
-- `dokploy environment:delete`: Delete an existing environment.
+# Stop a database
+dokploy postgres stop --postgresId pg123
 
-### Application Management
-
-- `dokploy app:create`: Create a new application.
-- `dokploy app:delete`: Delete an existing application.
-- `dokploy app:deploy`: Deploy an application.
-- `dokploy app:stop`: Stop a running application.
-
-### Enviroment Management
-
-- `dokploy env pull <file>`: Pull environment variables from Dokploy in a <file>.
-- `dokploy env push <file>`: Push environment variables to Dokploy from a <file>.
-
-### Database Management
-
-Dokploy supports various types of databases:
-
-#### MariaDB
-
-- `dokploy database:mariadb:create`
-- `dokploy database:mariadb:delete`
-- `dokploy database:mariadb:deploy`
-- `dokploy database:mariadb:stop`
-
-#### MongoDB
-
-- `dokploy database:mongo:create`
-- `dokploy database:mongo:delete`
-- `dokploy database:mongo:deploy`
-- `dokploy database:mongo:stop`
-
-#### MySQL
-
-- `dokploy database:mysql:create`
-- `dokploy database:mysql:delete`
-- `dokploy database:mysql:deploy`
-- `dokploy database:mysql:stop`
-
-#### PostgreSQL
-
-- `dokploy database:postgres:create`
-- `dokploy database:postgres:delete`
-- `dokploy database:postgres:deploy`
-- `dokploy database:postgres:stop`
-
-#### Redis
-
-- `dokploy database:redis:create`
-- `dokploy database:redis:delete`
-- `dokploy database:redis:deploy`
-- `dokploy database:redis:stop`
-
-For more information about a specific command, use:
-
-```sh-session
-$ dokploy [COMMAND] --help
+# Get raw JSON output
+dokploy project all --json
 ```
+
+### Getting help
+
+```bash
+# List all groups
+dokploy --help
+
+# List actions in a group
+dokploy application --help
+
+# See options for a specific action
+dokploy application deploy --help
+```
+
+## Available command groups
+
+| Group | Commands | Group | Commands |
+|---|---|---|---|
+| `admin` | 1 | `notification` | 38 |
+| `ai` | 9 | `organization` | 10 |
+| `application` | 29 | `patch` | 12 |
+| `backup` | 11 | `port` | 4 |
+| `bitbucket` | 7 | `postgres` | 14 |
+| `certificates` | 4 | `preview-deployment` | 4 |
+| `cluster` | 4 | `project` | 8 |
+| `compose` | 28 | `redirects` | 4 |
+| `deployment` | 8 | `redis` | 14 |
+| `destination` | 6 | `registry` | 7 |
+| `docker` | 7 | `rollback` | 2 |
+| `domain` | 9 | `schedule` | 6 |
+| `environment` | 7 | `security` | 4 |
+| `gitea` | 8 | `server` | 16 |
+| `github` | 6 | `settings` | 49 |
+| `gitlab` | 7 | `ssh-key` | 6 |
+| `git-provider` | 2 | `sso` | 10 |
+| `license-key` | 6 | `stripe` | 7 |
+| `mariadb` | 14 | `swarm` | 3 |
+| `mongo` | 14 | `user` | 18 |
+| `mounts` | 6 | `volume-backups` | 6 |
+| `mysql` | 14 | | |
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run in dev mode
+pnpm run dev -- project all
+
+# Regenerate commands from OpenAPI spec
+pnpm run generate
+
+# Build
+pnpm run build
+
+# Lint & format
+pnpm run lint
+```
+
+### Updating commands
+
+Commands are auto-generated from `openapi.json`. To update:
+
+1. Replace `openapi.json` with the latest spec from the [Dokploy repo](https://github.com/Dokploy/dokploy)
+2. Run `pnpm run generate`
+3. Build with `pnpm run build`
 
 ## Contributing
 
@@ -125,7 +138,7 @@ If you want to contribute to Dokploy CLI, please check out our [Contributing Gui
 
 ## Support
 
-If you encounter any issues or have any questions, please [open an issue](https://github.com/yourusername/dokploy/issues) in our GitHub repository.
+If you encounter any issues or have any questions, please [open an issue](https://github.com/Dokploy/cli/issues) in our GitHub repository.
 
 ## License
 
