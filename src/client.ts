@@ -1,8 +1,8 @@
-import axios, { type AxiosInstance } from "axios";
-import chalk from "chalk";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import axios, { type AxiosInstance } from "axios";
+import chalk from "chalk";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,7 +14,8 @@ export interface AuthConfig {
 }
 
 export function readAuthConfig(): AuthConfig {
-	const envToken = process.env.DOKPLOY_AUTH_TOKEN;
+	const envToken =
+		process.env.DOKPLOY_API_KEY ?? process.env.DOKPLOY_AUTH_TOKEN;
 	const envUrl = process.env.DOKPLOY_URL;
 
 	if (envToken && envUrl) {
@@ -60,13 +61,22 @@ export function createClient(): AxiosInstance {
 	});
 }
 
-export async function apiPost(endpoint: string, data?: Record<string, unknown>) {
+export async function apiPost(
+	endpoint: string,
+	data?: Record<string, unknown>,
+) {
 	const client = createClient();
-	const response = await client.post(`/trpc/${endpoint}`, data ? { json: data } : undefined);
+	const response = await client.post(
+		`/trpc/${endpoint}`,
+		data ? { json: data } : undefined,
+	);
 	return response.data?.result?.data?.json ?? response.data;
 }
 
-export async function apiGet(endpoint: string, params?: Record<string, unknown>) {
+export async function apiGet(
+	endpoint: string,
+	params?: Record<string, unknown>,
+) {
 	const client = createClient();
 	const query = params
 		? `?input=${encodeURIComponent(JSON.stringify(params))}`

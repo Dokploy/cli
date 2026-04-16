@@ -1,14 +1,20 @@
-import type { Command } from "commander";
-import chalk from "chalk";
 import axios from "axios";
+import chalk from "chalk";
+import type { Command } from "commander";
 import { saveAuthConfig } from "../client.js";
 
 export function registerAuthCommand(program: Command) {
 	program
 		.command("auth")
 		.description("Authenticate with your Dokploy server")
-		.requiredOption("-u, --url <url>", "Server URL (e.g., https://panel.dokploy.com)")
-		.requiredOption("-t, --token <token>", "API key from your Dokploy dashboard")
+		.requiredOption(
+			"-u, --url <url>",
+			"Server URL (e.g., https://panel.dokploy.com)",
+		)
+		.requiredOption(
+			"-t, --token <token>",
+			"API key from your Dokploy dashboard",
+		)
 		.action(async (opts: { url: string; token: string }) => {
 			const url = opts.url.replace(/\/+$/, "");
 
