@@ -3,6 +3,7 @@
 import chalk from "chalk";
 import { program } from "commander";
 import { registerAuthCommand } from "./commands/auth.js";
+import { registerExecCommand } from "./commands/exec.js";
 import { registerGeneratedCommands } from "./generated/commands.js";
 
 const pkg = {
@@ -20,6 +21,7 @@ program
 	});
 
 registerAuthCommand(program);
+registerExecCommand(program);
 registerGeneratedCommands(program);
 
 const argv = process.argv.filter((arg) => arg !== "--");
