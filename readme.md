@@ -8,6 +8,14 @@ Dokploy CLI is a command-line tool to manage your Dokploy server remotely. It pr
 npm install -g @dokploy/cli
 ```
 
+## Getting Your API Key
+
+1. Log in to your Dokploy panel
+2. Click **Account** (bottom-left corner)
+3. Go to **Profile**
+4. Scroll down to **API/CLI Keys**
+5. Create a new key and copy it
+
 ## Authentication
 
 ### Option 1: Using the `auth` command
@@ -33,6 +41,94 @@ DOKPLOY_API_KEY="YOUR_API_KEY"
 ```
 
 The CLI loads it automatically. Shell environment variables take priority over the `.env` file.
+
+## Exec Command
+
+Open an interactive terminal session in a running Dokploy service container — similar to `heroku run`. No SSH access required, just a Dokploy API key.
+
+```bash
+dokploy exec --app <name> [--project <project>] [--env <environment>] [--shell <shell>] [command...]
+```
+
+### Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--app <name>` | Service name in Dokploy (required) | |
+| `--project <name>` | Project name (if ambiguous across projects) | auto-detect |
+| `--env <name>` | Environment name (e.g. staging, production) | auto-detect |
+| `--shell <shell>` | Shell to use (bash, sh, zsh, ash) | bash |
+
+### Examples
+
+```bash
+# Interactive shell into a container
+dokploy exec --env staging --app Web
+
+# Rails console
+dokploy exec --env staging --app Web rails c
+
+# Run a one-off command
+dokploy exec --app Web -- rails db:migrate
+
+# If app name is unique across environments, --env is optional
+dokploy exec --app Web rails c
+
+# Narrow by project if the same app name exists in multiple projects
+dokploy exec --project "My Project" --env staging --app Web rails c
+
+# Connect to non-application services (redis, postgres, etc.)
+dokploy exec --app Cache
+```
+
+If the same service name exists in multiple environments or projects, the CLI will prompt you to disambiguate:
+
+```
+Multiple services named "Web" found. Use --project and/or --env to specify:
+  - My Project / staging (applications)
+  - My Project / production (applications)
+```
+
+### Supported service types
+
+The `exec` command works with all Dokploy service types:
+
+- Applications
+- Redis
+- PostgreSQL
+- MongoDB
+- MySQL
+- MariaDB
+- Compose
+
+### How it works
+
+The `exec` command connects to containers through Dokploy's built-in WebSocket terminal — the same mechanism used by the web panel's Terminal tab.
+
+```
+Step 1: Find the service
+    dokploy exec --app Web --env staging
+                      │          │
+                      ▼          ▼
+    Call project.all API → search all projects/environments/service types
+    → resolve to internal Docker app name + server ID
+
+Step 2: Find the running container
+    Call docker.getContainersByAppLabel API
+    → find running containers for the service
+    → pick the first running replica
+
+Step 3: Connect via WebSocket
+    Open WebSocket to /docker-container-terminal
+    → authenticate with x-api-key header
+    → pipe stdin/stdout between your terminal and the container
+```
+
+```
+Your terminal → HTTPS/WSS → Dokploy panel → SSH → Docker host → docker exec → container
+```
+
+No direct SSH access to the server is needed — authentication is handled entirely through the Dokploy API key.
 
 ## Usage
 
