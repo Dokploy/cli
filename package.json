@@ -1,7 +1,7 @@
 {
   "name": "@dokploy/cli",
   "description": "A CLI to manage dokploy server remotely",
-  "version": "0.3.1",
+  "version": "v0.29.0",
   "author": "Mauricio Siu",
   "licenses": [
     {
@@ -53,6 +53,8 @@
   },
   "types": "dist/index.d.ts",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
