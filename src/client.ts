@@ -87,7 +87,7 @@ export async function apiPost(
 ) {
 	const client = createClient();
 	const response = await client.post(
-		`/trpc/${endpoint}`,
+		`/${endpoint}`,
 		data ? { json: data } : undefined,
 	);
 	return response.data?.result?.data?.json ?? response.data;
@@ -101,6 +101,6 @@ export async function apiGet(
 	const query = params
 		? `?input=${encodeURIComponent(JSON.stringify(params))}`
 		: "";
-	const response = await client.get(`/trpc/${endpoint}${query}`);
+	const response = await client.get(`/${endpoint}${query}`);
 	return response.data?.result?.data?.json ?? response.data;
 }
