@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
+import { readFileSync } from "node:fs";
 import chalk from "chalk";
 import { program } from "commander";
 import { registerAuthCommand } from "./commands/auth.js";
 import { registerGeneratedCommands } from "./generated/commands.js";
 
+const packageJson = JSON.parse(
+	readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+) as { version: string };
+
 const pkg = {
 	name: "dokploy",
-	version: "0.3.0",
+	version: packageJson.version,
 	description: "Dokploy CLI - Manage your Dokploy server",
 };
 
