@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -6,6 +7,9 @@ import { describe, expect, it } from "vitest";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const CLI = path.join(ROOT, "dist", "index.js");
+const packageJson = JSON.parse(
+	fs.readFileSync(path.join(ROOT, "package.json"), "utf8"),
+) as { version: string };
 
 function run(...args: string[]): string {
 	return execFileSync("node", [CLI, ...args], {
@@ -25,7 +29,7 @@ describe("CLI", () => {
 
 	it("should show version with --version", () => {
 		const output = run("--version");
-		expect(output.trim()).toMatch(/^\d+\.\d+\.\d+$/);
+		expect(output.trim()).toBe(packageJson.version);
 	});
 
 	it("should show subcommands for application", () => {
