@@ -24,7 +24,10 @@ function loadEnvFile(): void {
 		const eqIndex = trimmed.indexOf("=");
 		if (eqIndex === -1) continue;
 		const key = trimmed.slice(0, eqIndex).trim();
-		const value = trimmed.slice(eqIndex + 1).trim().replace(/^["']|["']$/g, "");
+		const value = trimmed
+			.slice(eqIndex + 1)
+			.trim()
+			.replace(/^["']|["']$/g, "");
 		if (!process.env[key]) {
 			process.env[key] = value;
 		}
@@ -86,10 +89,7 @@ export async function apiPost(
 	data?: Record<string, unknown>,
 ) {
 	const client = createClient();
-	const response = await client.post(
-		`/${endpoint}`,
-		data,
-	);
+	const response = await client.post(`/${endpoint}`, data);
 	return response.data;
 }
 
@@ -98,10 +98,6 @@ export async function apiGet(
 	params?: Record<string, unknown>,
 ) {
 	const client = createClient();
-	const query = Object
-		.entries(params ?? {})
-		.map(([key, value]) => `${key}=${value}`)
-		.join('&')
-	const response = await client.get(`/${endpoint}?${query}`);
+	const response = await client.get(`/${endpoint}`, { params });
 	return response.data;
 }
