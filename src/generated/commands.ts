@@ -987,12 +987,14 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--backupType <value>', 'backupType (database, compose)')
 		.option('--composeId <value>', 'composeId')
 		.option('--serviceName <value>', 'serviceName')
+		.option('--includeEncryptionKey', 'includeEncryptionKey')
 		.option('--metadata <value>', 'metadata')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
+			if (opts["includeEncryptionKey"] != null) opts["includeEncryptionKey"] = opts["includeEncryptionKey"] === true || opts["includeEncryptionKey"] === "true";
 			const data = await apiPost("backup.create", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -1176,11 +1178,13 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--serviceName <value>', 'serviceName')
 		.requiredOption('--metadata <value>', 'metadata')
 		.requiredOption('--databaseType <value>', 'databaseType (postgres, mariadb, mysql, mongo, web-server, libsql)')
+		.option('--includeEncryptionKey', 'includeEncryptionKey')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
+			if (opts["includeEncryptionKey"] != null) opts["includeEncryptionKey"] = opts["includeEncryptionKey"] === true || opts["includeEncryptionKey"] === "true";
 			const data = await apiPost("backup.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
