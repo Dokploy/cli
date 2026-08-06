@@ -8214,6 +8214,23 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_server
+		.command('update-builds-concurrency')
+		.description('server updateBuildsConcurrency')
+		.requiredOption('--serverId <value>', 'serverId')
+		.requiredOption('--buildsConcurrency <value>', 'buildsConcurrency')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["buildsConcurrency"] != null) opts["buildsConcurrency"] = Number(opts["buildsConcurrency"]);
+			const data = await apiPost("server.updateBuildsConcurrency", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_server
 		.command('validate')
 		.description('server validate')
 		.requiredOption('--serverId <value>', 'serverId')
@@ -8900,6 +8917,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enable"] != null) opts["enable"] = opts["enable"] === true || opts["enable"] === "true";
 			const data = await apiPost("settings.toggleRequests", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_settings
+		.command('update-builds-concurrency')
+		.description('settings updateBuildsConcurrency')
+		.requiredOption('--buildsConcurrency <value>', 'buildsConcurrency')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["buildsConcurrency"] != null) opts["buildsConcurrency"] = Number(opts["buildsConcurrency"]);
+			const data = await apiPost("settings.updateBuildsConcurrency", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
