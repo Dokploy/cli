@@ -7881,6 +7881,55 @@ export function registerGeneratedCommands(program: Command) {
 				printOutput(data);
 			}
 		});
+	const g_scim = program.command('scim').description('scim commands');
+
+	g_scim
+		.command('delete-provider')
+		.description('scim deleteProvider')
+		.requiredOption('--providerId <value>', 'providerId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("scim.deleteProvider", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_scim
+		.command('generate-token')
+		.description('scim generateToken')
+		.requiredOption('--providerId <value>', 'providerId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("scim.generateToken", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_scim
+		.command('list-providers')
+		.description('scim listProviders')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("scim.listProviders", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
 	const g_security = program.command('security').description('security commands');
 
 	g_security
