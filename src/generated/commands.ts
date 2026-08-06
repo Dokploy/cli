@@ -8751,6 +8751,22 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_settings
+		.command('update-enforce-sso')
+		.description('settings updateEnforceSSO')
+		.requiredOption('--enforceSSO', 'enforceSSO')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["enforceSSO"] != null) opts["enforceSSO"] = opts["enforceSSO"] === true || opts["enforceSSO"] === "true";
+			const data = await apiPost("settings.updateEnforceSSO", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_settings
 		.command('update-log-cleanup')
 		.description('settings updateLogCleanup')
 		.requiredOption('--cronExpression <value>', 'cronExpression')
@@ -8775,6 +8791,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateMiddlewareTraefikConfig", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_settings
+		.command('update-remote-servers-only')
+		.description('settings updateRemoteServersOnly')
+		.requiredOption('--remoteServersOnly', 'remoteServersOnly')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["remoteServersOnly"] != null) opts["remoteServersOnly"] = opts["remoteServersOnly"] === true || opts["remoteServersOnly"] === "true";
+			const data = await apiPost("settings.updateRemoteServersOnly", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -9044,6 +9076,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sso.deleteProvider", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_sso
+		.command('enforce-sso')
+		.description('sso enforceSSO')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("sso.enforceSSO", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
