@@ -148,6 +148,22 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_ai
+		.command('get-custom-providers')
+		.description('ai getCustomProviders')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("ai.getCustomProviders", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_ai
 		.command('get-enabled-providers')
 		.description('ai getEnabledProviders')
 		
@@ -189,6 +205,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.one", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_ai
+		.command('save-custom-providers')
+		.description('ai saveCustomProviders')
+		.requiredOption('--providers <value>', 'providers')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("ai.saveCustomProviders", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
