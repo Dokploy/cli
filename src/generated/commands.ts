@@ -148,22 +148,6 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_ai
-		.command('get-custom-providers')
-		.description('ai getCustomProviders')
-		
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiGet("ai.getCustomProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_ai
 		.command('get-enabled-providers')
 		.description('ai getEnabledProviders')
 		
@@ -205,22 +189,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_ai
-		.command('save-custom-providers')
-		.description('ai saveCustomProviders')
-		.requiredOption('--providers <value>', 'providers')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("ai.saveCustomProviders", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -1019,14 +987,12 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--backupType <value>', 'backupType (database, compose)')
 		.option('--composeId <value>', 'composeId')
 		.option('--serviceName <value>', 'serviceName')
-		.option('--includeEncryptionKey', 'includeEncryptionKey')
 		.option('--metadata <value>', 'metadata')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
-			if (opts["includeEncryptionKey"] != null) opts["includeEncryptionKey"] = opts["includeEncryptionKey"] === true || opts["includeEncryptionKey"] === "true";
 			const data = await apiPost("backup.create", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -1210,13 +1176,11 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--serviceName <value>', 'serviceName')
 		.requiredOption('--metadata <value>', 'metadata')
 		.requiredOption('--databaseType <value>', 'databaseType (postgres, mariadb, mysql, mongo, web-server, libsql)')
-		.option('--includeEncryptionKey', 'includeEncryptionKey')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
-			if (opts["includeEncryptionKey"] != null) opts["includeEncryptionKey"] = opts["includeEncryptionKey"] === true || opts["includeEncryptionKey"] === "true";
 			const data = await apiPost("backup.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -2740,14 +2704,12 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--internalPath <value>', 'internalPath')
 		.option('--stripPath', 'stripPath')
 		.option('--middlewares <value>', 'middlewares')
-		.option('--forwardAuthEnabled', 'forwardAuthEnabled')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["port"] != null) opts["port"] = Number(opts["port"]);
 			if (opts["https"] != null) opts["https"] = opts["https"] === true || opts["https"] === "true";
 			if (opts["stripPath"] != null) opts["stripPath"] = opts["stripPath"] === true || opts["stripPath"] === "true";
-			if (opts["forwardAuthEnabled"] != null) opts["forwardAuthEnabled"] = opts["forwardAuthEnabled"] === true || opts["forwardAuthEnabled"] === "true";
 			const data = await apiPost("domain.create", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -2820,7 +2782,6 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--internalPath <value>', 'internalPath')
 		.option('--stripPath', 'stripPath')
 		.option('--middlewares <value>', 'middlewares')
-		.option('--forwardAuthEnabled', 'forwardAuthEnabled')
 		.requiredOption('--domainId <value>', 'domainId')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
@@ -2828,7 +2789,6 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["port"] != null) opts["port"] = Number(opts["port"]);
 			if (opts["https"] != null) opts["https"] = opts["https"] === true || opts["https"] === "true";
 			if (opts["stripPath"] != null) opts["stripPath"] = opts["stripPath"] === true || opts["stripPath"] === "true";
-			if (opts["forwardAuthEnabled"] != null) opts["forwardAuthEnabled"] = opts["forwardAuthEnabled"] === true || opts["forwardAuthEnabled"] === "true";
 			const data = await apiPost("domain.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -2974,172 +2934,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("environment.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-	const g_forwardAuth = program.command('forward-auth').description('forward-auth commands');
-
-	g_forwardAuth
-		.command('deploy-on-server')
-		.description('forwardAuth deployOnServer')
-		.requiredOption('--serverId <value>', 'serverId')
-		.requiredOption('--providerId <value>', 'providerId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("forwardAuth.deployOnServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('disable')
-		.description('forwardAuth disable')
-		.requiredOption('--domainId <value>', 'domainId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("forwardAuth.disable", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('enable')
-		.description('forwardAuth enable')
-		.requiredOption('--domainId <value>', 'domainId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("forwardAuth.enable", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('get-auth-domain')
-		.description('forwardAuth getAuthDomain')
-		.requiredOption('--serverId <value>', 'serverId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiGet("forwardAuth.getAuthDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('list-providers')
-		.description('forwardAuth listProviders')
-		
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiGet("forwardAuth.listProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('remove-auth-domain')
-		.description('forwardAuth removeAuthDomain')
-		.requiredOption('--serverId <value>', 'serverId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("forwardAuth.removeAuthDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('remove-on-server')
-		.description('forwardAuth removeOnServer')
-		.requiredOption('--serverId <value>', 'serverId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("forwardAuth.removeOnServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('server-status')
-		.description('forwardAuth serverStatus')
-		
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiGet("forwardAuth.serverStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('set-auth-domain')
-		.description('forwardAuth setAuthDomain')
-		.requiredOption('--serverId <value>', 'serverId')
-		.requiredOption('--authDomain <value>', 'authDomain')
-		.option('--https', 'https')
-		.option('--certificateType <value>', 'certificateType (none, letsencrypt, custom)')
-		.option('--customCertResolver <value>', 'customCertResolver')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-			if (opts["https"] != null) opts["https"] = opts["https"] === true || opts["https"] === "true";
-			const data = await apiPost("forwardAuth.setAuthDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_forwardAuth
-		.command('status')
-		.description('forwardAuth status')
-		.requiredOption('--domainId <value>', 'domainId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiGet("forwardAuth.status", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -7805,7 +7599,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--applicationId <value>', 'applicationId')
 		.option('--composeId <value>', 'composeId')
 		.option('--serverId <value>', 'serverId')
-		.option('--organizationId <value>', 'organizationId')
+		.option('--userId <value>', 'userId')
 		.option('--enabled', 'enabled')
 		.option('--timezone <value>', 'timezone')
 		.option('--createdAt <value>', 'createdAt')
@@ -7902,7 +7696,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--applicationId <value>', 'applicationId')
 		.option('--composeId <value>', 'composeId')
 		.option('--serverId <value>', 'serverId')
-		.option('--organizationId <value>', 'organizationId')
+		.option('--userId <value>', 'userId')
 		.option('--enabled', 'enabled')
 		.option('--timezone <value>', 'timezone')
 		.option('--createdAt <value>', 'createdAt')
@@ -7911,55 +7705,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("schedule.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-	const g_scim = program.command('scim').description('scim commands');
-
-	g_scim
-		.command('delete-provider')
-		.description('scim deleteProvider')
-		.requiredOption('--providerId <value>', 'providerId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("scim.deleteProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_scim
-		.command('generate-token')
-		.description('scim generateToken')
-		.requiredOption('--providerId <value>', 'providerId')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("scim.generateToken", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_scim
-		.command('list-providers')
-		.description('scim listProviders')
-		
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiGet("scim.listProviders", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -8111,12 +7856,10 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--username <value>', 'username')
 		.requiredOption('--sshKeyId <value>', 'sshKeyId')
 		.requiredOption('--serverType <value>', 'serverType (deploy, build)')
-		.option('--enableDockerCleanup', 'enableDockerCleanup')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["port"] != null) opts["port"] = Number(opts["port"]);
-			if (opts["enableDockerCleanup"] != null) opts["enableDockerCleanup"] = opts["enableDockerCleanup"] === true || opts["enableDockerCleanup"] === "true";
 			const data = await apiPost("server.create", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -8283,31 +8026,12 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--username <value>', 'username')
 		.requiredOption('--sshKeyId <value>', 'sshKeyId')
 		.requiredOption('--serverType <value>', 'serverType (deploy, build)')
-		.option('--enableDockerCleanup', 'enableDockerCleanup')
 		.option('--command <value>', 'command')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["port"] != null) opts["port"] = Number(opts["port"]);
-			if (opts["enableDockerCleanup"] != null) opts["enableDockerCleanup"] = opts["enableDockerCleanup"] === true || opts["enableDockerCleanup"] === "true";
 			const data = await apiPost("server.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_server
-		.command('update-builds-concurrency')
-		.description('server updateBuildsConcurrency')
-		.requiredOption('--serverId <value>', 'serverId')
-		.requiredOption('--buildsConcurrency <value>', 'buildsConcurrency')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-			if (opts["buildsConcurrency"] != null) opts["buildsConcurrency"] = Number(opts["buildsConcurrency"]);
-			const data = await apiPost("server.updateBuildsConcurrency", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -9010,22 +8734,6 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_settings
-		.command('update-builds-concurrency')
-		.description('settings updateBuildsConcurrency')
-		.requiredOption('--buildsConcurrency <value>', 'buildsConcurrency')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-			if (opts["buildsConcurrency"] != null) opts["buildsConcurrency"] = Number(opts["buildsConcurrency"]);
-			const data = await apiPost("settings.updateBuildsConcurrency", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_settings
 		.command('update-docker-cleanup')
 		.description('settings updateDockerCleanup')
 		.requiredOption('--enableDockerCleanup', 'enableDockerCleanup')
@@ -9035,22 +8743,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableDockerCleanup"] != null) opts["enableDockerCleanup"] = opts["enableDockerCleanup"] === true || opts["enableDockerCleanup"] === "true";
 			const data = await apiPost("settings.updateDockerCleanup", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_settings
-		.command('update-enforce-sso')
-		.description('settings updateEnforceSSO')
-		.requiredOption('--enforceSSO', 'enforceSSO')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-			if (opts["enforceSSO"] != null) opts["enforceSSO"] = opts["enforceSSO"] === true || opts["enforceSSO"] === "true";
-			const data = await apiPost("settings.updateEnforceSSO", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -9083,22 +8775,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateMiddlewareTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_settings
-		.command('update-remote-servers-only')
-		.description('settings updateRemoteServersOnly')
-		.requiredOption('--remoteServersOnly', 'remoteServersOnly')
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-			if (opts["remoteServersOnly"] != null) opts["remoteServersOnly"] = opts["remoteServersOnly"] === true || opts["remoteServersOnly"] === "true";
-			const data = await apiPost("settings.updateRemoteServersOnly", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -9368,22 +9044,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sso.deleteProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_sso
-		.command('enforce-sso')
-		.description('sso enforceSSO')
-		
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiGet("sso.enforceSSO", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
