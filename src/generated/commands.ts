@@ -343,6 +343,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--description <value>', 'description')
 		.requiredOption('--environmentId <value>', 'environmentId')
 		.option('--serverId <value>', 'serverId')
+		.option('--sourceType <value>', 'sourceType (github, docker, git, gitlab, bitbucket, gitea, drop)')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
@@ -931,6 +932,8 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--bitbucketId <value>', 'bitbucketId')
 		.option('--buildServerId <value>', 'buildServerId')
 		.option('--buildRegistryId <value>', 'buildRegistryId')
+		.option('--networkIds <value>', 'networkIds')
+		.option('--detachDokployNetwork', 'detachDokployNetwork')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
@@ -948,6 +951,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
 			if (opts["isStaticSpa"] != null) opts["isStaticSpa"] = opts["isStaticSpa"] === true || opts["isStaticSpa"] === "true";
 			if (opts["createEnvFile"] != null) opts["createEnvFile"] = opts["createEnvFile"] === true || opts["createEnvFile"] === "true";
+			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("application.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -1577,6 +1581,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--appName <value>', 'appName')
 		.option('--serverId <value>', 'serverId')
 		.option('--composeFile <value>', 'composeFile')
+		.option('--sourceType <value>', 'sourceType (git, github, gitlab, bitbucket, gitea, raw)')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
@@ -1951,10 +1956,11 @@ export function registerGeneratedCommands(program: Command) {
 		.description('compose saveEnvironment')
 		.requiredOption('--composeId <value>', 'composeId')
 		.requiredOption('--env <value>', 'env')
+		.option('--createEnvFile', 'createEnvFile')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
-
+			if (opts["createEnvFile"] != null) opts["createEnvFile"] = opts["createEnvFile"] === true || opts["createEnvFile"] === "true";
 			const data = await apiPost("compose.saveEnvironment", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -2067,6 +2073,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--customGitBranch <value>', 'customGitBranch')
 		.option('--customGitSSHKeyId <value>', 'customGitSSHKeyId')
 		.option('--command <value>', 'command')
+		.option('--createEnvFile', 'createEnvFile')
 		.option('--enableSubmodules', 'enableSubmodules')
 		.option('--composePath <value>', 'composePath')
 		.option('--suffix <value>', 'suffix')
@@ -2075,6 +2082,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--isolatedDeploymentsVolume', 'isolatedDeploymentsVolume')
 		.option('--triggerType <value>', 'triggerType (push, tag)')
 		.option('--composeStatus <value>', 'composeStatus (idle, running, done, error)')
+		.option('--icon <value>', 'icon')
 		.option('--environmentId <value>', 'environmentId')
 		.option('--createdAt <value>', 'createdAt')
 		.option('--watchPaths <value>', 'watchPaths')
@@ -2082,11 +2090,13 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--gitlabId <value>', 'gitlabId')
 		.option('--bitbucketId <value>', 'bitbucketId')
 		.option('--giteaId <value>', 'giteaId')
+		.option('--serviceNetworks <value>', 'serviceNetworks')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["autoDeploy"] != null) opts["autoDeploy"] = opts["autoDeploy"] === true || opts["autoDeploy"] === "true";
 			if (opts["gitlabProjectId"] != null) opts["gitlabProjectId"] = Number(opts["gitlabProjectId"]);
+			if (opts["createEnvFile"] != null) opts["createEnvFile"] = opts["createEnvFile"] === true || opts["createEnvFile"] === "true";
 			if (opts["enableSubmodules"] != null) opts["enableSubmodules"] = opts["enableSubmodules"] === true || opts["enableSubmodules"] === "true";
 			if (opts["randomize"] != null) opts["randomize"] = opts["randomize"] === true || opts["randomize"] === "true";
 			if (opts["isolatedDeployment"] != null) opts["isolatedDeployment"] = opts["isolatedDeployment"] === true || opts["isolatedDeployment"] === "true";
@@ -2467,7 +2477,220 @@ export function registerGeneratedCommands(program: Command) {
 				printOutput(data);
 			}
 		});
+	const g_dnsProvider = program.command('dns-provider').description('dns-provider commands');
+
+	g_dnsProvider
+		.command('all')
+		.description('dnsProvider all')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dnsProvider.all", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('create')
+		.description('dnsProvider create')
+		.requiredOption('--name <value>', 'name')
+		.requiredOption('--config <value>', 'config')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dnsProvider.create", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('create-record')
+		.description('dnsProvider createRecord')
+		.requiredOption('--type <value>', 'type (A, CNAME)')
+		.requiredOption('--name <value>', 'name')
+		.requiredOption('--content <value>', 'content')
+		.option('--ttl <value>', 'ttl')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.requiredOption('--zoneId <value>', 'zoneId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["ttl"] != null) opts["ttl"] = Number(opts["ttl"]);
+			const data = await apiPost("dnsProvider.createRecord", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('delete-record')
+		.description('dnsProvider deleteRecord')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.requiredOption('--zoneId <value>', 'zoneId')
+		.requiredOption('--recordId <value>', 'recordId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dnsProvider.deleteRecord", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('list-records')
+		.description('dnsProvider listRecords')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.requiredOption('--zoneId <value>', 'zoneId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dnsProvider.listRecords", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('list-zones')
+		.description('dnsProvider listZones')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dnsProvider.listZones", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('one')
+		.description('dnsProvider one')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dnsProvider.one", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('remove')
+		.description('dnsProvider remove')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dnsProvider.remove", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('test-connection')
+		.description('dnsProvider testConnection')
+		.option('--dnsProviderId <value>', 'dnsProviderId')
+		.option('--config <value>', 'config')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dnsProvider.testConnection", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('update')
+		.description('dnsProvider update')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.requiredOption('--name <value>', 'name')
+		.requiredOption('--config <value>', 'config')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dnsProvider.update", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dnsProvider
+		.command('update-record')
+		.description('dnsProvider updateRecord')
+		.requiredOption('--type <value>', 'type (A, CNAME)')
+		.requiredOption('--name <value>', 'name')
+		.requiredOption('--content <value>', 'content')
+		.option('--ttl <value>', 'ttl')
+		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
+		.requiredOption('--zoneId <value>', 'zoneId')
+		.requiredOption('--recordId <value>', 'recordId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["ttl"] != null) opts["ttl"] = Number(opts["ttl"]);
+			const data = await apiPost("dnsProvider.updateRecord", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
 	const g_docker = program.command('docker').description('docker commands');
+
+	g_docker
+		.command('delete-container-file')
+		.description('docker deleteContainerFile')
+		.requiredOption('--containerId <value>', 'containerId')
+		.requiredOption('--path <value>', 'path')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("docker.deleteContainerFile", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
 
 	g_docker
 		.command('get-config')
@@ -2539,6 +2762,40 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_docker
+		.command('get-events')
+		.description('docker getEvents')
+		.option('--serverId <value>', 'serverId')
+		.option('--minutes <value>', 'minutes')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["minutes"] != null) opts["minutes"] = Number(opts["minutes"]);
+			const data = await apiGet("docker.getEvents", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_docker
+		.command('get-server-health')
+		.description('docker getServerHealth')
+		.option('--serverId <value>', 'serverId')
+		.option('--sinceHours <value>', 'sinceHours')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["sinceHours"] != null) opts["sinceHours"] = Number(opts["sinceHours"]);
+			const data = await apiGet("docker.getServerHealth", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_docker
 		.command('get-service-containers-by-app-name')
 		.description('docker getServiceContainersByAppName')
 		.requiredOption('--appName <value>', 'appName')
@@ -2582,6 +2839,42 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.killContainer", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_docker
+		.command('list-container-files')
+		.description('docker listContainerFiles')
+		.requiredOption('--containerId <value>', 'containerId')
+		.requiredOption('--path <value>', 'path')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("docker.listContainerFiles", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_docker
+		.command('read-container-file')
+		.description('docker readContainerFile')
+		.requiredOption('--containerId <value>', 'containerId')
+		.requiredOption('--path <value>', 'path')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("docker.readContainerFile", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -2666,6 +2959,268 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.uploadFileToContainer", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_docker
+		.command('write-container-file')
+		.description('docker writeContainerFile')
+		.requiredOption('--containerId <value>', 'containerId')
+		.requiredOption('--path <value>', 'path')
+		.requiredOption('--content <value>', 'content')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("docker.writeContainerFile", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+	const g_dockerDiskUsage = program.command('docker-disk-usage').description('docker-disk-usage commands');
+
+	g_dockerDiskUsage
+		.command('get-build-cache')
+		.description('dockerDiskUsage getBuildCache')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerDiskUsage.getBuildCache", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerDiskUsage
+		.command('get-disk-usage')
+		.description('dockerDiskUsage getDiskUsage')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerDiskUsage.getDiskUsage", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerDiskUsage
+		.command('prune-build-cache')
+		.description('dockerDiskUsage pruneBuildCache')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dockerDiskUsage.pruneBuildCache", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+	const g_dockerImage = program.command('docker-image').description('docker-image commands');
+
+	g_dockerImage
+		.command('get-image-config')
+		.description('dockerImage getImageConfig')
+		.requiredOption('--imageRef <value>', 'imageRef')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerImage.getImageConfig", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerImage
+		.command('get-images')
+		.description('dockerImage getImages')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerImage.getImages", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerImage
+		.command('remove-image')
+		.description('dockerImage removeImage')
+		.requiredOption('--repository <value>', 'repository')
+		.requiredOption('--tag <value>', 'tag')
+		.requiredOption('--id <value>', 'id')
+		.option('--force', 'force')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["force"] != null) opts["force"] = opts["force"] === true || opts["force"] === "true";
+			const data = await apiPost("dockerImage.removeImage", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+	const g_dockerVolume = program.command('docker-volume').description('docker-volume commands');
+
+	g_dockerVolume
+		.command('delete-volume-file')
+		.description('dockerVolume deleteVolumeFile')
+		.requiredOption('--volumeName <value>', 'volumeName')
+		.requiredOption('--path <value>', 'path')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dockerVolume.deleteVolumeFile", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerVolume
+		.command('get-volume-config')
+		.description('dockerVolume getVolumeConfig')
+		.requiredOption('--volumeName <value>', 'volumeName')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerVolume.getVolumeConfig", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerVolume
+		.command('get-volumes')
+		.description('dockerVolume getVolumes')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerVolume.getVolumes", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerVolume
+		.command('get-volumes-size')
+		.description('dockerVolume getVolumesSize')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerVolume.getVolumesSize", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerVolume
+		.command('list-volume-files')
+		.description('dockerVolume listVolumeFiles')
+		.requiredOption('--volumeName <value>', 'volumeName')
+		.requiredOption('--path <value>', 'path')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerVolume.listVolumeFiles", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerVolume
+		.command('read-volume-file')
+		.description('dockerVolume readVolumeFile')
+		.requiredOption('--volumeName <value>', 'volumeName')
+		.requiredOption('--path <value>', 'path')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("dockerVolume.readVolumeFile", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerVolume
+		.command('remove-volume')
+		.description('dockerVolume removeVolume')
+		.requiredOption('--volumeName <value>', 'volumeName')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dockerVolume.removeVolume", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_dockerVolume
+		.command('write-volume-file')
+		.description('dockerVolume writeVolumeFile')
+		.requiredOption('--volumeName <value>', 'volumeName')
+		.requiredOption('--path <value>', 'path')
+		.requiredOption('--content <value>', 'content')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("dockerVolume.writeVolumeFile", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -2806,6 +3361,22 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_domain
+		.command('toggle-enable')
+		.description('domain toggleEnable')
+		.requiredOption('--domainId <value>', 'domainId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("domain.toggleEnable", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_domain
 		.command('update')
 		.description('domain update')
 		.requiredOption('--host <value>', 'host')
@@ -2821,6 +3392,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--stripPath', 'stripPath')
 		.option('--middlewares <value>', 'middlewares')
 		.option('--forwardAuthEnabled', 'forwardAuthEnabled')
+		.option('--enabled', 'enabled')
 		.requiredOption('--domainId <value>', 'domainId')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
@@ -2829,6 +3401,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["https"] != null) opts["https"] = opts["https"] === true || opts["https"] === "true";
 			if (opts["stripPath"] != null) opts["stripPath"] = opts["stripPath"] === true || opts["stripPath"] === "true";
 			if (opts["forwardAuthEnabled"] != null) opts["forwardAuthEnabled"] = opts["forwardAuthEnabled"] === true || opts["forwardAuthEnabled"] === "true";
+			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("domain.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -3875,6 +4448,8 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--stopGracePeriodSwarm <value>', 'stopGracePeriodSwarm')
 		.option('--endpointSpecSwarm <value>', 'endpointSpecSwarm')
 		.option('--replicas <value>', 'replicas')
+		.option('--networkIds <value>', 'networkIds')
+		.option('--detachDokployNetwork', 'detachDokployNetwork')
 		.option('--createdAt <value>', 'createdAt')
 		.option('--environmentId <value>', 'environmentId')
 		.option('--json', 'Output raw JSON')
@@ -3885,6 +4460,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["externalGRPCPort"] != null) opts["externalGRPCPort"] = Number(opts["externalGRPCPort"]);
 			if (opts["externalAdminPort"] != null) opts["externalAdminPort"] = Number(opts["externalAdminPort"]);
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
+			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("libsql.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -4293,11 +4869,14 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--replicas <value>', 'replicas')
 		.option('--createdAt <value>', 'createdAt')
 		.option('--environmentId <value>', 'environmentId')
+		.option('--networkIds <value>', 'networkIds')
+		.option('--detachDokployNetwork', 'detachDokployNetwork')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
+			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("mariadb.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -4606,12 +5185,15 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--createdAt <value>', 'createdAt')
 		.option('--environmentId <value>', 'environmentId')
 		.option('--replicaSets', 'replicaSets')
+		.option('--networkIds <value>', 'networkIds')
+		.option('--detachDokployNetwork', 'detachDokployNetwork')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
 			if (opts["replicaSets"] != null) opts["replicaSets"] = opts["replicaSets"] === true || opts["replicaSets"] === "true";
+			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("mongo.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -5043,12 +5625,156 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--replicas <value>', 'replicas')
 		.option('--createdAt <value>', 'createdAt')
 		.option('--environmentId <value>', 'environmentId')
+		.option('--networkIds <value>', 'networkIds')
+		.option('--detachDokployNetwork', 'detachDokployNetwork')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
+			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("mysql.update", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+	const g_network = program.command('network').description('network commands');
+
+	g_network
+		.command('all')
+		.description('network all')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("network.all", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('create')
+		.description('network create')
+		.requiredOption('--name <value>', 'name')
+		.option('--driver <value>', 'driver (bridge, overlay)')
+		.option('--internal', 'internal')
+		.option('--attachable', 'attachable')
+		.option('--enableIPv4', 'enableIPv4')
+		.option('--enableIPv6', 'enableIPv6')
+		.option('--mtu <value>', 'mtu')
+		.option('--ipam <value>', 'ipam')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+			if (opts["internal"] != null) opts["internal"] = opts["internal"] === true || opts["internal"] === "true";
+			if (opts["attachable"] != null) opts["attachable"] = opts["attachable"] === true || opts["attachable"] === "true";
+			if (opts["enableIPv4"] != null) opts["enableIPv4"] = opts["enableIPv4"] === true || opts["enableIPv4"] === "true";
+			if (opts["enableIPv6"] != null) opts["enableIPv6"] = opts["enableIPv6"] === true || opts["enableIPv6"] === "true";
+			const data = await apiPost("network.create", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('import')
+		.description('network import')
+		.option('--serverId <value>', 'serverId')
+		.requiredOption('--names <value>', 'names')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("network.import", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('inspect')
+		.description('network inspect')
+		.requiredOption('--networkId <value>', 'networkId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("network.inspect", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('networks-to-sync')
+		.description('network networksToSync')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("network.networksToSync", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('one')
+		.description('network one')
+		.requiredOption('--networkId <value>', 'networkId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("network.one", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('recreate')
+		.description('network recreate')
+		.requiredOption('--networkId <value>', 'networkId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("network.recreate", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('remove')
+		.description('network remove')
+		.requiredOption('--networkId <value>', 'networkId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("network.remove", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -6376,6 +7102,7 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--organizationId <value>', 'organizationId')
 		.requiredOption('--name <value>', 'name')
 		.option('--logo <value>', 'logo')
+		.option('--defaultRole <value>', 'defaultRole')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
@@ -6398,6 +7125,55 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.updateMemberRole", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+	const g_overview = program.command('overview').description('overview commands');
+
+	g_overview
+		.command('backups')
+		.description('overview backups')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("overview.backups", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_overview
+		.command('domains')
+		.description('overview domains')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("overview.domains", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_overview
+		.command('services')
+		.description('overview services')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("overview.services", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -6997,11 +7773,14 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--replicas <value>', 'replicas')
 		.option('--createdAt <value>', 'createdAt')
 		.option('--environmentId <value>', 'environmentId')
+		.option('--networkIds <value>', 'networkIds')
+		.option('--detachDokployNetwork', 'detachDokployNetwork')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
+			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("postgres.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -7607,11 +8386,14 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--ulimitsSwarm <value>', 'ulimitsSwarm')
 		.option('--replicas <value>', 'replicas')
 		.option('--environmentId <value>', 'environmentId')
+		.option('--networkIds <value>', 'networkIds')
+		.option('--detachDokployNetwork', 'detachDokployNetwork')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
+			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("redis.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -8480,22 +9262,6 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_settings
-		.command('clean-redis')
-		.description('settings cleanRedis')
-		
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("settings.cleanRedis", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_settings
 		.command('clean-sshprivate-key')
 		.description('settings cleanSSHPrivateKey')
 		
@@ -8889,22 +9655,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.readWebServerTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
-		});
-
-	g_settings
-		.command('reload-redis')
-		.description('settings reloadRedis')
-		
-		.option('--json', 'Output raw JSON')
-		.action(async (opts: Record<string, any>) => {
-			const jsonOutput = opts.json; delete opts.json;
-
-			const data = await apiPost("settings.reloadRedis", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -10191,6 +10941,38 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_user
+		.command('list-passkeys')
+		.description('user listPasskeys')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("user.listPasskeys", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_user
+		.command('list-sessions')
+		.description('user listSessions')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("user.listSessions", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_user
 		.command('one')
 		.description('user one')
 		.requiredOption('--userId <value>', 'userId')
@@ -10215,6 +10997,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.remove", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_user
+		.command('revoke-session')
+		.description('user revokeSession')
+		.requiredOption('--sessionId <value>', 'sessionId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("user.revokeSession", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -10312,6 +11110,127 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serversQuantity"] != null) opts["serversQuantity"] = Number(opts["serversQuantity"]);
 			if (opts["sendInvoiceNotifications"] != null) opts["sendInvoiceNotifications"] = opts["sendInvoiceNotifications"] === true || opts["sendInvoiceNotifications"] === "true";
 			const data = await apiPost("user.update", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+	const g_vaultProvider = program.command('vault-provider').description('vault-provider commands');
+
+	g_vaultProvider
+		.command('all')
+		.description('vaultProvider all')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("vaultProvider.all", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_vaultProvider
+		.command('create')
+		.description('vaultProvider create')
+		.requiredOption('--name <value>', 'name')
+		.requiredOption('--config <value>', 'config')
+		.requiredOption('--assignments <value>', 'assignments')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("vaultProvider.create", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_vaultProvider
+		.command('list-secret-names')
+		.description('vaultProvider listSecretNames')
+		.requiredOption('--vaultProviderId <value>', 'vaultProviderId')
+		.requiredOption('--projectId <value>', 'projectId')
+		.option('--environmentId <value>', 'environmentId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("vaultProvider.listSecretNames", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_vaultProvider
+		.command('one')
+		.description('vaultProvider one')
+		.requiredOption('--vaultProviderId <value>', 'vaultProviderId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("vaultProvider.one", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_vaultProvider
+		.command('remove')
+		.description('vaultProvider remove')
+		.requiredOption('--vaultProviderId <value>', 'vaultProviderId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("vaultProvider.remove", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_vaultProvider
+		.command('test-connection')
+		.description('vaultProvider testConnection')
+		.option('--vaultProviderId <value>', 'vaultProviderId')
+		.option('--config <value>', 'config')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("vaultProvider.testConnection", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_vaultProvider
+		.command('update')
+		.description('vaultProvider update')
+		.requiredOption('--vaultProviderId <value>', 'vaultProviderId')
+		.requiredOption('--name <value>', 'name')
+		.requiredOption('--config <value>', 'config')
+		.requiredOption('--assignments <value>', 'assignments')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("vaultProvider.update", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
