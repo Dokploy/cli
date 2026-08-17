@@ -7,6 +7,11 @@ export function registerAuthCommand(program: Command) {
 	program
 		.command("auth")
 		.description("Authenticate with your Dokploy server")
+		.option(
+			"-p, --profile <name>",
+			"Profile name to save these credentials under (default: default)",
+			"default",
+		)
 		.requiredOption(
 			"-u, --url <url>",
 			"Server URL (e.g., https://panel.dokploy.com)",
@@ -15,7 +20,7 @@ export function registerAuthCommand(program: Command) {
 			"-t, --token <token>",
 			"API key from your Dokploy dashboard",
 		)
-		.action(async (opts: { url: string; token: string }) => {
+		.action(async (opts: { url: string; token: string; profile: string }) => {
 			const url = opts.url.replace(/\/+$/, "");
 
 			console.log(chalk.blue("Validating credentials..."));
@@ -28,8 +33,12 @@ export function registerAuthCommand(program: Command) {
 					},
 				});
 
-				saveAuthConfig(url, opts.token);
-				console.log(chalk.green("Authenticated successfully."));
+				saveAuthConfig(url, opts.token, opts.profile);
+				console.log(
+					chalk.green(
+						`Authenticated successfully. Saved profile '${opts.profile}'.`,
+					),
+				);
 			} catch (error: any) {
 				console.error(chalk.red(`Authentication failed: ${error.message}`));
 				process.exit(1);
