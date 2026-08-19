@@ -98,8 +98,13 @@ export async function apiGet(
 	params?: Record<string, unknown>,
 ) {
 	const client = createClient();
+	// tRPC v11 servers require the GET `input` query param to be wrapped in a
+	// { json: ... } envelope (see https://trpc.io/docs/client/http-link). A
+	// bare object is deserialized as `undefined` and every GET call fails with
+	// HTTP 400. The envelope is also accepted by older tRPC v10 servers, so it
+	// works against all Dokploy server versions.
 	const query = params
-		? `?input=${encodeURIComponent(JSON.stringify(params))}`
+		? `?input=${encodeURIComponent(JSON.stringify({ json: params }))}`
 		: "";
 	const response = await client.get(`/trpc/${endpoint}${query}`);
 	return response.data?.result?.data?.json ?? response.data;
