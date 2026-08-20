@@ -3,7 +3,7 @@
 
 import type { Command } from "commander";
 import chalk from "chalk";
-import { apiPost, apiGet } from "../client.js";
+import { apiPost, apiGet, apiPostForm } from "../client.js";
 
 function printOutput(data: unknown) {
 	if (data === null || data === undefined) {
@@ -409,12 +409,14 @@ export function registerGeneratedCommands(program: Command) {
 	g_application
 		.command('drop-deployment')
 		.description('application dropDeployment')
-		
+		.requiredOption('--applicationId <value>', 'applicationId')
+		.requiredOption('--zip <value>', 'zip')
+		.option('--dropBuildPath <value>', 'dropBuildPath')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			const data = await apiPost("application.dropDeployment", opts);
+			const data = await apiPostForm("application.dropDeployment", opts, ["zip"]);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -2953,12 +2955,15 @@ export function registerGeneratedCommands(program: Command) {
 	g_docker
 		.command('upload-file-to-container')
 		.description('docker uploadFileToContainer')
-		
+		.requiredOption('--containerId <value>', 'containerId')
+		.requiredOption('--file <value>', 'file')
+		.requiredOption('--destinationPath <value>', 'destinationPath')
+		.option('--serverId <value>', 'serverId')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			const data = await apiPost("docker.uploadFileToContainer", opts);
+			const data = await apiPostForm("docker.uploadFileToContainer", opts, ["file"]);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
