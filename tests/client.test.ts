@@ -62,10 +62,16 @@ describe("readAuthConfig", () => {
 });
 
 describe("apiGet", () => {
+	const originalEnv = { ...process.env };
+
 	beforeEach(() => {
 		process.env.DOKPLOY_URL = "https://test.dokploy.com";
 		process.env.DOKPLOY_API_KEY = "test-key-123";
 		getSpy.mockReset().mockResolvedValue({ data: {} });
+	});
+
+	afterEach(() => {
+		process.env = { ...originalEnv };
 	});
 
 	it("should wrap GET params in the SuperJSON { json: ... } input envelope", async () => {
