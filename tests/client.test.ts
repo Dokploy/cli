@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { apiGet } from "../src/client.js";
 
 const getSpy = vi.hoisted(() => vi.fn());
 
@@ -7,7 +8,6 @@ vi.mock("axios", () => {
 		default: {
 			create: () => ({
 				get: getSpy,
-				post: () => Promise.resolve({ data: {} }),
 			}),
 		},
 	};
@@ -69,7 +69,6 @@ describe("apiGet", () => {
 	});
 
 	it("should wrap GET params in the SuperJSON { json: ... } input envelope", async () => {
-		const { apiGet } = await import("../src/client.js");
 		await apiGet("compose.one", { composeId: "abc123", limit: 1 });
 
 		expect(getSpy).toHaveBeenCalledWith(
@@ -80,14 +79,12 @@ describe("apiGet", () => {
 	});
 
 	it("should omit the input query string when params are undefined", async () => {
-		const { apiGet } = await import("../src/client.js");
 		await apiGet("project.all");
 
 		expect(getSpy).toHaveBeenCalledWith("/trpc/project.all");
 	});
 
 	it("should send an empty { json: {} } envelope when params are an empty object", async () => {
-		const { apiGet } = await import("../src/client.js");
 		await apiGet("project.all", {});
 
 		expect(getSpy).toHaveBeenCalledWith(
