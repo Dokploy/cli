@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -11,10 +12,16 @@ const packageJson = JSON.parse(
 	fs.readFileSync(path.join(ROOT, "package.json"), "utf8"),
 ) as { version: string };
 
+const testConfigDir = path.join(os.tmpdir(), `dokploy-cli-test-${process.pid}`);
+
 function run(...args: string[]): string {
 	return execFileSync("node", [CLI, ...args], {
 		encoding: "utf8",
-		env: { ...process.env, NO_COLOR: "1" },
+		env: {
+			...process.env,
+			NO_COLOR: "1",
+			DOKPLOY_CONFIG_DIR: testConfigDir,
+		},
 	});
 }
 
@@ -86,5 +93,85 @@ describe("CLI", () => {
 	it("should exit with 0 when no args provided", () => {
 		const output = run();
 		expect(output).toContain("Usage:");
+	});
+});
+
+describe("profiles command", () => {
+	beforeEach(() => {
+		fs.mkdirSync(testConfigDir, { recursive: true });
+	});
+
+	afterEach(() => {
+		fs.rmSync(testConfigDir, { recursive: true, force: true });
+	});
+
+	function writeConfig(
+		profiles: Record<string, { url: string; token: string }>,
+		currentProfile: string,
+	) {
+		fs.writeFileSync(
+			path.join(testConfigDir, "config.json"),
+			JSON.stringify({ currentProfile, profiles }, null, 2),
+		);
+	}
+
+	it("should list profiles", () => {
+		writeConfig(
+			{
+				prod: { url: "https://prod.example.com", token: "t" },
+				staging: { url: "https://staging.example.com", token: "t" },
+			},
+			"prod",
+		);
+		const output = run("profiles", "list");
+		expect(output).toContain("prod");
+		expect(output).toContain("staging");
+		expect(output).toContain("https://staging.example.com");
+	});
+
+	it("should switch the active profile", () => {
+		writeConfig(
+			{
+				prod: { url: "https://prod.example.com", token: "t" },
+				staging: { url: "https://staging.example.com", token: "t" },
+			},
+			"prod",
+		);
+		run("profiles", "use", "staging");
+		const output = run("profiles", "current");
+		expect(output.trim()).toBe("staging");
+	});
+
+	it("should show current profile", () => {
+		writeConfig(
+			{ prod: { url: "https://prod.example.com", token: "t" } },
+			"prod",
+		);
+		const output = run("profiles", "current");
+		expect(output.trim()).toBe("prod");
+	});
+
+	it("should remove a profile", () => {
+		writeConfig(
+			{
+				prod: { url: "https://prod.example.com", token: "t" },
+				staging: { url: "https://staging.example.com", token: "t" },
+			},
+			"prod",
+		);
+		run("profiles", "remove", "staging");
+		const output = run("profiles", "list");
+		expect(output).not.toContain("staging");
+		expect(output).toContain("prod");
+	});
+
+	it("should expose --profile global flag in help", () => {
+		const output = run("--help");
+		expect(output).toContain("--profile");
+	});
+
+	it("should expose profiles in root help", () => {
+		const output = run("--help");
+		expect(output).toContain("profiles");
 	});
 });

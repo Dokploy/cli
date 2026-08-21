@@ -34,6 +34,43 @@ DOKPLOY_API_KEY="YOUR_API_KEY"
 
 The CLI loads it automatically. Shell environment variables take priority over the `.env` file.
 
+### Multiple accounts (profiles)
+
+Manage several Dokploy instances or organizations with named profiles. Profiles are stored in `~/.dokploy/config.json` (override with `DOKPLOY_CONFIG_DIR`).
+
+```bash
+# Save credentials under a named profile
+dokploy auth --profile prod -u https://panel.dokploy.com -t PROD_API_KEY
+dokploy auth --profile staging -u https://staging.example.com -t STAGING_API_KEY
+
+# List profiles
+dokploy profiles list
+# * prod             https://panel.dokploy.com
+#   staging          https://staging.example.com
+
+# Switch the active profile
+dokploy profiles use staging
+
+# Show the active profile
+dokploy profiles current
+
+# Remove a profile
+dokploy profiles remove prod
+```
+
+Override the active profile per-command with the global `--profile` flag or the `DOKPLOY_PROFILE` env var:
+
+```bash
+dokploy --profile prod project list
+DOKPLOY_PROFILE=staging dokploy project list
+```
+
+Without a `--profile` flag, credentials resolve in this order:
+
+1. `DOKPLOY_URL` + `DOKPLOY_API_KEY` / `DOKPLOY_AUTH_TOKEN` env vars
+2. The active profile (set with `dokploy profiles use`, or the first profile saved)
+3. The `default` profile
+
 ## Usage
 
 ```bash
