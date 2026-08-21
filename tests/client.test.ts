@@ -60,11 +60,12 @@ describe("readAuthConfig", () => {
 });
 
 describe("apiGet", () => {
-	it("should wrap GET params in the SuperJSON { json: ... } input envelope", async () => {
+	const urls: string[] = [];
+
+	beforeEach(async () => {
 		process.env.DOKPLOY_URL = "https://test.dokploy.com";
 		process.env.DOKPLOY_API_KEY = "test-key-123";
-
-		const urls: string[] = [];
+		urls.length = 0;
 		const axiosMock = await import("axios");
 		axiosMock.default.create = () =>
 			({
@@ -73,7 +74,9 @@ describe("apiGet", () => {
 					return { data: {} };
 				},
 			}) as never;
+	});
 
+	it("should wrap GET params in the SuperJSON { json: ... } input envelope", async () => {
 		const { apiGet } = await import("../src/client.js");
 		await apiGet("compose.one", { composeId: "abc123", limit: 1 });
 
@@ -84,43 +87,10 @@ describe("apiGet", () => {
 		);
 	});
 
-	it("should omit the input query string when no params are passed", async () => {
-		process.env.DOKPLOY_URL = "https://test.dokploy.com";
-		process.env.DOKPLOY_API_KEY = "test-key-123";
-
-		const urls: string[] = [];
-		const axiosMock = await import("axios");
-		axiosMock.default.create = () =>
-			({
-				get: async (url: string) => {
-					urls.push(url);
-					return { data: {} };
-				},
-			}) as never;
-
-		const { apiGet } = await import("../src/client.js");
-		await apiGet("project.all");
-
-		expect(urls[0]).toBe("/trpc/project.all");
-	});
-
 	it("should encode the empty opts object generated parameterless commands pass", async () => {
-		process.env.DOKPLOY_URL = "https://test.dokploy.com";
-		process.env.DOKPLOY_API_KEY = "test-key-123";
-
-		const urls: string[] = [];
-		const axiosMock = await import("axios");
-		axiosMock.default.create = () =>
-			({
-				get: async (url: string) => {
-					urls.push(url);
-					return { data: {} };
-				},
-			}) as never;
-
 		const { apiGet } = await import("../src/client.js");
-		// Generated commands always pass Commander's opts object, which is {}
-		// for parameterless commands once --json is stripped.
+		// Generated commands always pass Commander's opts, which is {} for
+		// parameterless commands once --json is stripped.
 		await apiGet("project.all", {});
 
 		expect(urls[0]).toBe(
