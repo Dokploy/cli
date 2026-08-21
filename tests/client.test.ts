@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const getSpy = vi.hoisted(() => vi.fn());
+
 vi.mock("axios", () => {
 	return {
 		default: {
 			create: () => ({
-				get: () => Promise.resolve({ data: {} }),
+				get: getSpy,
 				post: () => Promise.resolve({ data: {} }),
 			}),
 		},
@@ -60,40 +62,35 @@ describe("readAuthConfig", () => {
 });
 
 describe("apiGet", () => {
-	const urls: string[] = [];
-
-	beforeEach(async () => {
+	beforeEach(() => {
 		process.env.DOKPLOY_URL = "https://test.dokploy.com";
 		process.env.DOKPLOY_API_KEY = "test-key-123";
-		urls.length = 0;
-		const axiosMock = await import("axios");
-		axiosMock.default.create = () =>
-			({
-				get: async (url: string) => {
-					urls.push(url);
-					return { data: {} };
-				},
-			}) as never;
+		getSpy.mockReset().mockResolvedValue({ data: {} });
 	});
 
 	it("should wrap GET params in the SuperJSON { json: ... } input envelope", async () => {
 		const { apiGet } = await import("../src/client.js");
 		await apiGet("compose.one", { composeId: "abc123", limit: 1 });
 
-		expect(urls[0]).toBe(
+		expect(getSpy).toHaveBeenCalledWith(
 			`/trpc/compose.one?input=${encodeURIComponent(
 				JSON.stringify({ json: { composeId: "abc123", limit: 1 } }),
 			)}`,
 		);
 	});
 
-	it("should encode the empty opts object generated parameterless commands pass", async () => {
+	it("should omit the input query string when params are undefined", async () => {
 		const { apiGet } = await import("../src/client.js");
-		// Generated commands always pass Commander's opts, which is {} for
-		// parameterless commands once --json is stripped.
+		await apiGet("project.all");
+
+		expect(getSpy).toHaveBeenCalledWith("/trpc/project.all");
+	});
+
+	it("should send an empty { json: {} } envelope when params are an empty object", async () => {
+		const { apiGet } = await import("../src/client.js");
 		await apiGet("project.all", {});
 
-		expect(urls[0]).toBe(
+		expect(getSpy).toHaveBeenCalledWith(
 			`/trpc/project.all?input=${encodeURIComponent(JSON.stringify({ json: {} }))}`,
 		);
 	});

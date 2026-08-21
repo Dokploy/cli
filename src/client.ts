@@ -98,8 +98,7 @@ export async function apiGet(
 	params?: Record<string, unknown>,
 ) {
 	const client = createClient();
-	// The server runs tRPC with the SuperJSON transformer, so GET input must
-	// use its serialized { json: ... } envelope; a bare object gets a 400.
+	// tRPC SuperJSON input uses the { json: ... } envelope.
 	const query = params
 		? `?input=${encodeURIComponent(JSON.stringify({ json: params }))}`
 		: "";
