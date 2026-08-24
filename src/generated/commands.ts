@@ -348,8 +348,9 @@ export function registerGeneratedCommands(program: Command) {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			await apiPost("application.create", opts);
-			const data = { status: "created" };
+			const response = await apiPost("application.create", opts);
+			if (typeof response?.applicationId !== "string" || response.applicationId.length === 0) throw new Error("application.create response missing applicationId");
+			const data = { applicationId: response.applicationId, status: "created" };
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {

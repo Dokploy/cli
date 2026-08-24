@@ -14,13 +14,13 @@ const cases = [
 		action: "create",
 		arguments: ["--name", "app", "--environmentId", "env-1"],
 		expectedInput: { environmentId: "env-1", name: "app" },
-		expectedOutput: { status: "created" },
+		expectedOutput: { applicationId: "app-1", status: "created" },
 	},
 	{
 		action: "create",
 		arguments: ["--name", "app", "--environmentId", "env-1", "--json"],
 		expectedInput: { environmentId: "env-1", name: "app" },
-		expectedOutput: { status: "created" },
+		expectedOutput: { applicationId: "app-1", status: "created" },
 	},
 	{
 		action: "move",
@@ -139,4 +139,42 @@ describe("application lifecycle output", () => {
 		).rejects.toThrow("mutation failed");
 		expect(output).toEqual([]);
 	});
+
+	it.each([
+		{
+			caseName: "missing",
+			response: { refreshToken: "must-not-appear" },
+		},
+		{
+			caseName: "not a string",
+			response: {
+				applicationId: { refreshToken: "must-not-appear" },
+			},
+		},
+	])(
+		"should fail closed when create identity is $caseName",
+		async ({ response }) => {
+			postSpy.mockResolvedValue(response);
+			const output: string[] = [];
+			vi.spyOn(console, "log").mockImplementation((value) =>
+				output.push(String(value)),
+			);
+			const program = new Command();
+			registerGeneratedCommands(program);
+
+			await expect(
+				program.parseAsync([
+					"node",
+					"dokploy",
+					"application",
+					"create",
+					"--name",
+					"app",
+					"--environmentId",
+					"env-1",
+				]),
+			).rejects.toThrow("application.create response missing applicationId");
+			expect(output).toEqual([]);
+		},
+	);
 });

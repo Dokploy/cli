@@ -71,7 +71,10 @@ interface CommandInfo {
 	description: string;
 	options: OptionInfo[];
 	outputProjection?: {
-		identifier?: "applicationId";
+		identifier?: {
+			name: "applicationId";
+			source: "request" | "response";
+		};
 		status: "created" | "deleted" | "moved" | "started" | "stopped";
 	};
 }
@@ -145,15 +148,30 @@ function camelToKebab(s: string): string {
 function outputProjection(endpoint: string): CommandInfo["outputProjection"] {
 	switch (endpoint) {
 		case "application.create":
-			return { status: "created" };
+			return {
+				identifier: { name: "applicationId", source: "response" },
+				status: "created",
+			};
 		case "application.delete":
-			return { identifier: "applicationId", status: "deleted" };
+			return {
+				identifier: { name: "applicationId", source: "request" },
+				status: "deleted",
+			};
 		case "application.move":
-			return { identifier: "applicationId", status: "moved" };
+			return {
+				identifier: { name: "applicationId", source: "request" },
+				status: "moved",
+			};
 		case "application.start":
-			return { identifier: "applicationId", status: "started" };
+			return {
+				identifier: { name: "applicationId", source: "request" },
+				status: "started",
+			};
 		case "application.stop":
-			return { identifier: "applicationId", status: "stopped" };
+			return {
+				identifier: { name: "applicationId", source: "request" },
+				status: "stopped",
+			};
 	}
 }
 
@@ -228,11 +246,16 @@ function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 	const apiCall = cmd.method === "post"
 		? `await apiPost("${cmd.endpoint}", opts)`
 		: `await apiGet("${cmd.endpoint}", opts)`;
-	const projectionFields = cmd.outputProjection?.identifier
-		? `${cmd.outputProjection.identifier}: opts.${cmd.outputProjection.identifier}, `
+	const identifier = cmd.outputProjection?.identifier;
+	const responseVariable = identifier?.source === "response" ? "response" : "";
+	const projectionCall = responseVariable
+		? `const ${responseVariable} = ${apiCall};\n\t\t\tif (typeof ${responseVariable}?.${identifier.name} !== "string" || ${responseVariable}.${identifier.name}.length === 0) throw new Error("${cmd.endpoint} response missing ${identifier.name}");`
+		: `${apiCall};`;
+	const projectionFields = identifier
+		? `${identifier.name}: ${responseVariable || "opts"}.${identifier.name}, `
 		: "";
 	const responseHandling = cmd.outputProjection
-		? `${apiCall};\n\t\t\tconst data = { ${projectionFields}status: "${cmd.outputProjection.status}" };`
+		? `${projectionCall}\n\t\t\tconst data = { ${projectionFields}status: "${cmd.outputProjection.status}" };`
 		: `const data = ${apiCall};`;
 
 	const escapedDesc = cmd.description.replace(/'/g, "\\'");
