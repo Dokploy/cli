@@ -70,6 +70,10 @@ interface CommandInfo {
 	method: "get" | "post";
 	description: string;
 	options: OptionInfo[];
+	outputProjection?: {
+		identifier?: "applicationId";
+		status: "created" | "deleted" | "moved" | "started" | "stopped";
+	};
 }
 
 interface OptionInfo {
@@ -138,6 +142,21 @@ function camelToKebab(s: string): string {
 	return s.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
+function outputProjection(endpoint: string): CommandInfo["outputProjection"] {
+	switch (endpoint) {
+		case "application.create":
+			return { status: "created" };
+		case "application.delete":
+			return { identifier: "applicationId", status: "deleted" };
+		case "application.move":
+			return { identifier: "applicationId", status: "moved" };
+		case "application.start":
+			return { identifier: "applicationId", status: "started" };
+		case "application.stop":
+			return { identifier: "applicationId", status: "stopped" };
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Parse spec → CommandInfo[]
 // ---------------------------------------------------------------------------
@@ -165,6 +184,7 @@ function parseSpec(spec: OpenAPISpec): CommandInfo[] {
 				method: method as "get" | "post",
 				description: op.summary ?? op.description ?? `${group} ${action}`,
 				options,
+				outputProjection: outputProjection(endpoint),
 			});
 		}
 	}
@@ -208,6 +228,12 @@ function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 	const apiCall = cmd.method === "post"
 		? `await apiPost("${cmd.endpoint}", opts)`
 		: `await apiGet("${cmd.endpoint}", opts)`;
+	const projectionFields = cmd.outputProjection?.identifier
+		? `${cmd.outputProjection.identifier}: opts.${cmd.outputProjection.identifier}, `
+		: "";
+	const responseHandling = cmd.outputProjection
+		? `${apiCall};\n\t\t\tconst data = { ${projectionFields}status: "${cmd.outputProjection.status}" };`
+		: `const data = ${apiCall};`;
 
 	const escapedDesc = cmd.description.replace(/'/g, "\\'");
 
@@ -220,7 +246,7 @@ function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 ${coercions}
-			const data = ${apiCall};
+			${responseHandling}
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {

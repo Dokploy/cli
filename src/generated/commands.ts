@@ -348,7 +348,8 @@ export function registerGeneratedCommands(program: Command) {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			const data = await apiPost("application.create", opts);
+			await apiPost("application.create", opts);
+			const data = { status: "created" };
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -364,7 +365,8 @@ export function registerGeneratedCommands(program: Command) {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			const data = await apiPost("application.delete", opts);
+			await apiPost("application.delete", opts);
+			const data = { applicationId: opts.applicationId, status: "deleted" };
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -463,7 +465,8 @@ export function registerGeneratedCommands(program: Command) {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			const data = await apiPost("application.move", opts);
+			await apiPost("application.move", opts);
+			const data = { applicationId: opts.applicationId, status: "moved" };
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -807,7 +810,8 @@ export function registerGeneratedCommands(program: Command) {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			const data = await apiPost("application.start", opts);
+			await apiPost("application.start", opts);
+			const data = { applicationId: opts.applicationId, status: "started" };
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -823,7 +827,8 @@ export function registerGeneratedCommands(program: Command) {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 
-			const data = await apiPost("application.stop", opts);
+			await apiPost("application.stop", opts);
+			const data = { applicationId: opts.applicationId, status: "stopped" };
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
