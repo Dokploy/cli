@@ -3414,7 +3414,7 @@ export function registerGeneratedCommands(program: Command) {
 		.command('validate-domain')
 		.description('domain validateDomain')
 		.requiredOption('--domain <value>', 'domain')
-		.option('--serverIp <value>', 'serverIp')
+		.option('--serverId <value>', 'serverId')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
@@ -5775,6 +5775,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("network.remove", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_network
+		.command('resync')
+		.description('network resync')
+		.requiredOption('--networkId <value>', 'networkId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("network.resync", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
