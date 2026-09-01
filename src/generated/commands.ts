@@ -2515,16 +2515,18 @@ export function registerGeneratedCommands(program: Command) {
 	g_dnsProvider
 		.command('create-record')
 		.description('dnsProvider createRecord')
-		.requiredOption('--type <value>', 'type (A, CNAME)')
+		.requiredOption('--type <value>', 'type (A, AAAA, CNAME, MX, TXT, NS, SRV, CAA, PTR)')
 		.requiredOption('--name <value>', 'name')
 		.requiredOption('--content <value>', 'content')
 		.option('--ttl <value>', 'ttl')
+		.option('--proxied', 'proxied')
 		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
 		.requiredOption('--zoneId <value>', 'zoneId')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["ttl"] != null) opts["ttl"] = Number(opts["ttl"]);
+			if (opts["proxied"] != null) opts["proxied"] = opts["proxied"] === true || opts["proxied"] === "true";
 			const data = await apiPost("dnsProvider.createRecord", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -2654,10 +2656,11 @@ export function registerGeneratedCommands(program: Command) {
 	g_dnsProvider
 		.command('update-record')
 		.description('dnsProvider updateRecord')
-		.requiredOption('--type <value>', 'type (A, CNAME)')
+		.requiredOption('--type <value>', 'type (A, AAAA, CNAME, MX, TXT, NS, SRV, CAA, PTR)')
 		.requiredOption('--name <value>', 'name')
 		.requiredOption('--content <value>', 'content')
 		.option('--ttl <value>', 'ttl')
+		.option('--proxied', 'proxied')
 		.requiredOption('--dnsProviderId <value>', 'dnsProviderId')
 		.requiredOption('--zoneId <value>', 'zoneId')
 		.requiredOption('--recordId <value>', 'recordId')
@@ -2665,6 +2668,7 @@ export function registerGeneratedCommands(program: Command) {
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["ttl"] != null) opts["ttl"] = Number(opts["ttl"]);
+			if (opts["proxied"] != null) opts["proxied"] = opts["proxied"] === true || opts["proxied"] === "true";
 			const data = await apiPost("dnsProvider.updateRecord", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -5931,6 +5935,7 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--name <value>', 'name')
 		.requiredOption('--appDeploy', 'appDeploy')
 		.requiredOption('--dockerCleanup', 'dockerCleanup')
+		.requiredOption('--serverThreshold', 'serverThreshold')
 		.requiredOption('--serverUrl <value>', 'serverUrl')
 		.requiredOption('--appToken <value>', 'appToken')
 		.requiredOption('--priority <value>', 'priority')
@@ -5945,6 +5950,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dokployRestart"] != null) opts["dokployRestart"] = opts["dokployRestart"] === true || opts["dokployRestart"] === "true";
 			if (opts["appDeploy"] != null) opts["appDeploy"] = opts["appDeploy"] === true || opts["appDeploy"] === "true";
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
+			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.createGotify", opts);
@@ -6032,6 +6038,7 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--name <value>', 'name')
 		.requiredOption('--appDeploy', 'appDeploy')
 		.requiredOption('--dockerCleanup', 'dockerCleanup')
+		.requiredOption('--serverThreshold', 'serverThreshold')
 		.requiredOption('--serverUrl <value>', 'serverUrl')
 		.requiredOption('--topic <value>', 'topic')
 		.requiredOption('--accessToken <value>', 'accessToken')
@@ -6046,6 +6053,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dokployRestart"] != null) opts["dokployRestart"] = opts["dokployRestart"] === true || opts["dokployRestart"] === "true";
 			if (opts["appDeploy"] != null) opts["appDeploy"] = opts["appDeploy"] === true || opts["appDeploy"] === "true";
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
+			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			const data = await apiPost("notification.createNtfy", opts);
 			if (jsonOutput) {
@@ -6642,6 +6650,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--name <value>', 'name')
 		.option('--appDeploy', 'appDeploy')
 		.option('--dockerCleanup', 'dockerCleanup')
+		.option('--serverThreshold', 'serverThreshold')
 		.option('--serverUrl <value>', 'serverUrl')
 		.option('--appToken <value>', 'appToken')
 		.option('--priority <value>', 'priority')
@@ -6659,6 +6668,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dokployRestart"] != null) opts["dokployRestart"] = opts["dokployRestart"] === true || opts["dokployRestart"] === "true";
 			if (opts["appDeploy"] != null) opts["appDeploy"] = opts["appDeploy"] === true || opts["appDeploy"] === "true";
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
+			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.updateGotify", opts);
@@ -6752,6 +6762,7 @@ export function registerGeneratedCommands(program: Command) {
 		.option('--name <value>', 'name')
 		.option('--appDeploy', 'appDeploy')
 		.option('--dockerCleanup', 'dockerCleanup')
+		.option('--serverThreshold', 'serverThreshold')
 		.option('--serverUrl <value>', 'serverUrl')
 		.option('--topic <value>', 'topic')
 		.option('--accessToken <value>', 'accessToken')
@@ -6769,6 +6780,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dokployRestart"] != null) opts["dokployRestart"] = opts["dokployRestart"] === true || opts["dokployRestart"] === "true";
 			if (opts["appDeploy"] != null) opts["appDeploy"] = opts["appDeploy"] === true || opts["appDeploy"] === "true";
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
+			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			const data = await apiPost("notification.updateNtfy", opts);
 			if (jsonOutput) {
@@ -8966,6 +8978,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.getServerTime", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_server
+		.command('get-services')
+		.description('server getServices')
+		.requiredOption('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("server.getServices", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
