@@ -391,6 +391,23 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_application
+		.command('deploy-nginx-quickstart')
+		.description('application deployNginxQuickstart')
+		.requiredOption('--environmentId <value>', 'environmentId')
+		.option('--serverId <value>', 'serverId')
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("application.deployNginxQuickstart", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_application
 		.command('disconnect-git-provider')
 		.description('application disconnectGitProvider')
 		.requiredOption('--applicationId <value>', 'applicationId')
@@ -1617,10 +1634,11 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--composeId <value>', 'composeId')
 		.option('--title <value>', 'title')
 		.option('--description <value>', 'description')
+		.option('--freshVolumes', 'freshVolumes')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
-
+			if (opts["freshVolumes"] != null) opts["freshVolumes"] = opts["freshVolumes"] === true || opts["freshVolumes"] === "true";
 			const data = await apiPost("compose.deploy", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -1923,10 +1941,11 @@ export function registerGeneratedCommands(program: Command) {
 		.requiredOption('--composeId <value>', 'composeId')
 		.option('--title <value>', 'title')
 		.option('--description <value>', 'description')
+		.option('--freshVolumes', 'freshVolumes')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
-
+			if (opts["freshVolumes"] != null) opts["freshVolumes"] = opts["freshVolumes"] === true || opts["freshVolumes"] === "true";
 			const data = await apiPost("compose.redeploy", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
@@ -7918,6 +7937,22 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_project
+		.command('complete-onboarding')
+		.description('project completeOnboarding')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("project.completeOnboarding", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_project
 		.command('create')
 		.description('project create')
 		.requiredOption('--name <value>', 'name')
@@ -7966,6 +8001,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("project.homeStats", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_project
+		.command('onboarding-status')
+		.description('project onboardingStatus')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("project.onboardingStatus", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
@@ -10380,6 +10431,22 @@ export function registerGeneratedCommands(program: Command) {
 		});
 
 	g_stripe
+		.command('get-billing-status')
+		.description('stripe getBillingStatus')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiGet("stripe.getBillingStatus", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_stripe
 		.command('get-current-plan')
 		.description('stripe getCurrentPlan')
 		
@@ -10420,6 +10487,22 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("stripe.getProducts", opts);
+			if (jsonOutput) {
+				console.log(JSON.stringify(data, null, 2));
+			} else {
+				printOutput(data);
+			}
+		});
+
+	g_stripe
+		.command('start-free-trial')
+		.description('stripe startFreeTrial')
+		
+		.option('--json', 'Output raw JSON')
+		.action(async (opts: Record<string, any>) => {
+			const jsonOutput = opts.json; delete opts.json;
+
+			const data = await apiPost("stripe.startFreeTrial", opts);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {
