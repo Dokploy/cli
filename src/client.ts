@@ -24,7 +24,10 @@ function loadEnvFile(): void {
 		const eqIndex = trimmed.indexOf("=");
 		if (eqIndex === -1) continue;
 		const key = trimmed.slice(0, eqIndex).trim();
-		const value = trimmed.slice(eqIndex + 1).trim().replace(/^["']|["']$/g, "");
+		const value = trimmed
+			.slice(eqIndex + 1)
+			.trim()
+			.replace(/^["']|["']$/g, "");
 		if (!process.env[key]) {
 			process.env[key] = value;
 		}
@@ -90,6 +93,31 @@ export async function apiPost(
 		`/trpc/${endpoint}`,
 		data ? { json: data } : undefined,
 	);
+	return response.data?.result?.data?.json ?? response.data;
+}
+
+export async function apiPostForm(
+	endpoint: string,
+	data: Record<string, unknown>,
+	fileFields: string[],
+) {
+	const client = createClient();
+	const formData: Record<string, unknown> = {};
+
+	for (const [key, value] of Object.entries(data)) {
+		if (value === undefined) continue;
+		if (fileFields.includes(key)) {
+			const filePath = String(value);
+			if (!fs.existsSync(filePath)) {
+				throw new Error(`File not found: ${filePath}`);
+			}
+			formData[key] = fs.createReadStream(filePath);
+		} else {
+			formData[key] = value;
+		}
+	}
+
+	const response = await client.postForm(`/trpc/${endpoint}`, formData);
 	return response.data?.result?.data?.json ?? response.data;
 }
 
