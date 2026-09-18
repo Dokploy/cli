@@ -10497,7 +10497,7 @@ export function registerGeneratedCommands(program: Command) {
 	g_stripe
 		.command('start-free-trial')
 		.description('stripe startFreeTrial')
-		
+		.requiredOption('--tier <value>', 'tier (hobby, startup)')
 		.option('--json', 'Output raw JSON')
 		.action(async (opts: Record<string, any>) => {
 			const jsonOutput = opts.json; delete opts.json;
