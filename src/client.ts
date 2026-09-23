@@ -24,7 +24,10 @@ function loadEnvFile(): void {
 		const eqIndex = trimmed.indexOf("=");
 		if (eqIndex === -1) continue;
 		const key = trimmed.slice(0, eqIndex).trim();
-		const value = trimmed.slice(eqIndex + 1).trim().replace(/^["']|["']$/g, "");
+		const value = trimmed
+			.slice(eqIndex + 1)
+			.trim()
+			.replace(/^["']|["']$/g, "");
 		if (!process.env[key]) {
 			process.env[key] = value;
 		}
@@ -86,11 +89,8 @@ export async function apiPost(
 	data?: Record<string, unknown>,
 ) {
 	const client = createClient();
-	const response = await client.post(
-		`/trpc/${endpoint}`,
-		data ? { json: data } : undefined,
-	);
-	return response.data?.result?.data?.json ?? response.data;
+	const response = await client.post(`/${endpoint}`, data);
+	return response.data;
 }
 
 export async function apiGet(
@@ -98,9 +98,6 @@ export async function apiGet(
 	params?: Record<string, unknown>,
 ) {
 	const client = createClient();
-	const query = params
-		? `?input=${encodeURIComponent(JSON.stringify(params))}`
-		: "";
-	const response = await client.get(`/trpc/${endpoint}${query}`);
-	return response.data?.result?.data?.json ?? response.data;
+	const response = await client.get(`/${endpoint}`, { params });
+	return response.data;
 }

@@ -1,5 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const axiosMocks = vi.hoisted(() => ({
+	create: vi.fn(),
+	get: vi.fn(),
+	post: vi.fn(),
+}));
+
+vi.mock("axios", () => ({
+	default: {
+		create: axiosMocks.create,
+	},
+}));
+
 describe("readAuthConfig", () => {
 	const originalEnv = { ...process.env };
 
@@ -52,5 +64,52 @@ describe("saveAuthConfig", () => {
 	it("should write config with correct structure", async () => {
 		const { saveAuthConfig } = await import("../src/client.js");
 		expect(typeof saveAuthConfig).toBe("function");
+	});
+});
+
+describe("REST API client", () => {
+	beforeEach(() => {
+		process.env.DOKPLOY_URL = "https://test.dokploy.com";
+		process.env.DOKPLOY_API_KEY = "test-key";
+		axiosMocks.create.mockReturnValue({
+			get: axiosMocks.get,
+			post: axiosMocks.post,
+		});
+	});
+
+	afterEach(() => {
+		delete process.env.DOKPLOY_URL;
+		delete process.env.DOKPLOY_API_KEY;
+		vi.clearAllMocks();
+	});
+
+	it("sends GET parameters to the REST endpoint", async () => {
+		const responseData = { projectId: "project-1" };
+		axiosMocks.get.mockResolvedValue({ data: responseData });
+
+		const { apiGet } = await import("../src/client.js");
+		const result = await apiGet("project.one", {
+			projectId: "project with spaces",
+		});
+
+		expect(axiosMocks.get).toHaveBeenCalledWith("/project.one", {
+			params: { projectId: "project with spaces" },
+		});
+		expect(result).toEqual(responseData);
+	});
+
+	it("sends POST data directly to the REST endpoint", async () => {
+		const requestData = { name: "My Project" };
+		const responseData = { projectId: "project-1", ...requestData };
+		axiosMocks.post.mockResolvedValue({ data: responseData });
+
+		const { apiPost } = await import("../src/client.js");
+		const result = await apiPost("project.create", requestData);
+
+		expect(axiosMocks.post).toHaveBeenCalledWith(
+			"/project.create",
+			requestData,
+		);
+		expect(result).toEqual(responseData);
 	});
 });
