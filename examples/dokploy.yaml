@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Project
+name: my-project
+description: My application stack
+
+environments:
+  - name: production
+    applications:
+      - name: web-api
+        gitProvider: my-github-app
+        sourceType: github
+        repository: api
+        owner: my-org
+        branch: main
+        buildType: dockerfile
+        dockerfile: Dockerfile
+        replicas: 1
+        autoDeploy: true
+        domains:
+          - host: api.example.com
+            port: 3000
+            https: true
+            certificateType: letsencrypt
+        mounts:
+          - type: volume
+            mountPath: /app/data
+            volumeName: api-data
+        schedules:
+          - name: cleanup
+            cronExpression: "0 2 * * *"
+            command: rm -rf /tmp/cache
+
+    compose:
+      - name: monitoring
+        sourceType: raw
+        composeFile: |
+          services:
+            uptime:
+              image: louislam/uptime-kuma:1
+
+    postgres:
+      - name: main-db
+        dockerImage: postgres:16
+        databaseName: myapp
+        databaseUser: admin
+        databasePassword: change-me
+
+    redis:
+      - name: cache
+        dockerImage: redis:7
+        databasePassword: change-me
