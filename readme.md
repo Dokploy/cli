@@ -78,6 +78,30 @@ dokploy application --help
 dokploy application deploy --help
 ```
 
+## Declarative config (`apply` / `export`)
+
+Describe a project in a `dokploy.yaml` and let the CLI create or update it. Resources are matched by name, so the same file can be applied repeatedly.
+
+```bash
+# Snapshot an existing project
+dokploy export -p my-project -f dokploy.yaml
+
+# Preview what would change
+dokploy apply -f dokploy.yaml --dry-run --verbose
+
+# Apply it
+dokploy apply -f dokploy.yaml
+```
+
+See [`examples/dokploy.yaml`](examples/dokploy.yaml) for the format. It covers applications, compose services, postgres, mysql, mariadb, mongo and redis, plus their domains, ports, mounts, redirects, basic-auth security and schedules.
+
+- Only the fields you write are enforced; everything else is left as it is on the server.
+- Nothing is ever deleted. Remove resources in the dashboard.
+- `serverName` and `gitProvider` refer to a remote server and a git provider by their names in Dokploy.
+- Database credentials (`databaseName`, `databaseUser`, `databasePassword`, `databaseRootPassword`) are only used when creating a database; change them later from the dashboard. `export` never writes database or basic-auth passwords.
+- Environment variables are not part of the file; manage them with `dokploy application save-environment` and its equivalents.
+- Unknown keys are rejected, so typos fail instead of being ignored.
+
 ## Available command groups
 
 | Group | Commands | Group | Commands |
