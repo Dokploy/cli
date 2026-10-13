@@ -19,6 +19,8 @@ describe("formatChanges", () => {
 				config: {},
 				changes: {
 					password: { from: "old-secret", to: "new-secret" },
+					env: { from: "TOKEN=old-secret", to: "TOKEN=new-secret" },
+					buildArgs: { from: "NPM=secret-1", to: "NPM=secret-2" },
 					username: { from: "admin", to: "root" },
 				},
 			},

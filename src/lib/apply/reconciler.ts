@@ -15,6 +15,7 @@ import {
 	omit,
 	pick,
 	requiredOnCreate,
+	SCOPE_FIELDS,
 	SERVICE_TYPES,
 	SERVICES,
 	type ServiceType,
@@ -107,7 +108,7 @@ async function planEnvironment(
 	const action = diffResource(
 		"environment",
 		environment.name,
-		pick(environment, ["name", "description"]),
+		pick(environment, SCOPE_FIELDS),
 		remote,
 	);
 	const children = await Promise.all(
@@ -131,15 +132,27 @@ const missingOnCreate = (action: Action): string[] => {
 					(field) => action.config[field] === undefined,
 				)
 			: [];
-	return [
-		...(missing.length > 0
-			? [
-					`${action.resourceType} "${action.name}" needs ${missing.join(", ")} to be created`,
-				]
-			: []),
-		...(action.children ?? []).flatMap(missingOnCreate),
-	];
+	return missing.length > 0
+		? [
+				`${action.resourceType} "${action.name}" needs ${missing.join(", ")} to be created`,
+			]
+		: [];
 };
+
+const movedServer = (action: Action): string[] =>
+	action.type !== "create" &&
+	action.config.serverId !== undefined &&
+	action.config.serverId !== action.remote?.serverId
+		? [
+				`${action.resourceType} "${action.name}" runs on a different server; serverName only applies when creating it`,
+			]
+		: [];
+
+const planErrors = (action: Action): string[] => [
+	...missingOnCreate(action),
+	...movedServer(action),
+	...(action.children ?? []).flatMap(planErrors),
+];
 
 export async function buildPlan(config: DokployConfig): Promise<ApplyPlan> {
 	const lookups = await loadLookups(
@@ -156,7 +169,7 @@ export async function buildPlan(config: DokployConfig): Promise<ApplyPlan> {
 	const project = diffResource(
 		"project",
 		config.name,
-		pick(config, ["name", "description"]),
+		pick(config, SCOPE_FIELDS),
 		remoteProject,
 	);
 	const environments = await Promise.all(
@@ -165,9 +178,9 @@ export async function buildPlan(config: DokployConfig): Promise<ApplyPlan> {
 		),
 	);
 
-	const missing = environments.flatMap(missingOnCreate);
-	if (missing.length > 0) {
-		throw new Error(`Cannot apply:\n  ${missing.join("\n  ")}`);
+	const errors = environments.flatMap(planErrors);
+	if (errors.length > 0) {
+		throw new Error(`Cannot apply:\n  ${errors.join("\n  ")}`);
 	}
 	return { project, environments };
 }

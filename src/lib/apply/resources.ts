@@ -35,11 +35,17 @@ interface ChildSpec {
 	parent: (parentType: ServiceType, parentId: string) => Fields;
 }
 
-export const SECRET_FIELDS = [
+export const SCOPE_FIELDS = ["name", "description", "env"];
+
+export const PASSWORD_FIELDS = [
 	"databasePassword",
 	"databaseRootPassword",
 	"password",
 ];
+
+export const ENV_FIELDS = ["env", "buildArgs", "buildSecrets"];
+
+export const SECRET_FIELDS = [...PASSWORD_FIELDS, ...ENV_FIELDS];
 
 const credentials = [
 	"databaseName",

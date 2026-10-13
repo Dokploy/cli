@@ -2,11 +2,18 @@ apiVersion: v1
 kind: Project
 name: my-project
 description: My application stack
+env: |
+  LOG_LEVEL=info
 
 environments:
   - name: production
+    env: |
+      API_URL=https://api.example.com
     applications:
       - name: web-api
+        env: |
+          LOG_LEVEL=${{project.LOG_LEVEL}}
+          PUBLIC_URL=${{environment.API_URL}}
         gitProvider: my-github-app
         sourceType: github
         repository: api

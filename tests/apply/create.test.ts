@@ -280,6 +280,109 @@ describe("apply to an empty server", () => {
 		});
 	});
 
+	it("applies env everywhere and fills in the auto-created production environment", async () => {
+		vi.mocked(apiPost).mockImplementation(async (endpoint, body) =>
+			endpoint === "environment.create"
+				? { environmentId: "env-staging", ...body }
+				: (created[endpoint] ?? {}),
+		);
+
+		await executePlan(
+			await buildPlan(
+				parseConfig(`
+apiVersion: v1
+kind: Project
+name: fresh
+env: SHARED=1
+environments:
+  - name: production
+    description: live
+    env: API_URL=https://api.example.com
+    applications:
+      - name: web
+        env: TOKEN=from-vault
+        buildSecrets: NPM_TOKEN=x
+    redis:
+      - name: cache
+        databasePassword: pw
+        env: MAXMEMORY=64mb
+  - name: staging
+    description: preview
+    env: API_URL=https://staging.example.com
+`),
+			),
+		);
+
+		expect(vi.mocked(apiPost).mock.calls).toEqual([
+			["project.create", { name: "fresh", env: "SHARED=1" }],
+			[
+				"environment.update",
+				{
+					environmentId: "env-prod",
+					description: "live",
+					env: "API_URL=https://api.example.com",
+				},
+			],
+			["application.create", { name: "web", environmentId: "env-prod" }],
+			[
+				"application.update",
+				{
+					applicationId: "app1",
+					env: "TOKEN=from-vault",
+					buildSecrets: "NPM_TOKEN=x",
+				},
+			],
+			[
+				"redis.create",
+				{ name: "cache", databasePassword: "pw", environmentId: "env-prod" },
+			],
+			["redis.update", { redisId: "r1", env: "MAXMEMORY=64mb" }],
+			[
+				"environment.create",
+				{ name: "staging", description: "preview", projectId: "p1" },
+			],
+			[
+				"environment.update",
+				{
+					environmentId: "env-staging",
+					env: "API_URL=https://staging.example.com",
+				},
+			],
+		]);
+	});
+
+	it("refuses to move an existing service to another server", async () => {
+		serve({
+			"project.all": () => [{ projectId: "p1", name: "fresh" }],
+			"project.one": () => ({
+				projectId: "p1",
+				name: "fresh",
+				environments: [
+					{
+						environmentId: "env-prod",
+						name: "production",
+						applications: [{ applicationId: "a1", name: "web" }],
+					},
+				],
+			}),
+			"application.one": () => ({
+				applicationId: "a1",
+				name: "web",
+				serverId: null,
+			}),
+		});
+
+		await expect(
+			buildPlan(
+				parseConfig(
+					"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n        serverName: worker-1\n",
+				),
+			),
+		).rejects.toThrow(
+			'application "web" runs on a different server; serverName only applies when creating it',
+		);
+	});
+
 	it("updates project and environment descriptions", async () => {
 		serve({
 			"project.all": () => [{ projectId: "p1", name: "fresh" }],

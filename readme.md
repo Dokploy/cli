@@ -86,6 +86,9 @@ Describe a project in a `dokploy.yaml` and let the CLI create or update it. Reso
 # Snapshot an existing project
 dokploy export -p my-project -f dokploy.yaml
 
+# Include env, buildArgs and buildSecrets in the snapshot
+dokploy export -p my-project -f dokploy.yaml --include-env
+
 # Preview what would change
 dokploy apply -f dokploy.yaml --dry-run --verbose
 
@@ -97,9 +100,9 @@ See [`examples/dokploy.yaml`](examples/dokploy.yaml) for the format. It covers a
 
 - Only the fields you write are enforced; everything else is left as it is on the server.
 - Nothing is ever deleted. Remove resources in the dashboard.
-- `serverName` and `gitProvider` refer to a remote server and a git provider by their names in Dokploy.
+- `serverName` and `gitProvider` refer to a remote server and a git provider by their names in Dokploy. `serverName` only applies when a service is created; pointing an existing service at another server fails the plan.
 - Database credentials (`databaseName`, `databaseUser`, `databasePassword`, `databaseRootPassword`) are only used when creating a database; change them later from the dashboard. `export` never writes database or basic-auth passwords.
-- Environment variables are not part of the file; manage them with `dokploy application save-environment` and its equivalents.
+- `env` is accepted on the project, each environment and each service, and applications also take `buildArgs` and `buildSecrets`. Each one is a block of `KEY=value` lines, the same text as the dashboard's Environment tab, so `${{project.KEY}}` and `${{environment.KEY}}` references work. `export` leaves them out unless you pass `--include-env`, and `--verbose` never prints their values.
 - Unknown keys are rejected, so typos fail instead of being ignored.
 
 ## Available command groups
