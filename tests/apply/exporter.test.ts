@@ -26,6 +26,7 @@ const remote: Record<string, unknown> = {
 		sourceType: "github",
 		repository: "api",
 		env: "SECRET=1",
+		buildArgs: "NODE_ENV=production",
 		dockerBuildStage: null,
 		createdAt: "2026-01-01",
 		domains: [
@@ -62,10 +63,12 @@ const remote: Record<string, unknown> = {
 
 const project = {
 	name: "demo",
+	env: "SHARED=1",
 	environments: [
 		{
 			name: "production",
 			description: null,
+			env: "API_URL=https://api.example.com",
 			applications: [{ applicationId: "app1" }],
 			postgres: [{ postgresId: "pg1" }],
 		},
@@ -76,6 +79,9 @@ describe("exportProject", () => {
 	it("exports only declarative fields, without secrets, and round-trips through the schema", async () => {
 		const config = parseConfig(await exportProject(project));
 		const [environment] = config.environments;
+
+		expect(config.env).toBeUndefined();
+		expect(environment.env).toBeUndefined();
 
 		expect(environment.applications).toEqual([
 			{
@@ -99,5 +105,21 @@ describe("exportProject", () => {
 				],
 			},
 		]);
+	});
+
+	it("includes env and build args only when asked, still without passwords", async () => {
+		const config = parseConfig(
+			await exportProject(project, { includeEnv: true }),
+		);
+		const [environment] = config.environments;
+
+		expect(config.env).toBe("SHARED=1");
+		expect(environment.env).toBe("API_URL=https://api.example.com");
+		expect(environment.applications?.[0]).toMatchObject({
+			env: "SECRET=1",
+			buildArgs: "NODE_ENV=production",
+			security: [{ username: "admin" }],
+		});
+		expect(environment.postgres?.[0]).not.toHaveProperty("databasePassword");
 	});
 });

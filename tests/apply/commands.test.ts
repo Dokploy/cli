@@ -37,6 +37,7 @@ const remote: Record<string, unknown> = {
 	"project.one": {
 		projectId: "p1",
 		name: "demo",
+		env: "SHARED=1",
 		environments: [{ environmentId: "e1", name: "production" }],
 	},
 	"server.all": [],
@@ -111,6 +112,16 @@ describe("apply and export commands", () => {
 		await run("export", "-p", "demo", "-f", out);
 
 		expect(fs.readFileSync(out, "utf8")).toContain("name: demo");
+	});
+
+	it("writes env only with --include-env", async () => {
+		const out = path.join(dir, "env.yaml");
+
+		await run("export", "-p", "demo", "-f", out);
+		expect(fs.readFileSync(out, "utf8")).not.toContain("SHARED=1");
+
+		await run("export", "-p", "demo", "-f", out, "--include-env");
+		expect(fs.readFileSync(out, "utf8")).toContain("env: SHARED=1");
 	});
 
 	it("exports to stdout and rejects unknown projects", async () => {

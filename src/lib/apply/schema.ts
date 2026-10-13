@@ -63,6 +63,7 @@ const serviceFields = {
 	name: z.string().min(1),
 	description: z.string().optional(),
 	serverName: z.string().optional(),
+	env: z.string().optional(),
 };
 
 const resourceLimitFields = {
@@ -107,6 +108,7 @@ const applicationSchema = z.strictObject({
 	dockerContextPath: z.string().optional(),
 	dockerBuildStage: z.string().optional(),
 	buildArgs: z.string().optional(),
+	buildSecrets: z.string().optional(),
 	command: z.string().optional(),
 	args: z.array(z.string()).optional(),
 	replicas: z.number().int().positive().optional(),
@@ -184,6 +186,7 @@ export const serviceSchemas = {
 const environmentSchema = z.strictObject({
 	name: z.string().min(1),
 	description: z.string().optional(),
+	env: z.string().optional(),
 	applications: z.array(applicationSchema).optional(),
 	compose: z.array(composeSchema).optional(),
 	postgres: z.array(postgresSchema).optional(),
@@ -198,6 +201,7 @@ export const dokployConfigSchema = z.strictObject({
 	kind: z.literal("Project"),
 	name: z.string().min(1),
 	description: z.string().optional(),
+	env: z.string().optional(),
 	environments: z.array(environmentSchema).min(1),
 });
 

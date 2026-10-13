@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from "../../client.js";
-import { changedValues, diffChildren } from "./differ.js";
+import { changedValues, diffChildren, diffResource } from "./differ.js";
 import { errorMessage, fetchService } from "./remote.js";
 import { actionLabel } from "./reporter.js";
 import {
@@ -65,13 +65,27 @@ async function executeEnvironment(
 		const existing: Fields[] = await apiGet("environment.byProjectId", {
 			projectId,
 		});
-		const match = existing.find(
-			(environment) => environment.name === action.config.name,
+		const remote: Fields =
+			existing.find((environment) => environment.name === action.name) ??
+			(await apiPost("environment.create", {
+				...pick(action.config, ["name", "description"]),
+				projectId,
+			}));
+		const pending = changedValues(
+			diffResource(
+				"environment",
+				action.name,
+				omit(action.config, ["name"]),
+				remote,
+			),
 		);
-		return match
-			? match.environmentId
-			: (await apiPost("environment.create", { ...action.config, projectId }))
-					.environmentId;
+		if (Object.keys(pending).length > 0) {
+			await apiPost("environment.update", {
+				environmentId: remote.environmentId,
+				...pending,
+			});
+		}
+		return remote.environmentId;
 	}
 	if (action.type === "update") {
 		await apiPost("environment.update", {
