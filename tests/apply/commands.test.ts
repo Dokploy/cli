@@ -122,6 +122,7 @@ describe("apply and export commands", () => {
 
 		await run("export", "-p", "demo", "-f", out, "--include-env");
 		expect(fs.readFileSync(out, "utf8")).toContain("env: SHARED=1");
+		expect(fs.statSync(out).mode & 0o777).toBe(0o600);
 	});
 
 	it("exports to stdout and rejects unknown projects", async () => {
