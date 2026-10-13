@@ -120,6 +120,7 @@ describe("apply and export commands", () => {
 		await run("export", "-p", "demo", "-f", out);
 		expect(fs.readFileSync(out, "utf8")).not.toContain("SHARED=1");
 
+		fs.chmodSync(out, 0o644);
 		await run("export", "-p", "demo", "-f", out, "--include-env");
 		expect(fs.readFileSync(out, "utf8")).toContain("env: SHARED=1");
 		expect(fs.statSync(out).mode & 0o777).toBe(0o600);

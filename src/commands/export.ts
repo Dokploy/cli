@@ -14,6 +14,16 @@ const exportNamedProject = async (name: string, options: ExportOptions) => {
 	return exportProject(await apiGet("project.one", { projectId }), options);
 };
 
+const writePrivate = (file: string, content: string) => {
+	const fd = fs.openSync(file, "w", 0o600);
+	try {
+		fs.fchmodSync(fd, 0o600);
+		fs.writeFileSync(fd, content, "utf8");
+	} finally {
+		fs.closeSync(fd);
+	}
+};
+
 export function registerExportCommand(program: Command) {
 	program
 		.command("export")
@@ -36,8 +46,7 @@ export function registerExportCommand(program: Command) {
 					throw new Error(errorMessage(error));
 				});
 				if (opts.file) {
-					fs.writeFileSync(opts.file, yaml, { encoding: "utf8", mode: 0o600 });
-					fs.chmodSync(opts.file, 0o600);
+					writePrivate(opts.file, yaml);
 					console.error(
 						chalk.green(`Exported project "${opts.project}" to ${opts.file}`),
 					);
