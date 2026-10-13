@@ -77,7 +77,9 @@ const project = {
 
 describe("exportProject", () => {
 	it("exports only declarative fields, without secrets, and round-trips through the schema", async () => {
-		const config = parseConfig(await exportProject(project));
+		const config = parseConfig(
+			await exportProject(project, { includeEnv: false }),
+		);
 		const [environment] = config.environments;
 
 		expect(config.env).toBeUndefined();

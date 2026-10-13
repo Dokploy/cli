@@ -37,7 +37,7 @@ const shapeKeys = (schema: { shape: Record<string, unknown> }) =>
 	Object.keys(schema.shape);
 
 export interface ExportOptions {
-	includeEnv?: boolean;
+	includeEnv: boolean;
 }
 
 interface Names {
@@ -137,7 +137,7 @@ async function exportEnvironment(
 
 export async function exportProject(
 	project: Fields,
-	{ includeEnv = false }: ExportOptions = {},
+	{ includeEnv }: ExportOptions,
 ): Promise<string> {
 	const hidden = includeEnv ? PASSWORD_FIELDS : SECRET_FIELDS;
 	const names = await loadNames();

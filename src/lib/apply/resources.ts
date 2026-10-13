@@ -43,7 +43,7 @@ export const PASSWORD_FIELDS = [
 	"password",
 ];
 
-export const ENV_FIELDS = ["env", "buildArgs", "buildSecrets"];
+const ENV_FIELDS = ["env", "buildArgs", "buildSecrets"];
 
 export const SECRET_FIELDS = [...PASSWORD_FIELDS, ...ENV_FIELDS];
 

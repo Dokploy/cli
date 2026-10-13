@@ -31,12 +31,13 @@ export function registerExportCommand(program: Command) {
 				includeEnv?: boolean;
 			}) => {
 				const yaml = await exportNamedProject(opts.project, {
-					includeEnv: opts.includeEnv,
+					includeEnv: opts.includeEnv === true,
 				}).catch((error) => {
 					throw new Error(errorMessage(error));
 				});
 				if (opts.file) {
-					fs.writeFileSync(opts.file, yaml, "utf8");
+					fs.writeFileSync(opts.file, yaml, { encoding: "utf8", mode: 0o600 });
+					fs.chmodSync(opts.file, 0o600);
 					console.error(
 						chalk.green(`Exported project "${opts.project}" to ${opts.file}`),
 					);

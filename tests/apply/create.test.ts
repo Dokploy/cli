@@ -351,6 +351,73 @@ environments:
 		]);
 	});
 
+	it("updates env on an existing environment and service", async () => {
+		serve({
+			"project.all": () => [{ projectId: "p1", name: "fresh" }],
+			"project.one": () => ({
+				projectId: "p1",
+				name: "fresh",
+				environments: [
+					{
+						environmentId: "env-prod",
+						name: "production",
+						env: "API_URL=old",
+						applications: [{ applicationId: "a1", name: "web" }],
+					},
+				],
+			}),
+			"application.one": () => ({
+				applicationId: "a1",
+				name: "web",
+				env: "TOKEN=old",
+				buildArgs: "NODE_ENV=production",
+			}),
+		});
+
+		await executePlan(
+			await buildPlan(
+				parseConfig(
+					"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    env: API_URL=new\n    applications:\n      - name: web\n        env: TOKEN=new\n        buildArgs: NODE_ENV=production\n",
+				),
+			),
+		);
+
+		expect(vi.mocked(apiPost).mock.calls).toEqual([
+			["environment.update", { environmentId: "env-prod", env: "API_URL=new" }],
+			["application.update", { applicationId: "a1", env: "TOKEN=new" }],
+		]);
+	});
+
+	it("keeps a service on the server it already runs on", async () => {
+		serve({
+			"project.all": () => [{ projectId: "p1", name: "fresh" }],
+			"project.one": () => ({
+				projectId: "p1",
+				name: "fresh",
+				environments: [
+					{
+						environmentId: "env-prod",
+						name: "production",
+						applications: [{ applicationId: "a1", name: "web" }],
+					},
+				],
+			}),
+			"application.one": () => ({
+				applicationId: "a1",
+				name: "web",
+				serverId: "srv1",
+			}),
+		});
+
+		const plan = await buildPlan(
+			parseConfig(
+				"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n        serverName: worker-1\n",
+			),
+		);
+
+		expect(plan.environments[0].children?.[0].type).toBe("unchanged");
+	});
+
 	it("refuses to move an existing service to another server", async () => {
 		serve({
 			"project.all": () => [{ projectId: "p1", name: "fresh" }],
