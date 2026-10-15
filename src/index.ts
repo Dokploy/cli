@@ -3,7 +3,9 @@
 import { readFileSync } from "node:fs";
 import chalk from "chalk";
 import { program } from "commander";
+import { registerApplyCommand } from "./commands/apply.js";
 import { registerAuthCommand } from "./commands/auth.js";
+import { registerExportCommand } from "./commands/export.js";
 import { registerGeneratedCommands } from "./generated/commands.js";
 
 const packageJson = JSON.parse(
@@ -25,6 +27,8 @@ program
 	});
 
 registerAuthCommand(program);
+registerApplyCommand(program);
+registerExportCommand(program);
 registerGeneratedCommands(program);
 
 const argv = process.argv.filter((arg) => arg !== "--");
