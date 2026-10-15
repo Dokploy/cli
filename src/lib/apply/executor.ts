@@ -1,6 +1,6 @@
 import { apiGet, apiPost } from "../../client.js";
 import { changedValues, diffChildren, diffResource } from "./differ.js";
-import { errorMessage, fetchService } from "./remote.js";
+import { errorMessage, fetchService, requireByName } from "./remote.js";
 import { actionLabel } from "./reporter.js";
 import {
 	CHILDREN,
@@ -12,9 +12,9 @@ import {
 	type ServiceType,
 	sequence,
 } from "./resources.js";
-import type { Action, ApplyPlan, ApplyResult } from "./types.js";
+import type { Action, ApplyResult, ProjectPlan } from "./types.js";
 
-interface Outcome {
+export interface Outcome {
 	action: Action;
 	label: string;
 	error?: string;
@@ -25,7 +25,7 @@ interface Attempt<T> {
 	value?: T;
 }
 
-async function attempt<T>(
+export async function attempt<T>(
 	action: Action,
 	label: string,
 	task: () => Promise<T>,
@@ -103,6 +103,17 @@ const rediffAgainst =
 		return diffChildren(key, parentType, [child.config], remote[key] ?? [])[0];
 	};
 
+const serverField = async (config: Fields): Promise<Fields> =>
+	config.serverName
+		? {
+				serverId: requireByName(
+					await apiGet("server.all"),
+					config.serverName,
+					"Server",
+				).serverId,
+			}
+		: {};
+
 async function executeService(
 	action: Action,
 	environmentId: string,
@@ -111,9 +122,18 @@ async function executeService(
 	const spec = SERVICES[type];
 	const idField = `${type}Id`;
 
+	if (action.type === "delete") {
+		await apiPost(spec.remove, {
+			[idField]: action.remoteId,
+			...spec.removeParams,
+		});
+		return { serviceId: action.remoteId!, children: [] };
+	}
+
 	if (action.type === "create") {
 		const created = await apiPost(`${type}.create`, {
-			...pick(action.config, [...spec.createFields, "serverId"]),
+			...pick(action.config, spec.createFields),
+			...(await serverField(action.config)),
 			environmentId,
 		});
 		const serviceId: string = created[idField];
@@ -121,6 +141,7 @@ async function executeService(
 			...spec.createFields,
 			...spec.createOnly,
 			"serverId",
+			"serverName",
 		]);
 		if (Object.keys(rest).length > 0) {
 			await apiPost(`${type}.update`, { [idField]: serviceId, ...rest });
@@ -147,6 +168,11 @@ async function executeChild(
 	parentId: string,
 ): Promise<void> {
 	const spec = CHILDREN[childKeyOf(action.resourceType)];
+	if (action.type === "delete") {
+		await apiPost(spec.remove, {
+			[`${spec.resourceType}Id`]: action.remoteId,
+		});
+	}
 	if (action.type === "create") {
 		await apiPost(`${spec.endpoint}.create`, {
 			...spec.createDefaults,
@@ -185,6 +211,16 @@ async function executeEnvironmentTree(
 	action: Action,
 	projectId: string,
 ): Promise<Outcome[]> {
+	if (action.type === "delete") {
+		const services = await sequence(action.children ?? [], (service) =>
+			executeServiceTree(service, action.remoteId!),
+		);
+		const environment = await attempt(action, actionLabel(action), () =>
+			apiPost("environment.remove", { environmentId: action.remoteId }),
+		);
+		return [...services.flat(), environment.outcome];
+	}
+
 	const environment = await attempt(action, actionLabel(action), () =>
 		executeEnvironment(action, projectId),
 	);
@@ -196,13 +232,14 @@ async function executeEnvironmentTree(
 	return [environment.outcome, ...services.flat()];
 }
 
-const summarize = (outcomes: Outcome[]): ApplyResult => {
+export const summarize = (outcomes: Outcome[]): ApplyResult => {
 	const succeeded = outcomes.filter((outcome) => !outcome.error);
 	const count = (type: Action["type"]) =>
 		succeeded.filter((outcome) => outcome.action.type === type).length;
 	return {
 		created: count("create"),
 		updated: count("update"),
+		deleted: count("delete"),
 		unchanged: count("unchanged"),
 		failed: outcomes.length - succeeded.length,
 		errors: outcomes
@@ -211,7 +248,20 @@ const summarize = (outcomes: Outcome[]): ApplyResult => {
 	};
 };
 
-export async function executePlan(plan: ApplyPlan): Promise<ApplyResult> {
+export const combineResults = (results: ApplyResult[]): ApplyResult => {
+	const total = (key: Exclude<keyof ApplyResult, "errors">) =>
+		results.reduce((sum, result) => sum + result[key], 0);
+	return {
+		created: total("created"),
+		updated: total("updated"),
+		deleted: total("deleted"),
+		unchanged: total("unchanged"),
+		failed: total("failed"),
+		errors: results.flatMap((result) => result.errors),
+	};
+};
+
+export async function executePlan(plan: ProjectPlan): Promise<ApplyResult> {
 	const project = await attempt(plan.project, actionLabel(plan.project), () =>
 		executeProject(plan.project),
 	);

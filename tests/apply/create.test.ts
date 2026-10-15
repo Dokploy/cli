@@ -8,9 +8,8 @@ vi.mock("../../src/client.js", () => ({
 
 import { apiGet, apiPost } from "../../src/client.js";
 import { executePlan } from "../../src/lib/apply/executor.js";
-import { parseConfig } from "../../src/lib/apply/parser.js";
-import { buildPlan } from "../../src/lib/apply/reconciler.js";
 import { providerIdField } from "../../src/lib/apply/remote.js";
+import { planProject } from "./helpers.js";
 
 const config = `
 apiVersion: v1
@@ -133,7 +132,7 @@ describe("apply to an empty server", () => {
 	});
 
 	it("creates every resource with the payload each endpoint expects", async () => {
-		const result = await executePlan(await buildPlan(parseConfig(config)));
+		const result = await executePlan(await planProject(config));
 
 		expect(vi.mocked(apiPost).mock.calls).toEqual([
 			["project.create", { name: "fresh", description: "new project" }],
@@ -274,6 +273,7 @@ describe("apply to an empty server", () => {
 		expect(result).toEqual({
 			created: 17,
 			updated: 0,
+			deleted: 0,
 			unchanged: 0,
 			failed: 0,
 			errors: [],
@@ -288,8 +288,7 @@ describe("apply to an empty server", () => {
 		);
 
 		await executePlan(
-			await buildPlan(
-				parseConfig(`
+			await planProject(`
 apiVersion: v1
 kind: Project
 name: fresh
@@ -310,7 +309,6 @@ environments:
     description: preview
     env: API_URL=https://staging.example.com
 `),
-			),
 		);
 
 		expect(vi.mocked(apiPost).mock.calls).toEqual([
@@ -375,10 +373,8 @@ environments:
 		});
 
 		await executePlan(
-			await buildPlan(
-				parseConfig(
-					"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    env: API_URL=new\n    applications:\n      - name: web\n        env: TOKEN=new\n        buildArgs: NODE_ENV=production\n",
-				),
+			await planProject(
+				"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    env: API_URL=new\n    applications:\n      - name: web\n        env: TOKEN=new\n        buildArgs: NODE_ENV=production\n",
 			),
 		);
 
@@ -409,10 +405,8 @@ environments:
 			}),
 		});
 
-		const plan = await buildPlan(
-			parseConfig(
-				"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n        serverName: worker-1\n",
-			),
+		const plan = await planProject(
+			"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n        serverName: worker-1\n",
 		);
 
 		expect(plan.environments[0].children?.[0].type).toBe("unchanged");
@@ -440,10 +434,8 @@ environments:
 		});
 
 		await expect(
-			buildPlan(
-				parseConfig(
-					"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n        serverName: worker-1\n",
-				),
+			planProject(
+				"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n        serverName: worker-1\n",
 			),
 		).rejects.toThrow(
 			'application "web" runs on a different server; serverName only applies when creating it',
@@ -464,10 +456,8 @@ environments:
 		});
 
 		await executePlan(
-			await buildPlan(
-				parseConfig(
-					"apiVersion: v1\nkind: Project\nname: fresh\ndescription: new\nenvironments:\n  - name: production\n    description: live\n",
-				),
+			await planProject(
+				"apiVersion: v1\nkind: Project\nname: fresh\ndescription: new\nenvironments:\n  - name: production\n    description: live\n",
 			),
 		);
 
@@ -500,17 +490,15 @@ environments:
 		});
 
 		await expect(
-			buildPlan(
-				parseConfig(
-					"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n",
-				),
+			planProject(
+				"apiVersion: v1\nkind: Project\nname: fresh\nenvironments:\n  - name: production\n    applications:\n      - name: web\n",
 			),
 		).rejects.toThrow('Multiple application resources named "web"');
 	});
 
 	it("refuses unknown server names before changing anything", async () => {
 		await expect(
-			buildPlan(parseConfig(config.replace("worker-1", "worker-9"))),
+			planProject(config.replace("worker-1", "worker-9")),
 		).rejects.toThrow('Server "worker-9" not found. Available: worker-1');
 		expect(apiPost).not.toHaveBeenCalled();
 	});

@@ -2,15 +2,19 @@ import * as fs from "node:fs";
 import chalk from "chalk";
 import type { Command } from "commander";
 import { apiGet } from "../client.js";
-import { type ExportOptions, exportProject } from "../lib/apply/exporter.js";
+import {
+	type ExportOptions,
+	exportAll,
+	exportProject,
+} from "../lib/apply/exporter.js";
 import { errorMessage, requireByName } from "../lib/apply/remote.js";
+import type { Fields } from "../lib/apply/resources.js";
 
-const exportNamedProject = async (name: string, options: ExportOptions) => {
-	const { projectId } = requireByName(
-		await apiGet("project.all"),
-		name,
-		"Project",
-	);
+const exportOneProject = async (idOrName: string, options: ExportOptions) => {
+	const projects: Fields[] = await apiGet("project.all");
+	const { projectId } =
+		projects.find((project) => project.projectId === idOrName) ??
+		requireByName(projects, idOrName, "Project");
 	return exportProject(await apiGet("project.one", { projectId }), options);
 };
 
@@ -24,35 +28,61 @@ const writePrivate = (file: string, content: string) => {
 	}
 };
 
+interface ExportFlags {
+	project?: string;
+	all?: boolean;
+	file?: string;
+	includeEnv?: boolean;
+	includeSecrets?: boolean;
+}
+
+const selection = (opts: ExportFlags) => {
+	if (opts.all === true && opts.project) {
+		throw new Error("Use either --project or --all, not both");
+	}
+	if (opts.all !== true && !opts.project) {
+		throw new Error("Pass --project <id or name>, or --all");
+	}
+	return opts.project;
+};
+
 export function registerExportCommand(program: Command) {
 	program
 		.command("export")
-		.description("Export an existing project as a declarative dokploy.yaml")
-		.requiredOption("-p, --project <name>", "Name of the project to export")
+		.description(
+			"Export a project, or everything with --all, as a declarative dokploy.yaml",
+		)
+		.option("-p, --project <id-or-name>", "Id or name of the project to export")
+		.option(
+			"-a, --all",
+			"Export every project plus organization settings: SSH keys, servers, S3 destinations, registries, certificates, notifications and secret managers",
+		)
 		.option("-f, --file <path>", "Write to this file instead of stdout")
 		.option(
 			"--include-env",
 			"Include env, buildArgs and buildSecrets (written in plain text)",
 		)
-		.action(
-			async (opts: {
-				project: string;
-				file?: string;
-				includeEnv?: boolean;
-			}) => {
-				const yaml = await exportNamedProject(opts.project, {
-					includeEnv: opts.includeEnv === true,
-				}).catch((error) => {
-					throw new Error(errorMessage(error));
-				});
-				if (opts.file) {
-					writePrivate(opts.file, yaml);
-					console.error(
-						chalk.green(`Exported project "${opts.project}" to ${opts.file}`),
-					);
-				} else {
-					process.stdout.write(yaml);
-				}
-			},
-		);
+		.option(
+			"--include-secrets",
+			"Include env plus every password, key and token Dokploy returns (written in plain text)",
+		)
+		.action(async (opts: ExportFlags) => {
+			const project = selection(opts);
+			const options = {
+				includeEnv: opts.includeEnv === true,
+				includeSecrets: opts.includeSecrets === true,
+			};
+			const yaml = await (project
+				? exportOneProject(project, options)
+				: exportAll(options)
+			).catch((error) => {
+				throw new Error(errorMessage(error));
+			});
+			if (opts.file) {
+				writePrivate(opts.file, yaml);
+				console.error(chalk.green(`Exported to ${opts.file}`));
+			} else {
+				process.stdout.write(yaml);
+			}
+		});
 }

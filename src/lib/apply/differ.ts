@@ -51,6 +51,38 @@ export function diffChildren(
 	});
 }
 
+export const deletion = (
+	resourceType: string,
+	name: string,
+	remote: Fields,
+): Action => ({
+	type: "delete",
+	resourceType,
+	name,
+	config: {},
+	remote,
+	remoteId: remote[`${resourceType}Id`],
+});
+
+export function pruneChildren(
+	key: ChildKey,
+	parentType: ServiceType,
+	localItems: Fields[],
+	remoteItems: Fields[],
+	keep: (item: Fields) => boolean,
+): Action[] {
+	const { resourceType, identity } = CHILDREN[key];
+	const declared = localItems.map((local) => identity(local, parentType));
+	return remoteItems
+		.filter(
+			(remote) =>
+				!declared.includes(identity(remote, parentType)) && !keep(remote),
+		)
+		.map((remote) =>
+			deletion(resourceType, identity(remote, parentType), remote),
+		);
+}
+
 export const changedValues = (action: Action): Fields =>
 	Object.fromEntries(
 		Object.entries(action.changes ?? {}).map(([key, { to }]) => [key, to]),

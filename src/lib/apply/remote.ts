@@ -6,12 +6,13 @@ export const errorMessage = (error: unknown): string =>
 	(isAxiosError(error) && error.response?.data?.error?.json?.message) ||
 	(error instanceof Error ? error.message : String(error));
 
-export function findByName(
+export function findBy(
 	items: Fields[],
+	field: string,
 	name: string,
 	label: string,
 ): Fields | undefined {
-	const matches = items.filter((item) => item.name === name);
+	const matches = items.filter((item) => item[field] === name);
 	if (matches.length > 1) {
 		throw new Error(
 			`Multiple ${label} resources named "${name}" found. Rename one in the Dokploy UI to resolve the ambiguity.`,
@@ -19,6 +20,12 @@ export function findByName(
 	}
 	return matches[0];
 }
+
+export const findByName = (
+	items: Fields[],
+	name: string,
+	label: string,
+): Fields | undefined => findBy(items, "name", name, label);
 
 export function requireByName(
 	items: Fields[],
@@ -56,11 +63,14 @@ export const providerIdField = (provider: Fields): Fields => {
 };
 
 export interface Lookups {
-	serverId: (name: string) => string;
+	serverId: (name: string) => string | undefined;
 	gitProviderFields: (name: string) => Fields;
 }
 
-export async function loadLookups(services: Fields[]): Promise<Lookups> {
+export async function loadLookups(
+	services: Fields[],
+	declaredServers: string[],
+): Promise<Lookups> {
 	const uses = (key: string) => services.some((service) => service[key]);
 	const servers: Fields[] = uses("serverName")
 		? await apiGet("server.all")
@@ -69,7 +79,10 @@ export async function loadLookups(services: Fields[]): Promise<Lookups> {
 		? await apiGet("gitProvider.getAll")
 		: [];
 	return {
-		serverId: (name) => requireByName(servers, name, "Server").serverId,
+		serverId: (name) =>
+			declaredServers.includes(name)
+				? findByName(servers, name, "Server")?.serverId
+				: requireByName(servers, name, "Server").serverId,
 		gitProviderFields: (name) =>
 			providerIdField(requireByName(providers, name, "Git provider")),
 	};

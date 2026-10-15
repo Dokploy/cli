@@ -33,7 +33,7 @@ describe("formatChanges", () => {
 });
 
 describe("formatPlan", () => {
-	const plan = {
+	const projectPlan = {
 		project: {
 			type: "unchanged" as const,
 			resourceType: "project",
@@ -59,6 +59,8 @@ describe("formatPlan", () => {
 		],
 	};
 
+	const plan = { organization: [], projects: [projectPlan] };
+
 	it("prints the tree with each action's status", () => {
 		const lines = formatPlan(plan, false).split("\n").filter(Boolean);
 
@@ -71,6 +73,41 @@ describe("formatPlan", () => {
 	it("adds field-level changes when verbose", () => {
 		expect(formatPlan(plan, true)).toContain('description: null → "live"');
 	});
+
+	it("lists organization resources first and marks deletions", () => {
+		const lines = formatPlan(
+			{
+				organization: [
+					{
+						type: "create",
+						resourceType: "destination",
+						name: "r2",
+						config: {},
+					},
+				],
+				projects: [
+					{
+						...projectPlan,
+						environments: [
+							{
+								type: "delete",
+								resourceType: "environment",
+								name: "preview",
+								config: {},
+							},
+						],
+					},
+				],
+			},
+			false,
+		)
+			.split("\n")
+			.filter(Boolean);
+
+		expect(lines[0]).toBe("Organization");
+		expect(lines[1]).toMatch(/^ {2}Destination "r2"\s+\[create\]$/);
+		expect(lines[3]).toMatch(/^ {2}Environment "preview"\s+\[delete\]$/);
+	});
 });
 
 describe("formatSummary and formatErrors", () => {
@@ -78,13 +115,14 @@ describe("formatSummary and formatErrors", () => {
 		const result = {
 			created: 2,
 			updated: 0,
+			deleted: 3,
 			unchanged: 5,
 			failed: 1,
 			errors: [{ resource: 'Redis "cache"', error: "boom" }],
 		};
 
 		expect(formatSummary(result)).toBe(
-			"\nSummary: 2 created, 5 unchanged, 1 failed",
+			"\nSummary: 2 created, 3 deleted, 5 unchanged, 1 failed",
 		);
 		expect(formatErrors(result)).toContain('Redis "cache": boom');
 	});
