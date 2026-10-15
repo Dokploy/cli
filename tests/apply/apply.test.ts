@@ -9,9 +9,9 @@ vi.mock("../../src/client.js", () => ({
 
 import { apiGet, apiPost } from "../../src/client.js";
 import { executePlan } from "../../src/lib/apply/executor.js";
-import { parseConfig } from "../../src/lib/apply/parser.js";
-import { buildPlan, countPlan } from "../../src/lib/apply/reconciler.js";
-import type { Action, ApplyPlan } from "../../src/lib/apply/types.js";
+import { countPlan } from "../../src/lib/apply/reconciler.js";
+import type { Action, ProjectPlan } from "../../src/lib/apply/types.js";
+import { planProject } from "./helpers.js";
 
 const emptySections = {
 	applications: [],
@@ -153,7 +153,7 @@ const flatten = (action: Action): string[] => [
 	...(action.children ?? []).flatMap(flatten),
 ];
 
-const describePlan = (plan: ApplyPlan) => [
+const describePlan = (plan: ProjectPlan) => [
 	...flatten(plan.project),
 	...plan.environments.flatMap(flatten),
 ];
@@ -171,7 +171,7 @@ describe("apply", () => {
 	});
 
 	it("plans updates by name and leaves database credentials alone", async () => {
-		const plan = await buildPlan(parseConfig(config));
+		const plan = await planProject(config);
 
 		expect(describePlan(plan)).toEqual([
 			"unchanged project demo",
@@ -184,7 +184,7 @@ describe("apply", () => {
 			"create postgres db",
 			"create mount /var/lib/postgresql/data",
 		]);
-		expect(countPlan(plan)).toMatchObject({
+		expect(countPlan({ organization: [], projects: [plan] })).toMatchObject({
 			created: 3,
 			updated: 2,
 			unchanged: 4,
@@ -192,7 +192,7 @@ describe("apply", () => {
 	});
 
 	it("sends only changes, keeps required fields on child updates and adopts auto-created mounts", async () => {
-		const result = await executePlan(await buildPlan(parseConfig(config)));
+		const result = await executePlan(await planProject(config));
 
 		expect(vi.mocked(apiPost).mock.calls).toEqual([
 			[
@@ -229,7 +229,7 @@ describe("apply", () => {
 
 	it("refuses to plan a database it cannot create", async () => {
 		await expect(
-			buildPlan(parseConfig(config.replace("databasePassword: secret", ""))),
+			planProject(config.replace("databasePassword: secret", "")),
 		).rejects.toThrow('postgres "db" needs databasePassword to be created');
 	});
 
@@ -250,7 +250,7 @@ describe("apply", () => {
 			return created[endpoint] ?? {};
 		});
 
-		const result = await executePlan(await buildPlan(parseConfig(config)));
+		const result = await executePlan(await planProject(config));
 
 		expect(result.errors).toEqual([
 			{ resource: 'Application "web"', error: "boom" },

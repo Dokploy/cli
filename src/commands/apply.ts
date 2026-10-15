@@ -11,12 +11,22 @@ export function registerApplyCommand(program: Command) {
 		.requiredOption("-f, --file <path>", "Path to the dokploy.yaml config file")
 		.option("-d, --dry-run", "Preview changes without applying them")
 		.option("-v, --verbose", "Show field-level changes")
+		.option(
+			"--prune",
+			"Delete environments, services and their domains, ports, mounts, redirects, basic auth and schedules that the file doesn't declare",
+		)
 		.action(
-			async (opts: { file: string; dryRun?: boolean; verbose?: boolean }) => {
+			async (opts: {
+				file: string;
+				dryRun?: boolean;
+				verbose?: boolean;
+				prune?: boolean;
+			}) => {
 				const result = await reconcile({
 					filePath: opts.file,
-					dryRun: opts.dryRun ?? false,
-					verbose: opts.verbose ?? false,
+					dryRun: opts.dryRun === true,
+					verbose: opts.verbose === true,
+					prune: opts.prune === true,
 				}).catch((error) => {
 					throw new Error(errorMessage(error));
 				});

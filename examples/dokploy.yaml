@@ -1,4 +1,44 @@
 apiVersion: v1
+kind: Organization
+sshKeys:
+  - name: deploy
+    publicKey: ssh-ed25519 AAAA... deploy@example.com
+    privateKey: |
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      ...
+      -----END OPENSSH PRIVATE KEY-----
+servers:
+  - name: worker-1
+    ipAddress: 203.0.113.10
+    username: root
+    sshKeyName: deploy
+destinations:
+  - name: backups
+    provider: cloudflare
+    accessKey: change-me
+    secretAccessKey: change-me
+    bucket: dokploy-backups
+    region: auto
+    endpoint: https://<account>.r2.cloudflarestorage.com
+notifications:
+  - name: alerts
+    type: slack
+    webhookUrl: https://hooks.slack.com/services/change-me
+    channel: "#deploys"
+    appDeploy: true
+    appBuildError: true
+vaultProviders:
+  - name: infisical
+    providerType: infisical
+    clientId: change-me
+    clientSecret: change-me
+    projectId: change-me
+    environmentSlug: prod
+    assignments:
+      - project: my-project
+        environments: [production]
+---
+apiVersion: v1
 kind: Project
 name: my-project
 description: My application stack

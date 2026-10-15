@@ -1,6 +1,6 @@
 import type { Fields } from "./resources.js";
 
-export type ActionType = "create" | "update" | "unchanged";
+export type ActionType = "create" | "update" | "delete" | "unchanged";
 
 export interface Change {
 	from: unknown;
@@ -18,14 +18,20 @@ export interface Action {
 	children?: Action[];
 }
 
-export interface ApplyPlan {
+export interface ProjectPlan {
 	project: Action;
 	environments: Action[];
+}
+
+export interface Plan {
+	organization: Action[];
+	projects: ProjectPlan[];
 }
 
 export interface ApplyResult {
 	created: number;
 	updated: number;
+	deleted: number;
 	unchanged: number;
 	failed: number;
 	errors: Array<{ resource: string; error: string }>;

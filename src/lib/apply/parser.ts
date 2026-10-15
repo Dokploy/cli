@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
-import { parse } from "yaml";
-import { type DokployConfig, dokployConfigSchema } from "./schema.js";
+import { parseAllDocuments } from "yaml";
+import { type DokployDocument, documentSchema } from "./schema.js";
 
 export class ConfigParseError extends Error {
 	constructor(message: string) {
@@ -9,30 +9,65 @@ export class ConfigParseError extends Error {
 	}
 }
 
-const parseYaml = (raw: string): unknown => {
-	try {
-		return parse(raw);
-	} catch (error) {
-		throw new ConfigParseError(`YAML parse error: ${(error as Error).message}`);
+const parseYaml = (raw: string): unknown[] => {
+	const documents = [...parseAllDocuments(raw)];
+	const errors = documents.flatMap((document) => document.errors);
+	if (errors.length > 0) {
+		throw new ConfigParseError(`YAML parse error: ${errors[0].message}`);
 	}
+	return documents
+		.map((document) => document.toJS())
+		.filter((document) => document !== null);
 };
 
-export function parseConfig(raw: string): DokployConfig {
-	const result = dokployConfigSchema.safeParse(parseYaml(raw));
+const validate = (document: unknown, index: number): DokployDocument => {
+	const result = documentSchema.safeParse(document);
 	if (!result.success) {
+		const prefix = index > 0 ? `document ${index + 1}: ` : "";
 		const details = result.error.issues.map(
-			(issue) => `  ${issue.path.join(".")}: ${issue.message}`,
+			(issue) => `  ${prefix}${issue.path.join(".")}: ${issue.message}`,
 		);
 		throw new ConfigParseError(`Validation failed:\n${details.join("\n")}`);
 	}
 	return result.data;
-}
+};
+
+const duplicates = (names: string[]) =>
+	names.filter((name, index) => names.indexOf(name) !== index);
+
+const checkDocuments = (documents: DokployDocument[]): DokployDocument[] => {
+	if (documents.length === 0) {
+		throw new ConfigParseError("Config file has no documents");
+	}
+	const organizations = documents.filter(
+		(document) => document.kind === "Organization",
+	);
+	if (organizations.length > 1) {
+		throw new ConfigParseError(
+			"Only one Organization document is allowed per file",
+		);
+	}
+	const repeated = duplicates(
+		documents.flatMap((document) =>
+			document.kind === "Project" ? [document.name] : [],
+		),
+	);
+	if (repeated.length > 0) {
+		throw new ConfigParseError(
+			`Project "${repeated[0]}" is declared more than once`,
+		);
+	}
+	return documents;
+};
+
+export const parseDocuments = (raw: string): DokployDocument[] =>
+	checkDocuments(parseYaml(raw).map(validate));
 
 export async function parseConfigFile(
 	filePath: string,
-): Promise<DokployConfig> {
+): Promise<DokployDocument[]> {
 	if (!fs.existsSync(filePath)) {
 		throw new ConfigParseError(`Config file not found: ${filePath}`);
 	}
-	return parseConfig(fs.readFileSync(filePath, "utf8"));
+	return parseDocuments(fs.readFileSync(filePath, "utf8"));
 }

@@ -23,11 +23,14 @@ interface ServiceSpec {
 	createFields: string[];
 	createOnly: string[];
 	requiredOnCreate: string[];
+	remove: string;
+	removeParams: Fields;
 }
 
 interface ChildSpec {
 	resourceType: string;
 	endpoint: string;
+	remove: string;
 	updateRequires: string[];
 	requiredOnCreate: string[];
 	createDefaults: Fields;
@@ -43,9 +46,30 @@ export const PASSWORD_FIELDS = [
 	"password",
 ];
 
-const ENV_FIELDS = ["env", "buildArgs", "buildSecrets"];
+export const ENV_FIELDS = ["env", "buildArgs", "buildSecrets"];
 
-export const SECRET_FIELDS = [...PASSWORD_FIELDS, ...ENV_FIELDS];
+export const CREDENTIAL_FIELDS = [
+	"privateKey",
+	"secretAccessKey",
+	"webhookUrl",
+	"botToken",
+	"apiKey",
+	"appToken",
+	"accessToken",
+	"apiToken",
+	"userKey",
+	"headers",
+	"token",
+	"clientSecret",
+	"serviceToken",
+	"secretKey",
+];
+
+export const SECRET_FIELDS = [
+	...PASSWORD_FIELDS,
+	...ENV_FIELDS,
+	...CREDENTIAL_FIELDS,
+];
 
 const credentials = [
 	"databaseName",
@@ -55,6 +79,7 @@ const credentials = [
 ];
 
 const database = (
+	type: ServiceType,
 	createFields: string[],
 	requiredOnCreate: string[],
 ): Omit<ServiceSpec, "section"> => ({
@@ -62,6 +87,8 @@ const database = (
 	createFields: ["name", "description", "dockerImage", ...createFields],
 	createOnly: credentials,
 	requiredOnCreate,
+	remove: `${type}.remove`,
+	removeParams: {},
 });
 
 export const SERVICES: Record<ServiceType, ServiceSpec> = {
@@ -78,6 +105,8 @@ export const SERVICES: Record<ServiceType, ServiceSpec> = {
 		createFields: ["name", "description"],
 		createOnly: [],
 		requiredOnCreate: [],
+		remove: "application.delete",
+		removeParams: {},
 	},
 	compose: {
 		section: "compose",
@@ -85,10 +114,13 @@ export const SERVICES: Record<ServiceType, ServiceSpec> = {
 		createFields: ["name", "description", "composeType"],
 		createOnly: [],
 		requiredOnCreate: [],
+		remove: "compose.delete",
+		removeParams: { deleteVolumes: false },
 	},
 	postgres: {
 		section: "postgres",
 		...database(
+			"postgres",
 			["databaseName", "databaseUser", "databasePassword"],
 			["databaseName", "databaseUser", "databasePassword"],
 		),
@@ -96,6 +128,7 @@ export const SERVICES: Record<ServiceType, ServiceSpec> = {
 	mysql: {
 		section: "mysql",
 		...database(
+			"mysql",
 			[
 				"databaseName",
 				"databaseUser",
@@ -108,6 +141,7 @@ export const SERVICES: Record<ServiceType, ServiceSpec> = {
 	mariadb: {
 		section: "mariadb",
 		...database(
+			"mariadb",
 			[
 				"databaseName",
 				"databaseUser",
@@ -120,13 +154,14 @@ export const SERVICES: Record<ServiceType, ServiceSpec> = {
 	mongo: {
 		section: "mongo",
 		...database(
+			"mongo",
 			["databaseUser", "databasePassword", "replicaSets"],
 			["databaseUser", "databasePassword"],
 		),
 	},
 	redis: {
 		section: "redis",
-		...database(["databasePassword"], ["databasePassword"]),
+		...database("redis", ["databasePassword"], ["databasePassword"]),
 	},
 };
 
@@ -140,6 +175,7 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 	domains: {
 		resourceType: "domain",
 		endpoint: "domain",
+		remove: "domain.delete",
 		updateRequires: ["host"],
 		requiredOnCreate: [],
 		createDefaults: {},
@@ -155,6 +191,7 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 	ports: {
 		resourceType: "port",
 		endpoint: "port",
+		remove: "port.delete",
 		updateRequires: ["publishedPort", "publishMode", "targetPort", "protocol"],
 		requiredOnCreate: [],
 		createDefaults: { publishMode: "ingress" },
@@ -164,6 +201,7 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 	mounts: {
 		resourceType: "mount",
 		endpoint: "mounts",
+		remove: "mounts.remove",
 		updateRequires: [],
 		requiredOnCreate: [],
 		createDefaults: {},
@@ -176,6 +214,7 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 	redirects: {
 		resourceType: "redirect",
 		endpoint: "redirects",
+		remove: "redirects.delete",
 		updateRequires: ["regex", "replacement", "permanent"],
 		requiredOnCreate: [],
 		createDefaults: { permanent: false },
@@ -185,6 +224,7 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 	security: {
 		resourceType: "security",
 		endpoint: "security",
+		remove: "security.delete",
 		updateRequires: ["username", "password"],
 		requiredOnCreate: ["password"],
 		createDefaults: {},
@@ -194,6 +234,7 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 	schedules: {
 		resourceType: "schedule",
 		endpoint: "schedule",
+		remove: "schedule.delete",
 		updateRequires: ["name", "cronExpression", "command"],
 		requiredOnCreate: [],
 		createDefaults: {},
@@ -206,6 +247,16 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 };
 
 export const CHILD_KEYS = Object.keys(CHILDREN) as ChildKey[];
+
+export const isAutoCreatedMount = (
+	type: ServiceType,
+	mount: Fields,
+	service: Fields,
+) =>
+	type !== "application" &&
+	type !== "compose" &&
+	mount.type === "volume" &&
+	mount.volumeName === `${service.appName}-data`;
 
 export const pick = (fields: Fields, keys: string[]): Fields =>
 	Object.fromEntries(

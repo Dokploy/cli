@@ -1,10 +1,11 @@
 import chalk from "chalk";
 import { SECRET_FIELDS } from "./resources.js";
-import type { Action, ApplyPlan, ApplyResult } from "./types.js";
+import type { Action, ApplyResult, Plan } from "./types.js";
 
 const STATUS_COLORS: Record<Action["type"], (text: string) => string> = {
 	create: chalk.green,
 	update: chalk.yellow,
+	delete: chalk.red,
 	unchanged: chalk.gray,
 };
 
@@ -43,19 +44,30 @@ const formatTree = (
 	),
 ];
 
-export const formatPlan = (plan: ApplyPlan, verbose: boolean): string =>
+export const formatPlan = (plan: Plan, verbose: boolean): string =>
 	[
 		"",
-		...formatTree(plan.project, 0, verbose),
-		...plan.environments.flatMap((environment) =>
-			formatTree(environment, 1, verbose),
-		),
+		...(plan.organization.length > 0
+			? [
+					"Organization",
+					...plan.organization.flatMap((action) =>
+						formatTree(action, 1, verbose),
+					),
+				]
+			: []),
+		...plan.projects.flatMap((project) => [
+			...formatTree(project.project, 0, verbose),
+			...project.environments.flatMap((environment) =>
+				formatTree(environment, 1, verbose),
+			),
+		]),
 	].join("\n");
 
 export function formatSummary(result: ApplyResult): string {
 	const parts = [
 		result.created > 0 && chalk.green(`${result.created} created`),
 		result.updated > 0 && chalk.yellow(`${result.updated} updated`),
+		result.deleted > 0 && chalk.red(`${result.deleted} deleted`),
 		result.unchanged > 0 && chalk.gray(`${result.unchanged} unchanged`),
 		result.failed > 0 && chalk.red(`${result.failed} failed`),
 	].filter(Boolean);

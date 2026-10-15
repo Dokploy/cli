@@ -1,7 +1,13 @@
 import chalk from "chalk";
 import { apiGet, readAuthConfig } from "../../client.js";
-import { diffChildren, diffResource } from "./differ.js";
-import { executePlan } from "./executor.js";
+import {
+	deletion,
+	diffChildren,
+	diffResource,
+	pruneChildren,
+} from "./differ.js";
+import { combineResults, executePlan } from "./executor.js";
+import { executeOrganization, planOrganization } from "./organization.js";
 import { parseConfigFile } from "./parser.js";
 import {
 	fetchService,
@@ -11,7 +17,9 @@ import {
 } from "./remote.js";
 import { formatErrors, formatPlan, formatSummary } from "./reporter.js";
 import {
+	type ChildKey,
 	type Fields,
+	isAutoCreatedMount,
 	omit,
 	pick,
 	requiredOnCreate,
@@ -19,25 +27,38 @@ import {
 	SERVICE_TYPES,
 	SERVICES,
 	type ServiceType,
+	sequence,
 } from "./resources.js";
-import type { DokployConfig, EnvironmentConfig } from "./schema.js";
-import type { Action, ApplyPlan, ApplyResult } from "./types.js";
+import type {
+	DokployDocument,
+	EnvironmentConfig,
+	OrganizationConfig,
+	ProjectConfig,
+} from "./schema.js";
+import type { Action, ApplyResult, Plan, ProjectPlan } from "./types.js";
 
 export interface ReconcileOptions {
 	filePath: string;
 	dryRun: boolean;
 	verbose: boolean;
+	prune: boolean;
+}
+
+export interface PlanOptions {
+	prune: boolean;
+	declaredServers: string[];
 }
 
 export async function reconcile({
 	filePath,
 	dryRun,
 	verbose,
+	prune,
 }: ReconcileOptions): Promise<ApplyResult> {
-	const config = await parseConfigFile(filePath);
+	const documents = await parseConfigFile(filePath);
 	console.log(chalk.blue(`Applying ${filePath} to ${readAuthConfig().url}`));
 
-	const plan = await buildPlan(config);
+	const plan = await buildFilePlan(documents, prune);
 	console.log(formatPlan(plan, verbose));
 
 	if (dryRun) {
@@ -45,7 +66,7 @@ export async function reconcile({
 		return countPlan(plan);
 	}
 
-	const result = await executePlan(plan);
+	const result = await executeFilePlan(plan);
 	console.log(formatSummary(result));
 	if (result.errors.length > 0) {
 		console.log(formatErrors(result));
@@ -62,19 +83,44 @@ const servicesOf = (
 		),
 	);
 
+const remoteServices = (environment: Fields): Action[] =>
+	SERVICE_TYPES.flatMap((type) =>
+		(environment[SERVICES[type].section] ?? []).map((service: Fields) =>
+			deletion(type, service.name, service),
+		),
+	);
+
 const resolveNames = (config: Fields, lookups: Lookups): Fields => {
-	const { serverName, gitProvider, ...fields } = config;
+	const { gitProvider, ...fields } = config;
 	return {
 		...fields,
-		...(serverName ? { serverId: lookups.serverId(serverName) } : {}),
+		...(fields.serverName
+			? { serverId: lookups.serverId(fields.serverName) }
+			: {}),
 		...(gitProvider ? lookups.gitProviderFields(gitProvider) : {}),
 	};
 };
+
+const childActions = (
+	key: ChildKey,
+	type: ServiceType,
+	local: Fields[] | undefined,
+	remote: Fields | undefined,
+	prune: boolean,
+): Action[] => [
+	...(local ? diffChildren(key, type, local, remote?.[key] ?? []) : []),
+	...(prune && remote
+		? pruneChildren(key, type, local ?? [], remote[key] ?? [], (item) =>
+				isAutoCreatedMount(type, item, remote),
+			)
+		: []),
+];
 
 async function planService(
 	type: ServiceType,
 	config: Fields,
 	remoteSummary: Fields | undefined,
+	prune: boolean,
 ): Promise<Action> {
 	const spec = SERVICES[type];
 	const remote = remoteSummary
@@ -85,12 +131,10 @@ async function planService(
 		config.name,
 		omit(config, spec.children),
 		remote,
-		[...spec.createOnly, "serverId"],
+		[...spec.createOnly, "serverId", "serverName"],
 	);
 	const children = spec.children.flatMap((key) =>
-		config[key]
-			? diffChildren(key, type, config[key], remote?.[key] ?? [])
-			: [],
+		childActions(key, type, config[key], remote, prune),
 	);
 	return { ...action, children };
 }
@@ -99,6 +143,7 @@ async function planEnvironment(
 	environment: EnvironmentConfig,
 	remoteEnvironments: Fields[],
 	lookups: Lookups,
+	prune: boolean,
 ): Promise<Action> {
 	const remote = findByName(
 		remoteEnvironments,
@@ -111,19 +156,49 @@ async function planEnvironment(
 		pick(environment, SCOPE_FIELDS),
 		remote,
 	);
-	const children = await Promise.all(
-		servicesOf(environment).map(({ type, config }) =>
+	const declared = servicesOf(environment);
+	const services = await Promise.all(
+		declared.map(({ type, config }) =>
 			planService(
 				type,
 				resolveNames(config, lookups),
 				remote
 					? findByName(remote[SERVICES[type].section] ?? [], config.name, type)
 					: undefined,
+				prune,
 			),
 		),
 	);
-	return { ...action, children };
+	const pruned =
+		prune && remote
+			? remoteServices(remote).filter(
+					(service) =>
+						!declared.some(
+							({ type, config }) =>
+								type === service.resourceType && config.name === service.name,
+						),
+				)
+			: [];
+	return { ...action, children: [...services, ...pruned] };
 }
+
+const prunedEnvironments = (
+	config: ProjectConfig,
+	remoteEnvironments: Fields[],
+): Action[] =>
+	remoteEnvironments
+		.filter(
+			(remote) =>
+				!config.environments.some(
+					(environment) => environment.name === remote.name,
+				),
+		)
+		.map((remote) => ({
+			...(remote.isDefault
+				? diffResource("environment", remote.name, {}, remote)
+				: deletion("environment", remote.name, remote)),
+			children: remoteServices(remote),
+		}));
 
 const missingOnCreate = (action: Action): string[] => {
 	const missing =
@@ -141,7 +216,7 @@ const missingOnCreate = (action: Action): string[] => {
 
 const movedServer = (action: Action): string[] =>
 	action.type !== "create" &&
-	action.config.serverId !== undefined &&
+	action.config.serverName !== undefined &&
 	action.config.serverId !== action.remote?.serverId
 		? [
 				`${action.resourceType} "${action.name}" runs on a different server; serverName only applies when creating it`,
@@ -154,9 +229,13 @@ const planErrors = (action: Action): string[] => [
 	...(action.children ?? []).flatMap(planErrors),
 ];
 
-export async function buildPlan(config: DokployConfig): Promise<ApplyPlan> {
+export async function buildPlan(
+	config: ProjectConfig,
+	{ prune, declaredServers }: PlanOptions,
+): Promise<ProjectPlan> {
 	const lookups = await loadLookups(
 		config.environments.flatMap(servicesOf).map(({ config }) => config),
+		declaredServers,
 	);
 	const projectSummary = findByName(
 		await apiGet("project.all"),
@@ -172,11 +251,15 @@ export async function buildPlan(config: DokployConfig): Promise<ApplyPlan> {
 		pick(config, SCOPE_FIELDS),
 		remoteProject,
 	);
-	const environments = await Promise.all(
-		config.environments.map((environment) =>
-			planEnvironment(environment, remoteProject?.environments ?? [], lookups),
-		),
-	);
+	const remoteEnvironments: Fields[] = remoteProject?.environments ?? [];
+	const environments = [
+		...(await Promise.all(
+			config.environments.map((environment) =>
+				planEnvironment(environment, remoteEnvironments, lookups, prune),
+			),
+		)),
+		...(prune ? prunedEnvironments(config, remoteEnvironments) : []),
+	];
 
 	const errors = environments.flatMap(planErrors);
 	if (errors.length > 0) {
@@ -185,18 +268,63 @@ export async function buildPlan(config: DokployConfig): Promise<ApplyPlan> {
 	return { project, environments };
 }
 
+const isOrganization = (
+	document: DokployDocument,
+): document is OrganizationConfig => document.kind === "Organization";
+
+const isProject = (document: DokployDocument): document is ProjectConfig =>
+	document.kind === "Project";
+
+export async function buildFilePlan(
+	documents: DokployDocument[],
+	prune: boolean,
+): Promise<Plan> {
+	const organization = documents.find(isOrganization);
+	const projects = documents.filter(isProject);
+	return {
+		organization: organization
+			? await planOrganization(
+					organization,
+					projects.map((project) => project.name),
+				)
+			: [],
+		projects: await sequence(projects, (project) =>
+			buildPlan(project, {
+				prune,
+				declaredServers: (organization?.servers ?? []).map(
+					(server) => server.name,
+				),
+			}),
+		),
+	};
+}
+
+export async function executeFilePlan(plan: Plan): Promise<ApplyResult> {
+	const before = await executeOrganization(plan.organization, "before");
+	const projects = await sequence(plan.projects, executePlan);
+	const after = await executeOrganization(plan.organization, "after");
+	return combineResults([before, ...projects, after]);
+}
+
 const flatten = (action: Action): Action[] => [
 	action,
 	...(action.children ?? []).flatMap(flatten),
 ];
 
-export function countPlan(plan: ApplyPlan): ApplyResult {
-	const actions = [plan.project, ...plan.environments.flatMap(flatten)];
+export function countPlan(plan: Plan): ApplyResult {
+	const actions = [
+		...plan.organization,
+		...plan.projects.flatMap((project) => [
+			project.project,
+			...project.environments.flatMap(flatten),
+		]),
+	];
 	const count = (type: Action["type"]) =>
 		actions.filter((action) => action.type === type).length;
 	return {
 		created: count("create"),
 		updated: count("update"),
+		deleted: count("delete"),
 		unchanged: count("unchanged"),
 		failed: 0,
 		errors: [],

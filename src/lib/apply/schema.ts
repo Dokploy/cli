@@ -196,7 +196,7 @@ const environmentSchema = z.strictObject({
 	redis: z.array(redisSchema).optional(),
 });
 
-export const dokployConfigSchema = z.strictObject({
+export const projectSchema = z.strictObject({
 	apiVersion: z.literal("v1"),
 	kind: z.literal("Project"),
 	name: z.string().min(1),
@@ -205,5 +205,194 @@ export const dokployConfigSchema = z.strictObject({
 	environments: z.array(environmentSchema).min(1),
 });
 
-export type DokployConfig = z.output<typeof dokployConfigSchema>;
+const sshKeySchema = z.strictObject({
+	name: z.string().min(1),
+	description: z.string().optional(),
+	publicKey: z.string().optional(),
+	privateKey: z.string().optional(),
+});
+
+const serverSchema = z.strictObject({
+	name: z.string().min(1),
+	description: z.string().optional(),
+	ipAddress: z.string().optional(),
+	port: z.number().int().positive().optional(),
+	username: z.string().optional(),
+	sshKeyName: z.string().optional(),
+	serverType: z.enum(["deploy", "build"]).optional(),
+	enableDockerCleanup: z.boolean().optional(),
+});
+
+const destinationSchema = z.strictObject({
+	name: z.string().min(1),
+	provider: z.string().optional(),
+	accessKey: z.string().optional(),
+	secretAccessKey: z.string().optional(),
+	bucket: z.string().optional(),
+	region: z.string().optional(),
+	endpoint: z.string().optional(),
+	additionalFlags: z.array(z.string()).optional(),
+	serverName: z.string().optional(),
+});
+
+const registrySchema = z.strictObject({
+	registryName: z.string().min(1),
+	registryType: z.enum(["cloud", "selfHosted"]).optional(),
+	registryUrl: z.string().optional(),
+	username: z.string().optional(),
+	password: z.string().optional(),
+	imagePrefix: z.string().optional(),
+	serverName: z.string().optional(),
+});
+
+const certificateSchema = z.strictObject({
+	name: z.string().min(1),
+	certificateData: z.string().optional(),
+	privateKey: z.string().optional(),
+	autoRenew: z.boolean().optional(),
+	serverName: z.string().optional(),
+});
+
+const text = z.string().optional();
+const flag = z.boolean().optional();
+const count = z.number().int().optional();
+const addresses = z.array(z.string()).optional();
+
+export const NOTIFICATION_EVENTS = [
+	"appDeploy",
+	"appBuildError",
+	"databaseBackup",
+	"dokployBackup",
+	"volumeBackup",
+	"dokployRestart",
+	"dockerCleanup",
+	"serverThreshold",
+];
+
+export const notificationFields = {
+	slack: { webhookUrl: text, channel: text },
+	telegram: { botToken: text, chatId: text, messageThreadId: text },
+	discord: { webhookUrl: text, decoration: flag },
+	email: {
+		smtpServer: text,
+		smtpPort: count,
+		username: text,
+		password: text,
+		fromAddress: text,
+		toAddresses: addresses,
+	},
+	resend: { apiKey: text, fromAddress: text, toAddresses: addresses },
+	gotify: {
+		serverUrl: text,
+		appToken: text,
+		priority: count,
+		decoration: flag,
+	},
+	ntfy: { serverUrl: text, topic: text, accessToken: text, priority: count },
+	mattermost: { webhookUrl: text, channel: text, username: text },
+	custom: {
+		endpoint: text,
+		headers: z.record(z.string(), z.string()).optional(),
+	},
+	lark: { webhookUrl: text },
+	teams: { webhookUrl: text },
+	pushover: {
+		userKey: text,
+		apiToken: text,
+		priority: count,
+		retry: count,
+		expire: count,
+	},
+};
+
+export type NotificationType = keyof typeof notificationFields;
+
+const notificationBase = {
+	name: z.string().min(1),
+	...Object.fromEntries(NOTIFICATION_EVENTS.map((event) => [event, flag])),
+};
+
+const notificationSchema = z.discriminatedUnion(
+	"type",
+	Object.entries(notificationFields).map(([type, fields]) =>
+		z.strictObject({ type: z.literal(type), ...notificationBase, ...fields }),
+	) as unknown as [z.ZodObject, ...z.ZodObject[]],
+);
+
+export const vaultProviderFields = {
+	hashicorp: { url: text, token: text, namespace: text, mount: text },
+	infisical: {
+		siteUrl: text,
+		clientId: text,
+		clientSecret: text,
+		projectId: text,
+		environmentSlug: text,
+		secretPath: text,
+	},
+	aws: {
+		region: text,
+		accessKeyId: text,
+		secretAccessKey: text,
+		endpoint: text,
+	},
+	"aws-parameter-store": {
+		region: text,
+		accessKeyId: text,
+		secretAccessKey: text,
+		endpoint: text,
+		parameterPath: text,
+	},
+	doppler: { serviceToken: text, project: text, config: text },
+	azure: { vaultUri: text, tenantId: text, clientId: text, clientSecret: text },
+	scaleway: { region: text, projectId: text, secretKey: text, apiUrl: text },
+	phase: { token: text, appId: text, env: text, path: text, apiUrl: text },
+};
+
+export type VaultProviderType = keyof typeof vaultProviderFields;
+
+const assignmentSchema = z.strictObject({
+	project: z.string().min(1),
+	environments: z.array(z.string().min(1)).optional(),
+});
+
+const vaultProviderSchema = z.discriminatedUnion(
+	"providerType",
+	Object.entries(vaultProviderFields).map(([providerType, fields]) =>
+		z.strictObject({
+			name: z.string().min(1),
+			providerType: z.literal(providerType),
+			assignments: z.array(assignmentSchema).optional(),
+			...fields,
+		}),
+	) as unknown as [z.ZodObject, ...z.ZodObject[]],
+);
+
+export const organizationSchema = z.strictObject({
+	apiVersion: z.literal("v1"),
+	kind: z.literal("Organization"),
+	sshKeys: z.array(sshKeySchema).optional(),
+	servers: z.array(serverSchema).optional(),
+	destinations: z.array(destinationSchema).optional(),
+	registries: z.array(registrySchema).optional(),
+	certificates: z.array(certificateSchema).optional(),
+	notifications: z.array(notificationSchema).optional(),
+	vaultProviders: z.array(vaultProviderSchema).optional(),
+});
+
+export const organizationItemSchemas = {
+	sshKeys: sshKeySchema,
+	servers: serverSchema,
+	destinations: destinationSchema,
+	registries: registrySchema,
+	certificates: certificateSchema,
+};
+
+export const documentSchema = z.discriminatedUnion("kind", [
+	projectSchema,
+	organizationSchema,
+]);
+
+export type ProjectConfig = z.output<typeof projectSchema>;
+export type OrganizationConfig = z.output<typeof organizationSchema>;
+export type DokployDocument = z.output<typeof documentSchema>;
 export type EnvironmentConfig = z.output<typeof environmentSchema>;
