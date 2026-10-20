@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import axios, { type AxiosInstance } from "axios";
@@ -6,7 +7,14 @@ import chalk from "chalk";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const configPath = path.join(__dirname, "..", "config.json");
+// Legacy location inside the installed package; wiped on upgrade.
+const legacyConfigPath = path.join(__dirname, "..", "config.json");
+
+export function getConfigPath(): string {
+	const base =
+		process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
+	return path.join(base, "dokploy", "config.json");
+}
 
 export interface AuthConfig {
 	token: string;
@@ -42,7 +50,10 @@ export function readAuthConfig(): AuthConfig {
 		return { token: envToken, url: envUrl };
 	}
 
-	if (!fs.existsSync(configPath)) {
+	const configPath = [getConfigPath(), legacyConfigPath].find((p) =>
+		fs.existsSync(p),
+	);
+	if (!configPath) {
 		console.error(
 			chalk.red(
 				"No configuration found. Please run 'dokploy auth' first or set DOKPLOY_URL and DOKPLOY_AUTH_TOKEN environment variables.",
@@ -67,7 +78,11 @@ export function readAuthConfig(): AuthConfig {
 }
 
 export function saveAuthConfig(url: string, token: string): void {
-	fs.writeFileSync(configPath, JSON.stringify({ url, token }, null, 2));
+	const configPath = getConfigPath();
+	fs.mkdirSync(path.dirname(configPath), { recursive: true });
+	fs.writeFileSync(configPath, JSON.stringify({ url, token }, null, 2), {
+		mode: 0o600,
+	});
 }
 
 export function createClient(): AxiosInstance {
