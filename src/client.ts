@@ -70,15 +70,27 @@ export function saveAuthConfig(url: string, token: string): void {
 	fs.writeFileSync(configPath, JSON.stringify({ url, token }, null, 2));
 }
 
+export function extractApiErrorMessage(data: unknown): string | undefined {
+	const d = data as any;
+	const message = d?.error?.json?.message ?? d?.error?.message ?? d?.message;
+	return typeof message === "string" && message ? message : undefined;
+}
+
 export function createClient(): AxiosInstance {
 	const auth = readAuthConfig();
-	return axios.create({
+	const client = axios.create({
 		baseURL: `${auth.url}/api`,
 		headers: {
 			"x-api-key": auth.token,
 			"Content-Type": "application/json",
 		},
 	});
+	client.interceptors.response.use(undefined, (error) => {
+		const detail = extractApiErrorMessage(error?.response?.data);
+		if (detail) error.message = `${error.message}: ${detail}`;
+		return Promise.reject(error);
+	});
+	return client;
 }
 
 export async function apiPost(
