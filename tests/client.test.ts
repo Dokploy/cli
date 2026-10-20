@@ -54,3 +54,48 @@ describe("saveAuthConfig", () => {
 		expect(typeof saveAuthConfig).toBe("function");
 	});
 });
+
+describe("apiUpdateMerged", () => {
+	it("should preserve current values for omitted fields", async () => {
+		process.env.DOKPLOY_URL = "https://test.dokploy.com";
+		process.env.DOKPLOY_API_KEY = "test-key";
+
+		const axios = (await import("axios")).default;
+		const get = vi.fn().mockResolvedValue({
+			data: {
+				result: {
+					data: {
+						json: {
+							applicationId: "a1",
+							name: "Old",
+							buildType: "nixpacks",
+							autoDeploy: true,
+							sourceType: null,
+							deployments: [],
+						},
+					},
+				},
+			},
+		});
+		const post = vi.fn().mockResolvedValue({ data: {} });
+		vi.spyOn(axios, "create").mockReturnValue({ get, post } as never);
+
+		const { apiUpdateMerged } = await import("../src/client.js");
+		await apiUpdateMerged(
+			"application.update",
+			"application.one",
+			"applicationId",
+			{ applicationId: "a1", name: "New" },
+			["applicationId", "name", "buildType", "autoDeploy", "sourceType"],
+		);
+
+		expect(post).toHaveBeenCalledWith("/trpc/application.update", {
+			json: {
+				applicationId: "a1",
+				name: "New",
+				buildType: "nixpacks",
+				autoDeploy: true,
+			},
+		});
+	});
+});
