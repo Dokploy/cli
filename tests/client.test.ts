@@ -54,3 +54,15 @@ describe("saveAuthConfig", () => {
 		expect(typeof saveAuthConfig).toBe("function");
 	});
 });
+
+describe("createClient", () => {
+	it("should send a dokploy-cli User-Agent header", async () => {
+		process.env.DOKPLOY_URL = "https://test.dokploy.com";
+		process.env.DOKPLOY_API_KEY = "test-key";
+
+		const { createClient } = await import("../src/client.js");
+		const ua = createClient().defaults.headers["User-Agent"];
+
+		expect(ua).toMatch(/^dokploy-cli\/\d+\.\d+\.\d+/);
+	});
+});

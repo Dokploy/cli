@@ -8,6 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const configPath = path.join(__dirname, "..", "config.json");
 
+const { version } = JSON.parse(
+	fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"),
+) as { version: string };
+
+export const USER_AGENT = `dokploy-cli/${version}`;
+
 export interface AuthConfig {
 	token: string;
 	url: string;
@@ -76,6 +82,7 @@ export function createClient(): AxiosInstance {
 		baseURL: `${auth.url}/api`,
 		headers: {
 			"x-api-key": auth.token,
+			"User-Agent": USER_AGENT,
 			"Content-Type": "application/json",
 		},
 	});
