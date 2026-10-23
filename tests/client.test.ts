@@ -1,3 +1,6 @@
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("readAuthConfig", () => {
@@ -49,8 +52,29 @@ describe("readAuthConfig", () => {
 });
 
 describe("saveAuthConfig", () => {
-	it("should write config with correct structure", async () => {
-		const { saveAuthConfig } = await import("../src/client.js");
-		expect(typeof saveAuthConfig).toBe("function");
+	it("should write a private config under the user config dir and read it back", async () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dokploy-cfg-"));
+		const originalEnv = { ...process.env };
+		process.env.XDG_CONFIG_HOME = dir;
+		delete process.env.DOKPLOY_URL;
+		delete process.env.DOKPLOY_API_KEY;
+		delete process.env.DOKPLOY_AUTH_TOKEN;
+
+		try {
+			const { saveAuthConfig, readAuthConfig, getConfigPath } = await import(
+				"../src/client.js"
+			);
+			saveAuthConfig("https://x.dokploy.com", "tok");
+
+			expect(getConfigPath()).toBe(path.join(dir, "dokploy", "config.json"));
+			expect(fs.statSync(getConfigPath()).mode & 0o777).toBe(0o600);
+			expect(readAuthConfig()).toEqual({
+				url: "https://x.dokploy.com",
+				token: "tok",
+			});
+		} finally {
+			process.env = originalEnv;
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });
