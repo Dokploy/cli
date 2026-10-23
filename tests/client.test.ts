@@ -54,3 +54,38 @@ describe("saveAuthConfig", () => {
 		expect(typeof saveAuthConfig).toBe("function");
 	});
 });
+
+describe("extractApiErrorMessage", () => {
+	it("should read tRPC and plain error bodies", async () => {
+		const { extractApiErrorMessage } = await import("../src/client.js");
+
+		expect(
+			extractApiErrorMessage({ error: { json: { message: "Not found" } } }),
+		).toBe("Not found");
+		expect(extractApiErrorMessage({ message: "Unauthorized" })).toBe(
+			"Unauthorized",
+		);
+		expect(extractApiErrorMessage("<html>")).toBeUndefined();
+		expect(extractApiErrorMessage(undefined)).toBeUndefined();
+	});
+
+	it("should append the server message to request errors", async () => {
+		process.env.DOKPLOY_URL = "http://127.0.0.1:9";
+		process.env.DOKPLOY_API_KEY = "k";
+		const { createClient } = await import("../src/client.js");
+		const client = createClient();
+		client.defaults.adapter = async (config) => {
+			const error: any = new Error("Request failed with status code 400");
+			error.config = config;
+			error.response = {
+				status: 400,
+				data: { error: { json: { message: "Invalid input" } } },
+			};
+			throw error;
+		};
+
+		await expect(client.get("/x")).rejects.toThrow(
+			"Request failed with status code 400: Invalid input",
+		);
+	});
+});
