@@ -3,7 +3,7 @@
 
 import type { Command } from "commander";
 import chalk from "chalk";
-import { apiPost, apiGet } from "../client.js";
+import { apiPost, apiGet, apiUpdateMerged } from "../client.js";
 
 function printOutput(data: unknown) {
 	if (data === null || data === undefined) {
@@ -969,7 +969,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["isStaticSpa"] != null) opts["isStaticSpa"] = opts["isStaticSpa"] === true || opts["isStaticSpa"] === "true";
 			if (opts["createEnvFile"] != null) opts["createEnvFile"] = opts["createEnvFile"] === true || opts["createEnvFile"] === "true";
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
-			const data = await apiPost("application.update", opts);
+			const data = await apiUpdateMerged("application.update", "application.one", "applicationId", opts, ["applicationId","name","appName","description","env","previewEnv","watchPaths","previewBuildArgs","previewBuildSecrets","previewLabels","previewWildcard","previewPort","previewHttps","previewPath","previewCertificateType","previewCustomCertResolver","previewLimit","isPreviewDeploymentsActive","previewRequireCollaboratorPermissions","rollbackActive","buildArgs","buildSecrets","memoryReservation","memoryLimit","cpuReservation","cpuLimit","title","enabled","subtitle","command","args","icon","refreshToken","sourceType","cleanCache","repository","owner","branch","buildPath","triggerType","autoDeploy","gitlabProjectId","gitlabRepository","gitlabOwner","gitlabBranch","gitlabBuildPath","gitlabPathNamespace","giteaRepository","giteaOwner","giteaBranch","giteaBuildPath","bitbucketRepository","bitbucketRepositorySlug","bitbucketOwner","bitbucketBranch","bitbucketBuildPath","username","password","dockerImage","registryUrl","customGitUrl","customGitBranch","customGitBuildPath","customGitSSHKeyId","enableSubmodules","dockerfile","dockerContextPath","dockerBuildStage","dropBuildPath","healthCheckSwarm","restartPolicySwarm","placementSwarm","updateConfigSwarm","rollbackConfigSwarm","modeSwarm","labelsSwarm","networkSwarm","stopGracePeriodSwarm","endpointSpecSwarm","ulimitsSwarm","replicas","applicationStatus","buildType","railpackVersion","herokuVersion","publishDirectory","isStaticSpa","createEnvFile","createdAt","registryId","rollbackRegistryId","environmentId","githubId","gitlabId","giteaId","bitbucketId","buildServerId","buildRegistryId","networkIds","detachDokployNetwork"]);
 			if (jsonOutput) {
 				console.log(JSON.stringify(data, null, 2));
 			} else {

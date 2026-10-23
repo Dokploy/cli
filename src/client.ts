@@ -104,3 +104,19 @@ export async function apiGet(
 	const response = await client.get(`/trpc/${endpoint}${query}`);
 	return response.data?.result?.data?.json ?? response.data;
 }
+
+// Partial-update helper: the server treats omitted fields as cleared.
+export async function apiUpdateMerged(
+	endpoint: string,
+	oneEndpoint: string,
+	idKey: string,
+	opts: Record<string, unknown>,
+	allowedKeys: string[],
+) {
+	const current = await apiGet(oneEndpoint, { [idKey]: opts[idKey] });
+	const merged: Record<string, unknown> = {};
+	for (const key of allowedKeys) {
+		if (current?.[key] != null) merged[key] = current[key];
+	}
+	return apiPost(endpoint, { ...merged, ...opts });
+}

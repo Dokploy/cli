@@ -196,6 +196,11 @@ function generateCoercion(opt: OptionInfo): string {
 	return "";
 }
 
+// Update commands whose server endpoint clears omitted fields.
+const MERGE_UPDATES: Record<string, { one: string; idKey: string }> = {
+	"application.update": { one: "application.one", idKey: "applicationId" },
+};
+
 function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 	const actionName = camelToKebab(cmd.action);
 	const optionLines = cmd.options.map(generateOptionLine).join("\n\t\t");
@@ -205,9 +210,13 @@ function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 		.map((c) => `\t\t\t${c}`)
 		.join("\n");
 
-	const apiCall = cmd.method === "post"
-		? `await apiPost("${cmd.endpoint}", opts)`
-		: `await apiGet("${cmd.endpoint}", opts)`;
+	const merge = MERGE_UPDATES[cmd.endpoint];
+	const allowedKeys = JSON.stringify(cmd.options.map((o) => o.name));
+	const apiCall = merge
+		? `await apiUpdateMerged("${cmd.endpoint}", "${merge.one}", "${merge.idKey}", opts, ${allowedKeys})`
+		: cmd.method === "post"
+			? `await apiPost("${cmd.endpoint}", opts)`
+			: `await apiGet("${cmd.endpoint}", opts)`;
 
 	const escapedDesc = cmd.description.replace(/'/g, "\\'");
 
@@ -253,7 +262,7 @@ function generateFile(commands: CommandInfo[]): string {
 
 import type { Command } from "commander";
 import chalk from "chalk";
-import { apiPost, apiGet } from "../client.js";
+import { apiPost, apiGet, apiUpdateMerged } from "../client.js";
 
 function printOutput(data: unknown) {
 	if (data === null || data === undefined) {

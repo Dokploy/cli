@@ -45,7 +45,7 @@ describe("generator", () => {
 		}
 	});
 
-	it("number of apiPost/apiGet calls should match valid endpoints", () => {
+	it("number of apiPost/apiGet/apiUpdateMerged calls should match valid endpoints", () => {
 		const spec = JSON.parse(fs.readFileSync(specPath, "utf8"));
 		const content = fs.readFileSync(generatedPath, "utf8");
 
@@ -57,7 +57,7 @@ describe("generator", () => {
 			if (group && rest.length > 0) validEndpoints++;
 		}
 
-		const apiCalls = (content.match(/await api(Post|Get)\(/g) || []).length;
+		const apiCalls = (content.match(/await api(Post|Get|UpdateMerged)\(/g) || []).length;
 		expect(apiCalls).toBe(validEndpoints);
 	});
 });
