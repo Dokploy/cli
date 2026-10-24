@@ -87,10 +87,10 @@ export async function apiPost(
 ) {
 	const client = createClient();
 	const response = await client.post(
-		`/trpc/${endpoint}`,
-		data ? { json: data } : undefined,
+		`/${endpoint}`,
+		data,
 	);
-	return response.data?.result?.data?.json ?? response.data;
+	return response.data;
 }
 
 export async function apiGet(
@@ -98,9 +98,10 @@ export async function apiGet(
 	params?: Record<string, unknown>,
 ) {
 	const client = createClient();
-	const query = params
-		? `?input=${encodeURIComponent(JSON.stringify(params))}`
-		: "";
-	const response = await client.get(`/trpc/${endpoint}${query}`);
-	return response.data?.result?.data?.json ?? response.data;
+	const query = Object
+		.entries(params ?? {})
+		.map(([key, value]) => `${key}=${value}`)
+		.join('&')
+	const response = await client.get(`/${endpoint}?${query}`);
+	return response.data;
 }
