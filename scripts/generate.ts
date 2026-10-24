@@ -31,6 +31,9 @@ interface OperationObject {
 			"application/json"?: {
 				schema?: SchemaObject;
 			};
+			"multipart/form-data"?: {
+				schema?: SchemaObject;
+			};
 		};
 	};
 	responses?: Record<string, unknown>;
@@ -54,6 +57,7 @@ interface SchemaObject {
 
 interface SchemaProperty {
 	type?: string;
+	format?: string;
 	anyOf?: SchemaObject[];
 	enum?: string[];
 	default?: unknown;
@@ -70,6 +74,7 @@ interface CommandInfo {
 	method: "get" | "post";
 	description: string;
 	options: OptionInfo[];
+	isMultipart?: boolean;
 }
 
 interface OptionInfo {
@@ -78,6 +83,7 @@ interface OptionInfo {
 	description: string;
 	required: boolean;
 	type: "string" | "number" | "boolean";
+	format?: string;
 	enumValues?: string[];
 }
 
@@ -86,7 +92,8 @@ interface OptionInfo {
 // ---------------------------------------------------------------------------
 
 function resolveType(prop: SchemaProperty): "string" | "number" | "boolean" {
-	const raw = prop.type ?? prop.anyOf?.find((s) => s.type && s.type !== "null")?.type;
+	const raw =
+		prop.type ?? prop.anyOf?.find((s) => s.type && s.type !== "null")?.type;
 	if (raw === "number" || raw === "integer") return "number";
 	if (raw === "boolean") return "boolean";
 	return "string";
@@ -98,7 +105,9 @@ function resolveEnum(prop: SchemaProperty): string[] | undefined {
 	return inner?.enum;
 }
 
-function extractOptionsFromSchema(schema: SchemaObject | undefined): OptionInfo[] {
+function extractOptionsFromSchema(
+	schema: SchemaObject | undefined,
+): OptionInfo[] {
 	if (!schema?.properties) return [];
 	const required = new Set(schema.required ?? []);
 	return Object.entries(schema.properties).map(([name, prop]) => {
@@ -108,10 +117,14 @@ function extractOptionsFromSchema(schema: SchemaObject | undefined): OptionInfo[
 		if (enumValues) desc += ` (${enumValues.join(", ")})`;
 		return {
 			name,
-			flag: `--${name} <${type === "boolean" ? "" : "value"}>`.replace(/ <>/g, ""),
+			flag: `--${name} <${type === "boolean" ? "" : "value"}>`.replace(
+				/ <>/g,
+				"",
+			),
 			description: desc,
 			required: required.has(name),
 			type,
+			format: prop.format,
 			enumValues,
 		};
 	});
@@ -125,7 +138,10 @@ function extractOptionsFromParams(params: ParameterObject[]): OptionInfo[] {
 		if (enumValues) desc += ` (${enumValues.join(", ")})`;
 		return {
 			name: p.name,
-			flag: `--${p.name} <${type === "boolean" ? "" : "value"}>`.replace(/ <>/g, ""),
+			flag: `--${p.name} <${type === "boolean" ? "" : "value"}>`.replace(
+				/ <>/g,
+				"",
+			),
 			description: desc,
 			required: p.required ?? false,
 			type,
@@ -153,8 +169,15 @@ function parseSpec(spec: OpenAPISpec): CommandInfo[] {
 
 			if (!group || !action) continue;
 
-			const bodySchema = op.requestBody?.content?.["application/json"]?.schema;
-			const paramOptions = op.parameters ? extractOptionsFromParams(op.parameters) : [];
+			const jsonSchema = op.requestBody?.content?.["application/json"]?.schema;
+			const multipartSchema =
+				op.requestBody?.content?.["multipart/form-data"]?.schema;
+			const bodySchema = jsonSchema ?? multipartSchema;
+			const isMultipart = !!multipartSchema;
+
+			const paramOptions = op.parameters
+				? extractOptionsFromParams(op.parameters)
+				: [];
 			const bodyOptions = extractOptionsFromSchema(bodySchema);
 			const options = [...paramOptions, ...bodyOptions];
 
@@ -165,6 +188,7 @@ function parseSpec(spec: OpenAPISpec): CommandInfo[] {
 				method: method as "get" | "post",
 				description: op.summary ?? op.description ?? `${group} ${action}`,
 				options,
+				isMultipart,
 			});
 		}
 	}
@@ -177,9 +201,8 @@ function parseSpec(spec: OpenAPISpec): CommandInfo[] {
 // ---------------------------------------------------------------------------
 
 function generateOptionLine(opt: OptionInfo): string {
-	const flag = opt.type === "boolean"
-		? `--${opt.name}`
-		: `--${opt.name} <value>`;
+	const flag =
+		opt.type === "boolean" ? `--${opt.name}` : `--${opt.name} <value>`;
 	const escaped = opt.description.replace(/'/g, "\\'");
 	return opt.required
 		? `.requiredOption('${flag}', '${escaped}')`
@@ -205,9 +228,17 @@ function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 		.map((c) => `\t\t\t${c}`)
 		.join("\n");
 
-	const apiCall = cmd.method === "post"
-		? `await apiPost("${cmd.endpoint}", opts)`
-		: `await apiGet("${cmd.endpoint}", opts)`;
+	let apiCall =
+		cmd.method === "post"
+			? `await apiPost("${cmd.endpoint}", opts)`
+			: `await apiGet("${cmd.endpoint}", opts)`;
+
+	if (cmd.isMultipart) {
+		const fileFields = cmd.options
+			.filter((o) => o.format === "binary")
+			.map((o) => o.name);
+		apiCall = `await apiPostForm("${cmd.endpoint}", opts, ${JSON.stringify(fileFields)})`;
+	}
 
 	const escapedDesc = cmd.description.replace(/'/g, "\\'");
 
@@ -239,10 +270,14 @@ function generateFile(commands: CommandInfo[]): string {
 	}
 
 	const groupBlocks: string[] = [];
-	for (const [group, cmds] of [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+	for (const [group, cmds] of [...groups.entries()].sort((a, b) =>
+		a[0].localeCompare(b[0]),
+	)) {
 		const varName = `g_${group.replace(/[^a-zA-Z0-9]/g, "_")}`;
 		const kebabGroup = camelToKebab(group);
-		groupBlocks.push(`\tconst ${varName} = program.command('${kebabGroup}').description('${kebabGroup} commands');`);
+		groupBlocks.push(
+			`\tconst ${varName} = program.command('${kebabGroup}').description('${kebabGroup} commands');`,
+		);
 		for (const cmd of cmds) {
 			groupBlocks.push(generateCommandCode(cmd, varName));
 		}
@@ -253,7 +288,7 @@ function generateFile(commands: CommandInfo[]): string {
 
 import type { Command } from "commander";
 import chalk from "chalk";
-import { apiPost, apiGet } from "../client.js";
+import { apiPost, apiGet, apiPostForm } from "../client.js";
 
 function printOutput(data: unknown) {
 	if (data === null || data === undefined) {
@@ -283,4 +318,6 @@ const commands = parseSpec(spec);
 fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
 fs.writeFileSync(OUT_PATH, generateFile(commands));
 
-console.log(`Generated ${commands.length} commands → ${path.relative(ROOT, OUT_PATH)}`);
+console.log(
+	`Generated ${commands.length} commands → ${path.relative(ROOT, OUT_PATH)}`,
+);

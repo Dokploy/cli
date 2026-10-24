@@ -57,7 +57,8 @@ describe("generator", () => {
 			if (group && rest.length > 0) validEndpoints++;
 		}
 
-		const apiCalls = (content.match(/await api(Post|Get)\(/g) || []).length;
+		const apiCalls = (content.match(/await api(Post|Get|PostForm)\(/g) || [])
+			.length;
 		expect(apiCalls).toBe(validEndpoints);
 	});
 });
