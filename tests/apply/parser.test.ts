@@ -69,6 +69,20 @@ describe("parseDocuments", () => {
 		).toThrow(/vaultProviders\.0: Unrecognized key: "url"/);
 	});
 
+	it("accepts a swarm update order and rejects an unknown one", () => {
+		const app = (order: string) =>
+			project(
+				`  - name: production\n    applications:\n      - name: api\n        updateConfigSwarm:\n          Parallelism: 1\n          Order: ${order}\n`,
+			);
+
+		expect(
+			parseDocuments(app("stop-first"))[0].kind === "Project" &&
+				parseDocuments(app("stop-first"))[0].environments[0].applications?.[0]
+					.updateConfigSwarm,
+		).toEqual({ Parallelism: 1, Order: "stop-first" });
+		expect(() => parseDocuments(app("sideways"))).toThrow(ConfigParseError);
+	});
+
 	it("rejects an empty file", () => {
 		expect(() => parseDocuments("")).toThrow("Config file has no documents");
 	});

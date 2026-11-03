@@ -84,6 +84,15 @@ const gitFields = {
 	triggerType: z.enum(["push", "tag"]).optional(),
 };
 
+const swarmUpdateSchema = z.strictObject({
+	Parallelism: z.number().int().nonnegative(),
+	Order: z.enum(["start-first", "stop-first"]),
+	Delay: z.number().optional(),
+	FailureAction: z.enum(["continue", "pause", "rollback"]).optional(),
+	Monitor: z.number().optional(),
+	MaxFailureRatio: z.number().optional(),
+});
+
 const applicationSchema = z.strictObject({
 	...serviceFields,
 	...gitFields,
@@ -112,6 +121,7 @@ const applicationSchema = z.strictObject({
 	command: z.string().optional(),
 	args: z.array(z.string()).optional(),
 	replicas: z.number().int().positive().optional(),
+	updateConfigSwarm: swarmUpdateSchema.optional(),
 	isPreviewDeploymentsActive: z.boolean().optional(),
 	previewPort: z.number().int().positive().optional(),
 	previewHttps: z.boolean().optional(),

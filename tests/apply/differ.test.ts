@@ -46,6 +46,36 @@ describe("diffResource", () => {
 	});
 });
 
+describe("diffResource with swarm update config", () => {
+	it("compares the update config by value", () => {
+		const remote = {
+			applicationId: "a1",
+			updateConfigSwarm: { Parallelism: 1, Order: "start-first" },
+		};
+		expect(
+			diffResource(
+				"application",
+				"api",
+				{ updateConfigSwarm: { Parallelism: 1, Order: "start-first" } },
+				remote,
+			).type,
+		).toBe("unchanged");
+		expect(
+			diffResource(
+				"application",
+				"api",
+				{ updateConfigSwarm: { Parallelism: 1, Order: "stop-first" } },
+				remote,
+			).changes,
+		).toEqual({
+			updateConfigSwarm: {
+				from: { Parallelism: 1, Order: "start-first" },
+				to: { Parallelism: 1, Order: "stop-first" },
+			},
+		});
+	});
+});
+
 describe("diffChildren", () => {
 	it("matches compose domains by host and service name", () => {
 		const actions = diffChildren(
