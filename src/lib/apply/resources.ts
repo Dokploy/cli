@@ -179,10 +179,12 @@ export const CHILDREN: Record<ChildKey, ChildSpec> = {
 		updateRequires: ["host"],
 		requiredOnCreate: [],
 		createDefaults: {},
-		identity: (domain, parentType) =>
-			parentType === "compose"
-				? `${domain.host}:${domain.serviceName ?? ""}`
-				: domain.host,
+		identity: (domain, parentType) => {
+			const route = `${domain.host}${domain.path && domain.path !== "/" ? domain.path : ""}`;
+			return parentType === "compose"
+				? `${route}:${domain.serviceName ?? ""}`
+				: route;
+		},
 		parent: (parentType, parentId) => ({
 			domainType: parentType,
 			...parentIdField(parentType, parentId),

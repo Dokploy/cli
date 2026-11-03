@@ -62,4 +62,25 @@ describe("diffChildren", () => {
 			["create", "example.com:api"],
 		]);
 	});
+
+	it("matches application domains by host and path", () => {
+		const actions = diffChildren(
+			"domains",
+			"application",
+			[
+				{ host: "example.com", port: 8888 },
+				{ host: "example.com", path: "/ws", port: 8889 },
+				{ host: "example.com", path: "/sim", port: 8890 },
+			],
+			[
+				{ domainId: "d1", host: "example.com", path: "/", port: 8888 },
+				{ domainId: "d2", host: "example.com", path: "/ws", port: 9999 },
+			],
+		);
+		expect(actions.map(({ type, name }) => [type, name])).toEqual([
+			["unchanged", "example.com"],
+			["update", "example.com/ws"],
+			["create", "example.com/sim"],
+		]);
+	});
 });
