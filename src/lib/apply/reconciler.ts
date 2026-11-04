@@ -1,6 +1,13 @@
 import chalk from "chalk";
 import { apiGet, readAuthConfig } from "../../client.js";
 import {
+	changedKeys,
+	deployAll,
+	deployTargets,
+	formatTargets,
+	landedKeys,
+} from "./deployer.js";
+import {
 	deletion,
 	diffChildren,
 	diffResource,
@@ -42,6 +49,8 @@ export interface ReconcileOptions {
 	dryRun: boolean;
 	verbose: boolean;
 	prune: boolean;
+	deploy: boolean;
+	deployTitle: string;
 }
 
 export interface PlanOptions {
@@ -54,6 +63,8 @@ export async function reconcile({
 	dryRun,
 	verbose,
 	prune,
+	deploy,
+	deployTitle,
 }: ReconcileOptions): Promise<ApplyResult> {
 	const documents = await parseConfigFile(filePath);
 	console.log(chalk.blue(`Applying ${filePath} to ${readAuthConfig().url}`));
@@ -62,16 +73,37 @@ export async function reconcile({
 	console.log(formatPlan(plan, verbose));
 
 	if (dryRun) {
+		if (deploy) {
+			console.log(formatTargets(await deployTargets(plan, changedKeys(plan))));
+		}
 		console.log(chalk.cyan("\n(dry-run) No changes applied."));
 		return countPlan(plan);
 	}
 
-	const result = await executeFilePlan(plan);
-	console.log(formatSummary(result));
+	const applied = await executeFilePlan(plan);
+	console.log(formatSummary(applied));
+	const result = deploy
+		? combineResults([
+				applied,
+				await deployChanged(documents, plan, prune, deployTitle),
+			])
+		: applied;
 	if (result.errors.length > 0) {
 		console.log(formatErrors(result));
 	}
 	return result;
+}
+
+async function deployChanged(
+	documents: DokployDocument[],
+	before: Plan,
+	prune: boolean,
+	title: string,
+): Promise<ApplyResult> {
+	const after = await buildFilePlan(documents, prune);
+	const targets = await deployTargets(after, landedKeys(before, after));
+	console.log(formatTargets(targets));
+	return deployAll(targets, title);
 }
 
 const servicesOf = (

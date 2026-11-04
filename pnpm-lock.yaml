@@ -17,6 +17,9 @@ importers:
       commander:
         specifier: ^13.1.0
         version: 13.1.0
+      safe-stable-stringify:
+        specifier: 3.0.0
+        version: 3.0.0
       yaml:
         specifier: ^2.9.1
         version: 2.9.1
@@ -678,6 +681,10 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
+  safe-stable-stringify@3.0.0:
+    resolution: {integrity: sha512-1z5+QfsSGAtBGJrCw2DP9cwfdvSEMRN4BKKaZxFIKwcwRbshkrtKzzueVFAJ2d1QJm+J3AmpYvI88jFnlEZmyg==}
+    engines: {node: '>=18'}
+
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
 
@@ -1300,6 +1307,8 @@ snapshots:
       '@rolldown/binding-openharmony-arm64': 1.2.15
       '@rolldown/binding-win32-arm64-msvc': 1.2.15
       '@rolldown/binding-win32-x64-msvc': 1.2.15
+
+  safe-stable-stringify@3.0.0: {}
 
   siginfo@2.0.0: {}
 
