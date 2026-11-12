@@ -6,14 +6,16 @@ vi.mock("../../src/client.js", () => ({
 	readAuthConfig: () => ({ url: "https://dokploy.test", token: "token" }),
 }));
 
-import { apiPost } from "../../src/client.js";
+import { apiGet, apiPost } from "../../src/client.js";
 import {
+	changedFiles,
 	DEPLOY_MARKER,
 	type Deployment,
 	deployAll,
 	deployTargets,
 	fingerprint,
 	landedKeys,
+	servicesMounting,
 } from "../../src/lib/apply/deployer.js";
 import type { Action, Plan } from "../../src/lib/apply/types.js";
 
@@ -58,6 +60,21 @@ const planWith = (...services: Action[]): Plan => ({
 });
 
 const KEY = "demo/production/compose/crm";
+
+const fileMount = (
+	filePath: string,
+	type: Action["type"] = "unchanged",
+): Action => ({
+	type,
+	resourceType: "mount",
+	name: filePath,
+	config: {
+		type: "file",
+		filePath,
+		mountPath: `/etc/${filePath}`,
+		content: "x",
+	},
+});
 
 const deployment = (overrides: Partial<Deployment>): Deployment => ({
 	deploymentId: "d1",
@@ -152,6 +169,65 @@ describe("deployTargets", () => {
 	});
 });
 
+describe("mounted files", () => {
+	it("names the changed file mounts of each service", () => {
+		const plan = planWith(
+			service({
+				children: [fileMount("otel.yaml", "update"), fileMount("loki.yaml")],
+			}),
+		);
+		expect(changedFiles(plan).get(KEY)).toEqual(["otel.yaml"]);
+	});
+
+	it("restarts for the changed files on a fresh change, for every file on a retried deploy", async () => {
+		const mounted = service({
+			children: [fileMount("otel.yaml"), fileMount("loki.yaml")],
+		});
+		const [changed] = await deployTargets(
+			planWith(mounted),
+			new Set([KEY]),
+			historyOf([]),
+			new Map([[KEY, ["otel.yaml"]]]),
+		);
+		expect(changed.files).toEqual(["otel.yaml"]);
+		const [retried] = await deployTargets(
+			planWith(mounted),
+			new Set(),
+			historyOf([
+				deployment({
+					status: "error",
+					description: `${DEPLOY_MARKER}${fingerprint(mounted)}`,
+				}),
+			]),
+		);
+		expect(retried.files).toEqual(["otel.yaml", "loki.yaml"]);
+	});
+
+	it("finds the services that mount a file, in short or long volume syntax", () => {
+		const composeFile = [
+			"services:",
+			"  otel:",
+			"    volumes:",
+			"      - ../files/otel.yaml:/etc/otel/config.yaml:ro",
+			"  loki:",
+			"    volumes:",
+			"      - type: bind",
+			"        source: ../files/loki.yaml",
+			"        target: /etc/loki.yaml",
+			"  grafana:",
+			"    volumes:",
+			"      - grafana-data:/var/lib/grafana",
+			"  kuma: {}",
+		].join("\n");
+		expect(servicesMounting(composeFile, ["otel.yaml"])).toEqual(["otel"]);
+		expect(servicesMounting(composeFile, ["loki.yaml", "otel.yaml"])).toEqual([
+			"otel",
+			"loki",
+		]);
+		expect(servicesMounting(composeFile, ["grafana.ini"])).toEqual([]);
+	});
+});
+
 describe("landedKeys", () => {
 	it("skips services whose changes did not apply", () => {
 		const changed = planWith(service({ type: "update" }));
@@ -161,7 +237,10 @@ describe("landedKeys", () => {
 });
 
 describe("deployAll", () => {
-	beforeEach(() => vi.mocked(apiPost).mockReset());
+	beforeEach(() => {
+		vi.mocked(apiPost).mockReset();
+		vi.mocked(apiGet).mockReset();
+	});
 
 	const target = {
 		key: KEY,
@@ -171,6 +250,7 @@ describe("deployAll", () => {
 		serviceId: "c1",
 		fingerprint: "abc123",
 		reason: "configuration changed",
+		files: [] as string[],
 	};
 
 	const afterTrigger = (result: Deployment) => {
@@ -194,6 +274,49 @@ describe("deployAll", () => {
 			description: `${DEPLOY_MARKER}abc123`,
 		});
 		expect(result.failed).toBe(0);
+	});
+
+	it("restarts the containers that mount a changed file once the deploy is done", async () => {
+		const history = afterTrigger(
+			deployment({
+				deploymentId: "new",
+				description: `${DEPLOY_MARKER}abc123`,
+			}),
+		);
+		vi.mocked(apiGet).mockImplementation(async (endpoint: string) =>
+			endpoint === "compose.one"
+				? {
+						appName: "app",
+						serverId: "s1",
+						composeFile:
+							"services:\n  otel:\n    volumes:\n      - ../files/otel.yaml:/etc/otel.yaml\n  loki:\n    volumes:\n      - ../files/loki.yaml:/etc/loki.yaml\n",
+					}
+				: [
+						{ name: "app-otel-1", containerId: "o1" },
+						{ name: "app-loki-1", containerId: "l1" },
+						{ name: "app-otel-proxy-1", containerId: "p1" },
+					],
+		);
+		const result = await deployAll(
+			[{ ...target, files: ["otel.yaml"] }],
+			"release",
+			history,
+		);
+		expect(result.failed).toBe(0);
+		expect(apiGet).toHaveBeenCalledWith("docker.getContainersByAppNameMatch", {
+			appName: "app",
+			appType: "docker-compose",
+			serverId: "s1",
+		});
+		expect(
+			vi
+				.mocked(apiPost)
+				.mock.calls.filter(
+					([endpoint]) => endpoint === "docker.restartContainer",
+				),
+		).toEqual([
+			["docker.restartContainer", { containerId: "o1", serverId: "s1" }],
+		]);
 	});
 
 	it("reports a deploy that fails", async () => {

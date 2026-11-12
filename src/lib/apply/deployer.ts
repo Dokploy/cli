@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import chalk from "chalk";
 import stringify from "safe-stable-stringify";
+import { parse } from "yaml";
 import { apiGet, apiPost } from "../../client.js";
 import { errorMessage } from "./remote.js";
 import { SERVICE_TYPES, type ServiceType } from "./resources.js";
@@ -9,6 +10,7 @@ import type { Action, ApplyResult, Plan } from "./types.js";
 export const DEPLOY_MARKER = "dokploy-apply config ";
 export const TRACKED_TYPES: ServiceType[] = ["application", "compose"];
 
+const MOUNTED_FILES = "../files/";
 const POLL_INTERVAL_MS = 5_000;
 const DEPLOY_TIMEOUT_MS = 20 * 60_000;
 
@@ -28,6 +30,12 @@ export interface DeployTarget {
 	serviceId?: string;
 	fingerprint: string;
 	reason: string;
+	files: string[];
+}
+
+interface Container {
+	name: string;
+	containerId: string;
 }
 
 interface PlannedService {
@@ -72,6 +80,51 @@ export const plannedServices = (plan: Plan): PlannedService[] =>
 				})),
 		),
 	);
+
+const fileMounts = (action: Action, changedOnly: boolean): string[] =>
+	(action.children ?? [])
+		.filter(
+			(child) =>
+				child.resourceType === "mount" &&
+				child.config.type === "file" &&
+				child.type !== "delete" &&
+				(!changedOnly || child.type !== "unchanged"),
+		)
+		.map((child) => String(child.config.filePath));
+
+export const changedFiles = (plan: Plan): Map<string, string[]> =>
+	new Map(
+		plannedServices(plan).map(({ key, action }) => [
+			key,
+			fileMounts(action, true),
+		]),
+	);
+
+const sourceOf = (volume: unknown): string =>
+	typeof volume === "string"
+		? volume.split(":")[0]
+		: String((volume as { source?: unknown })?.source ?? "");
+
+export const servicesMounting = (
+	composeFile: string,
+	files: string[],
+): string[] =>
+	Object.entries(
+		(parse(composeFile)?.services ?? {}) as Record<
+			string,
+			{ volumes?: unknown[] } | null
+		>,
+	)
+		.filter(([, service]) =>
+			(service?.volumes ?? []).some((volume) =>
+				files.some((file) => sourceOf(volume) === `${MOUNTED_FILES}${file}`),
+			),
+		)
+		.map(([name]) => name);
+
+const isReplicaOf = (container: string, appName: string, service: string) =>
+	container.startsWith(`${appName}-${service}-`) &&
+	/^\d+$/.test(container.slice(`${appName}-${service}-`.length));
 
 export const changedKeys = (plan: Plan): Set<string> =>
 	new Set(
@@ -118,6 +171,7 @@ export async function deployTargets(
 	plan: Plan,
 	changed: Set<string>,
 	history: History = fetchHistory,
+	files: Map<string, string[]> = new Map(),
 ): Promise<DeployTarget[]> {
 	const services = plannedServices(plan);
 	const reasons = await Promise.all(
@@ -137,6 +191,10 @@ export async function deployTargets(
 						serviceId: service.action.remoteId,
 						fingerprint: fingerprint(service.action),
 						reason,
+						files:
+							reason === "configuration changed"
+								? (files.get(service.key) ?? [])
+								: fileMounts(service.action, false),
 					},
 				]
 			: [];
@@ -152,7 +210,10 @@ export const formatTargets = (targets: DeployTarget[]): string =>
 					(target) =>
 						`  ${target.type} "${target.name}" in ${target.environment}`.padEnd(
 							50,
-						) + chalk.cyan(`(${target.reason})`),
+						) +
+						chalk.cyan(
+							`(${target.reason}${target.files.length > 0 ? `; restarts what mounts ${target.files.join(", ")}` : ""})`,
+						),
 				),
 			].join("\n");
 
@@ -183,15 +244,38 @@ async function awaitDeployment(
 	);
 }
 
+async function restartMounting(target: DeployTarget): Promise<string[]> {
+	if (target.type !== "compose" || target.files.length === 0) return [];
+	const compose = await apiGet("compose.one", { composeId: target.serviceId });
+	const services = servicesMounting(compose.composeFile ?? "", target.files);
+	if (services.length === 0) return [];
+	const server = compose.serverId ? { serverId: compose.serverId } : {};
+	const containers: Container[] =
+		(await apiGet("docker.getContainersByAppNameMatch", {
+			appName: compose.appName,
+			appType: "docker-compose",
+			...server,
+		})) ?? [];
+	const mounting = containers.filter(({ name }) =>
+		services.some((service) => isReplicaOf(name, compose.appName, service)),
+	);
+	await Promise.all(
+		mounting.map(({ containerId }) =>
+			apiPost("docker.restartContainer", { containerId, ...server }),
+		),
+	);
+	return mounting.map(({ name }) => name);
+}
+
 async function deployOne(
 	target: DeployTarget,
 	title: string,
 	history: History,
-): Promise<void> {
+): Promise<string[]> {
 	const idField = `${target.type}Id`;
 	if (!TRACKED_TYPES.includes(target.type)) {
 		await apiPost(`${target.type}.deploy`, { [idField]: target.serviceId });
-		return;
+		return [];
 	}
 	const known = new Set(
 		(await history(target.type, target.serviceId!)).map(
@@ -204,6 +288,7 @@ async function deployOne(
 		description: `${DEPLOY_MARKER}${target.fingerprint}`,
 	});
 	await awaitDeployment(target, known, history, Date.now() + DEPLOY_TIMEOUT_MS);
+	return restartMounting(target);
 }
 
 export async function deployAll(
@@ -215,8 +300,17 @@ export async function deployAll(
 		targets.map(async (target) => {
 			const label = `${target.type} "${target.name}" in ${target.environment}`;
 			try {
-				await deployOne(target, title, history);
-				console.log(chalk.green(`Deployed ${label}`));
+				const restarted = await deployOne(target, title, history);
+				console.log(
+					chalk.green(
+						[
+							`Deployed ${label}`,
+							...restarted.map(
+								(name) => `  restarted ${name} for its changed file`,
+							),
+						].join("\n"),
+					),
+				);
 				return { label };
 			} catch (error) {
 				console.log(chalk.red(`Deploy failed for ${label}`));

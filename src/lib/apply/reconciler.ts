@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { apiGet, readAuthConfig } from "../../client.js";
 import {
+	changedFiles,
 	changedKeys,
 	deployAll,
 	deployTargets,
@@ -74,7 +75,16 @@ export async function reconcile({
 
 	if (dryRun) {
 		if (deploy) {
-			console.log(formatTargets(await deployTargets(plan, changedKeys(plan))));
+			console.log(
+				formatTargets(
+					await deployTargets(
+						plan,
+						changedKeys(plan),
+						undefined,
+						changedFiles(plan),
+					),
+				),
+			);
 		}
 		console.log(chalk.cyan("\n(dry-run) No changes applied."));
 		return countPlan(plan);
@@ -101,7 +111,12 @@ async function deployChanged(
 	title: string,
 ): Promise<ApplyResult> {
 	const after = await buildFilePlan(documents, prune);
-	const targets = await deployTargets(after, landedKeys(before, after));
+	const targets = await deployTargets(
+		after,
+		landedKeys(before, after),
+		undefined,
+		changedFiles(before),
+	);
 	console.log(formatTargets(targets));
 	return deployAll(targets, title);
 }
