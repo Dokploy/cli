@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import chalk from "chalk";
 import { program } from "commander";
+import { getApiErrorMessage } from "./client.js";
 import { registerAuthCommand } from "./commands/auth.js";
 import { registerGeneratedCommands } from "./generated/commands.js";
 
@@ -30,6 +31,6 @@ registerGeneratedCommands(program);
 const argv = process.argv.filter((arg) => arg !== "--");
 
 program.parseAsync(argv).catch((err) => {
-	console.error(chalk.red(err.message));
+	console.error(chalk.red(getApiErrorMessage(err)));
 	process.exit(1);
 });
