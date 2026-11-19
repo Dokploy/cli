@@ -136,6 +136,26 @@ export function createClient(): AxiosInstance {
 	});
 }
 
+export function getApiErrorMessage(error: unknown): string {
+	if (axios.isAxiosError(error)) {
+		const body = error.response?.data?.error?.json;
+		const zodError = body?.data?.zodError;
+		const validationMessages: string[] = zodError
+			? [
+					...(zodError.formErrors ?? []),
+					...Object.values<string[]>(zodError.fieldErrors ?? {}).flat(),
+				]
+			: [];
+		if (validationMessages.length > 0) {
+			return validationMessages.join("\n");
+		}
+		if (typeof body?.message === "string" && body.message !== body.data?.code) {
+			return body.message;
+		}
+	}
+	return error instanceof Error ? error.message : String(error);
+}
+
 export async function apiPost(
 	endpoint: string,
 	data?: Record<string, unknown>,
