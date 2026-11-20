@@ -3,6 +3,10 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import axios, { type AxiosInstance } from "axios";
 import chalk from "chalk";
+import { printFriendlyError } from "./ui/errors.js";
+import { setCurrentEndpoint, spinnerLabel } from "./ui/presenters.js";
+import { withSpinner } from "./ui/spinner.js";
+import { canAnimate } from "./ui/style.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +28,10 @@ function loadEnvFile(): void {
 		const eqIndex = trimmed.indexOf("=");
 		if (eqIndex === -1) continue;
 		const key = trimmed.slice(0, eqIndex).trim();
-		const value = trimmed.slice(eqIndex + 1).trim().replace(/^["']|["']$/g, "");
+		const value = trimmed
+			.slice(eqIndex + 1)
+			.trim()
+			.replace(/^["']|["']$/g, "");
 		if (!process.env[key]) {
 			process.env[key] = value;
 		}
@@ -43,11 +50,22 @@ export function readAuthConfig(): AuthConfig {
 	}
 
 	if (!fs.existsSync(configPath)) {
-		console.error(
-			chalk.red(
-				"No configuration found. Please run 'dokploy auth' first or set DOKPLOY_URL and DOKPLOY_AUTH_TOKEN environment variables.",
-			),
-		);
+		if (canAnimate()) {
+			printFriendlyError({
+				title: "Not connected to a Dokploy server",
+				details: [],
+				hints: [
+					"Run: dokploy auth --url <server-url> --token <api-key>",
+					"Or set DOKPLOY_URL and DOKPLOY_API_KEY in your environment or a .env file.",
+				],
+			});
+		} else {
+			console.error(
+				chalk.red(
+					"No configuration found. Please run 'dokploy auth' first or set DOKPLOY_URL and DOKPLOY_AUTH_TOKEN environment variables.",
+				),
+			);
+		}
 		process.exit(1);
 	}
 
@@ -55,15 +73,52 @@ export function readAuthConfig(): AuthConfig {
 	const { token, url } = config;
 
 	if (!url || !token) {
-		console.error(
-			chalk.red(
-				"Incomplete auth config. Run 'dokploy auth' or set environment variables.",
-			),
-		);
+		if (canAnimate()) {
+			printFriendlyError({
+				title: "Saved credentials are incomplete",
+				details: [],
+				hints: ["Run: dokploy auth --url <server-url> --token <api-key>"],
+			});
+		} else {
+			console.error(
+				chalk.red(
+					"Incomplete auth config. Run 'dokploy auth' or set environment variables.",
+				),
+			);
+		}
 		process.exit(1);
 	}
 
 	return { token, url };
+}
+
+export function peekServerUrl(): string | null {
+	try {
+		// Same order as readAuthConfig: env only when both URL and key are set.
+		loadEnvFile();
+		const envToken =
+			process.env.DOKPLOY_API_KEY ?? process.env.DOKPLOY_AUTH_TOKEN;
+		if (envToken && process.env.DOKPLOY_URL) return process.env.DOKPLOY_URL;
+		if (!fs.existsSync(configPath)) return null;
+		const { url, token } = JSON.parse(fs.readFileSync(configPath, "utf8"));
+		return typeof url === "string" && url && token ? url : null;
+	} catch {
+		return null;
+	}
+}
+
+export function getConfigPath(): string {
+	return configPath;
+}
+
+function activityLabel(endpoint: string): string {
+	setCurrentEndpoint(endpoint);
+	const custom = spinnerLabel(endpoint);
+	if (custom) return custom;
+	const kebab = (s: string) =>
+		s.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+	const [group = "", ...rest] = endpoint.split(".");
+	return `${kebab(group)} ${kebab(rest.join("."))}`.trim();
 }
 
 export function saveAuthConfig(url: string, token: string): void {
@@ -81,14 +136,33 @@ export function createClient(): AxiosInstance {
 	});
 }
 
+export function getApiErrorMessage(error: unknown): string {
+	if (axios.isAxiosError(error)) {
+		const body = error.response?.data?.error?.json;
+		const zodError = body?.data?.zodError;
+		const validationMessages: string[] = zodError
+			? [
+					...(zodError.formErrors ?? []),
+					...Object.values<string[]>(zodError.fieldErrors ?? {}).flat(),
+				]
+			: [];
+		if (validationMessages.length > 0) {
+			return validationMessages.join("\n");
+		}
+		if (typeof body?.message === "string" && body.message !== body.data?.code) {
+			return body.message;
+		}
+	}
+	return error instanceof Error ? error.message : String(error);
+}
+
 export async function apiPost(
 	endpoint: string,
 	data?: Record<string, unknown>,
 ) {
 	const client = createClient();
-	const response = await client.post(
-		`/trpc/${endpoint}`,
-		data ? { json: data } : undefined,
+	const response = await withSpinner(activityLabel(endpoint), () =>
+		client.post(`/trpc/${endpoint}`, data ? { json: data } : undefined),
 	);
 	return response.data?.result?.data?.json ?? response.data;
 }
@@ -101,6 +175,8 @@ export async function apiGet(
 	const query = params
 		? `?input=${encodeURIComponent(JSON.stringify(params))}`
 		: "";
-	const response = await client.get(`/trpc/${endpoint}${query}`);
+	const response = await withSpinner(activityLabel(endpoint), () =>
+		client.get(`/trpc/${endpoint}${query}`),
+	);
 	return response.data?.result?.data?.json ?? response.data;
 }

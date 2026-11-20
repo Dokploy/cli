@@ -2,20 +2,8 @@
 // Run: npx tsx scripts/generate.ts
 
 import type { Command } from "commander";
-import chalk from "chalk";
 import { apiPost, apiGet } from "../client.js";
-
-function printOutput(data: unknown) {
-	if (data === null || data === undefined) {
-		console.log(chalk.green("OK"));
-		return;
-	}
-	if (typeof data === "string") {
-		console.log(data);
-		return;
-	}
-	console.log(JSON.stringify(data, null, 2));
-}
+import { render } from "../ui/render.js";
 
 export function registerGeneratedCommands(program: Command) {
 	const g_admin = program.command('admin').description('admin commands');
@@ -29,11 +17,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("admin.setupMonitoring", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "admin.setupMonitoring", method: "post" });
 		});
 	const g_ai = program.command('ai').description('ai commands');
 
@@ -48,11 +32,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("ai.analyzeLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.analyzeLogs", method: "post" });
 		});
 
 	g_ai
@@ -69,11 +49,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["isEnabled"] != null) opts["isEnabled"] = opts["isEnabled"] === true || opts["isEnabled"] === "true";
 			const data = await apiPost("ai.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.create", method: "post" });
 		});
 
 	g_ai
@@ -85,11 +61,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("ai.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.delete", method: "post" });
 		});
 
 	g_ai
@@ -109,11 +81,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("ai.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.deploy", method: "post" });
 		});
 
 	g_ai
@@ -125,11 +93,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.get", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.get", method: "get" });
 		});
 
 	g_ai
@@ -141,11 +105,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.getAll", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.getAll", method: "get" });
 		});
 
 	g_ai
@@ -157,11 +117,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.getCustomProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.getCustomProviders", method: "get" });
 		});
 
 	g_ai
@@ -173,11 +129,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.getEnabledProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.getEnabledProviders", method: "get" });
 		});
 
 	g_ai
@@ -190,11 +142,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.getModels", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.getModels", method: "get" });
 		});
 
 	g_ai
@@ -206,11 +154,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("ai.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.one", method: "get" });
 		});
 
 	g_ai
@@ -222,11 +166,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("ai.saveCustomProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.saveCustomProviders", method: "post" });
 		});
 
 	g_ai
@@ -240,11 +180,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("ai.suggest", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.suggest", method: "post" });
 		});
 
 	g_ai
@@ -258,11 +194,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("ai.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.testConnection", method: "post" });
 		});
 
 	g_ai
@@ -281,11 +213,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["isEnabled"] != null) opts["isEnabled"] = opts["isEnabled"] === true || opts["isEnabled"] === "true";
 			const data = await apiPost("ai.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "ai.update", method: "post" });
 		});
 	const g_application = program.command('application').description('application commands');
 
@@ -298,11 +226,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.cancelDeployment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.cancelDeployment", method: "post" });
 		});
 
 	g_application
@@ -314,11 +238,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.cleanQueues", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.cleanQueues", method: "post" });
 		});
 
 	g_application
@@ -330,11 +250,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.clearDeployments", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.clearDeployments", method: "post" });
 		});
 
 	g_application
@@ -351,11 +267,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.create", method: "post" });
 		});
 
 	g_application
@@ -367,11 +279,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.delete", method: "post" });
 		});
 
 	g_application
@@ -385,11 +293,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.deploy", method: "post" });
 		});
 
 	g_application
@@ -402,11 +306,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.deployNginxQuickstart", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.deployNginxQuickstart", method: "post" });
 		});
 
 	g_application
@@ -418,11 +318,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.disconnectGitProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.disconnectGitProvider", method: "post" });
 		});
 
 	g_application
@@ -434,11 +330,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.dropDeployment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.dropDeployment", method: "post" });
 		});
 
 	g_application
@@ -450,11 +342,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.killBuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.killBuild", method: "post" });
 		});
 
 	g_application
@@ -466,11 +354,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.markRunning", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.markRunning", method: "post" });
 		});
 
 	g_application
@@ -483,11 +367,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.move", method: "post" });
 		});
 
 	g_application
@@ -499,11 +379,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("application.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.one", method: "get" });
 		});
 
 	g_application
@@ -515,11 +391,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("application.readAppMonitoring", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.readAppMonitoring", method: "get" });
 		});
 
 	g_application
@@ -534,11 +406,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("application.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.readLogs", method: "get" });
 		});
 
 	g_application
@@ -550,11 +418,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("application.readTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.readTraefikConfig", method: "get" });
 		});
 
 	g_application
@@ -568,11 +432,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.redeploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.redeploy", method: "post" });
 		});
 
 	g_application
@@ -584,11 +444,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.refreshToken", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.refreshToken", method: "post" });
 		});
 
 	g_application
@@ -601,11 +457,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.reload", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.reload", method: "post" });
 		});
 
 	g_application
@@ -626,11 +478,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableSubmodules"] != null) opts["enableSubmodules"] = opts["enableSubmodules"] === true || opts["enableSubmodules"] === "true";
 			const data = await apiPost("application.saveBitbucketProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveBitbucketProvider", method: "post" });
 		});
 
 	g_application
@@ -651,11 +499,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["isStaticSpa"] != null) opts["isStaticSpa"] = opts["isStaticSpa"] === true || opts["isStaticSpa"] === "true";
 			const data = await apiPost("application.saveBuildType", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveBuildType", method: "post" });
 		});
 
 	g_application
@@ -671,11 +515,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.saveDockerProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveDockerProvider", method: "post" });
 		});
 
 	g_application
@@ -692,11 +532,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["createEnvFile"] != null) opts["createEnvFile"] = opts["createEnvFile"] === true || opts["createEnvFile"] === "true";
 			const data = await apiPost("application.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveEnvironment", method: "post" });
 		});
 
 	g_application
@@ -716,11 +552,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableSubmodules"] != null) opts["enableSubmodules"] = opts["enableSubmodules"] === true || opts["enableSubmodules"] === "true";
 			const data = await apiPost("application.saveGiteaProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveGiteaProvider", method: "post" });
 		});
 
 	g_application
@@ -741,11 +573,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableSubmodules"] != null) opts["enableSubmodules"] = opts["enableSubmodules"] === true || opts["enableSubmodules"] === "true";
 			const data = await apiPost("application.saveGithubProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveGithubProvider", method: "post" });
 		});
 
 	g_application
@@ -768,11 +596,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["gitlabProjectId"] != null) opts["gitlabProjectId"] = Number(opts["gitlabProjectId"]);
 			if (opts["enableSubmodules"] != null) opts["enableSubmodules"] = opts["enableSubmodules"] === true || opts["enableSubmodules"] === "true";
 			const data = await apiPost("application.saveGitlabProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveGitlabProvider", method: "post" });
 		});
 
 	g_application
@@ -791,11 +615,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableSubmodules"] != null) opts["enableSubmodules"] = opts["enableSubmodules"] === true || opts["enableSubmodules"] === "true";
 			const data = await apiPost("application.saveGitProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.saveGitProvider", method: "post" });
 		});
 
 	g_application
@@ -818,11 +638,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("application.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.search", method: "get" });
 		});
 
 	g_application
@@ -834,11 +650,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.start", method: "post" });
 		});
 
 	g_application
@@ -850,11 +662,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.stop", method: "post" });
 		});
 
 	g_application
@@ -990,11 +798,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["createEnvFile"] != null) opts["createEnvFile"] = opts["createEnvFile"] === true || opts["createEnvFile"] === "true";
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("application.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.update", method: "post" });
 		});
 
 	g_application
@@ -1007,11 +811,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("application.updateTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "application.updateTraefikConfig", method: "post" });
 		});
 	const g_auditLog = program.command('audit-log').description('audit-log commands');
 
@@ -1033,11 +833,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("auditLog.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "auditLog.all", method: "get" });
 		});
 	const g_backup = program.command('backup').description('backup commands');
 
@@ -1071,11 +867,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
 			if (opts["includeEncryptionKey"] != null) opts["includeEncryptionKey"] = opts["includeEncryptionKey"] === true || opts["includeEncryptionKey"] === "true";
 			const data = await apiPost("backup.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.create", method: "post" });
 		});
 
 	g_backup
@@ -1089,11 +881,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("backup.listBackupFiles", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.listBackupFiles", method: "get" });
 		});
 
 	g_backup
@@ -1105,11 +893,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.manualBackupCompose", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.manualBackupCompose", method: "post" });
 		});
 
 	g_backup
@@ -1121,11 +905,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.manualBackupLibsql", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.manualBackupLibsql", method: "post" });
 		});
 
 	g_backup
@@ -1137,11 +917,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.manualBackupMariadb", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.manualBackupMariadb", method: "post" });
 		});
 
 	g_backup
@@ -1153,11 +929,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.manualBackupMongo", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.manualBackupMongo", method: "post" });
 		});
 
 	g_backup
@@ -1169,11 +941,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.manualBackupMySql", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.manualBackupMySql", method: "post" });
 		});
 
 	g_backup
@@ -1185,11 +953,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.manualBackupPostgres", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.manualBackupPostgres", method: "post" });
 		});
 
 	g_backup
@@ -1201,11 +965,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.manualBackupWebServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.manualBackupWebServer", method: "post" });
 		});
 
 	g_backup
@@ -1217,11 +977,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("backup.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.one", method: "get" });
 		});
 
 	g_backup
@@ -1233,11 +989,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("backup.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.remove", method: "post" });
 		});
 
 	g_backup
@@ -1263,11 +1015,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
 			if (opts["includeEncryptionKey"] != null) opts["includeEncryptionKey"] = opts["includeEncryptionKey"] === true || opts["includeEncryptionKey"] === "true";
 			const data = await apiPost("backup.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "backup.update", method: "post" });
 		});
 	const g_bitbucket = program.command('bitbucket').description('bitbucket commands');
 
@@ -1280,11 +1028,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("bitbucket.bitbucketProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "bitbucket.bitbucketProviders", method: "get" });
 		});
 
 	g_bitbucket
@@ -1304,11 +1048,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("bitbucket.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "bitbucket.create", method: "post" });
 		});
 
 	g_bitbucket
@@ -1322,11 +1062,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("bitbucket.getBitbucketBranches", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "bitbucket.getBitbucketBranches", method: "get" });
 		});
 
 	g_bitbucket
@@ -1338,11 +1074,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("bitbucket.getBitbucketRepositories", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "bitbucket.getBitbucketRepositories", method: "get" });
 		});
 
 	g_bitbucket
@@ -1354,11 +1086,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("bitbucket.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "bitbucket.one", method: "get" });
 		});
 
 	g_bitbucket
@@ -1375,11 +1103,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("bitbucket.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "bitbucket.testConnection", method: "post" });
 		});
 
 	g_bitbucket
@@ -1399,11 +1123,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("bitbucket.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "bitbucket.update", method: "post" });
 		});
 	const g_certificates = program.command('certificates').description('certificates commands');
 
@@ -1416,11 +1136,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("certificates.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "certificates.all", method: "get" });
 		});
 
 	g_certificates
@@ -1440,11 +1156,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["autoRenew"] != null) opts["autoRenew"] = opts["autoRenew"] === true || opts["autoRenew"] === "true";
 			const data = await apiPost("certificates.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "certificates.create", method: "post" });
 		});
 
 	g_certificates
@@ -1456,11 +1168,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("certificates.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "certificates.one", method: "get" });
 		});
 
 	g_certificates
@@ -1472,11 +1180,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("certificates.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "certificates.remove", method: "post" });
 		});
 
 	g_certificates
@@ -1491,11 +1195,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("certificates.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "certificates.update", method: "post" });
 		});
 	const g_cluster = program.command('cluster').description('cluster commands');
 
@@ -1508,11 +1208,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("cluster.addManager", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "cluster.addManager", method: "get" });
 		});
 
 	g_cluster
@@ -1524,11 +1220,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("cluster.addWorker", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "cluster.addWorker", method: "get" });
 		});
 
 	g_cluster
@@ -1540,11 +1232,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("cluster.getNodes", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "cluster.getNodes", method: "get" });
 		});
 
 	g_cluster
@@ -1557,11 +1245,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("cluster.removeWorker", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "cluster.removeWorker", method: "post" });
 		});
 	const g_compose = program.command('compose').description('compose commands');
 
@@ -1574,11 +1258,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.cancelDeployment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.cancelDeployment", method: "post" });
 		});
 
 	g_compose
@@ -1590,11 +1270,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.cleanQueues", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.cleanQueues", method: "post" });
 		});
 
 	g_compose
@@ -1606,11 +1282,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.clearDeployments", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.clearDeployments", method: "post" });
 		});
 
 	g_compose
@@ -1629,11 +1301,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.create", method: "post" });
 		});
 
 	g_compose
@@ -1647,11 +1315,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["deleteVolumes"] != null) opts["deleteVolumes"] = opts["deleteVolumes"] === true || opts["deleteVolumes"] === "true";
 			const data = await apiPost("compose.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.delete", method: "post" });
 		});
 
 	g_compose
@@ -1667,11 +1331,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["freshVolumes"] != null) opts["freshVolumes"] = opts["freshVolumes"] === true || opts["freshVolumes"] === "true";
 			const data = await apiPost("compose.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.deploy", method: "post" });
 		});
 
 	g_compose
@@ -1686,11 +1346,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.deployTemplate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.deployTemplate", method: "post" });
 		});
 
 	g_compose
@@ -1702,11 +1358,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.disconnectGitProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.disconnectGitProvider", method: "post" });
 		});
 
 	g_compose
@@ -1718,11 +1370,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.fetchSourceType", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.fetchSourceType", method: "post" });
 		});
 
 	g_compose
@@ -1734,11 +1382,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("compose.getConvertedCompose", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.getConvertedCompose", method: "get" });
 		});
 
 	g_compose
@@ -1750,11 +1394,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("compose.getDefaultCommand", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.getDefaultCommand", method: "get" });
 		});
 
 	g_compose
@@ -1766,11 +1406,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("compose.getTags", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.getTags", method: "get" });
 		});
 
 	g_compose
@@ -1783,11 +1419,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.import", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.import", method: "post" });
 		});
 
 	g_compose
@@ -1800,11 +1432,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.isolatedDeployment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.isolatedDeployment", method: "post" });
 		});
 
 	g_compose
@@ -1816,11 +1444,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.killBuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.killBuild", method: "post" });
 		});
 
 	g_compose
@@ -1833,11 +1457,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("compose.loadMountsByService", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.loadMountsByService", method: "get" });
 		});
 
 	g_compose
@@ -1850,11 +1470,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("compose.loadServices", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.loadServices", method: "get" });
 		});
 
 	g_compose
@@ -1867,11 +1483,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.move", method: "post" });
 		});
 
 	g_compose
@@ -1883,11 +1495,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("compose.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.one", method: "get" });
 		});
 
 	g_compose
@@ -1901,11 +1509,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.previewTemplate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.previewTemplate", method: "post" });
 		});
 
 	g_compose
@@ -1918,11 +1522,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.processTemplate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.processTemplate", method: "post" });
 		});
 
 	g_compose
@@ -1935,11 +1535,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.randomizeCompose", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.randomizeCompose", method: "post" });
 		});
 
 	g_compose
@@ -1955,11 +1551,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("compose.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.readLogs", method: "get" });
 		});
 
 	g_compose
@@ -1975,11 +1567,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["freshVolumes"] != null) opts["freshVolumes"] = opts["freshVolumes"] === true || opts["freshVolumes"] === "true";
 			const data = await apiPost("compose.redeploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.redeploy", method: "post" });
 		});
 
 	g_compose
@@ -1991,11 +1579,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.refreshToken", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.refreshToken", method: "post" });
 		});
 
 	g_compose
@@ -2010,11 +1594,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["createEnvFile"] != null) opts["createEnvFile"] = opts["createEnvFile"] === true || opts["createEnvFile"] === "true";
 			const data = await apiPost("compose.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.saveEnvironment", method: "post" });
 		});
 
 	g_compose
@@ -2034,11 +1614,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("compose.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.search", method: "get" });
 		});
 
 	g_compose
@@ -2050,11 +1626,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.start", method: "post" });
 		});
 
 	g_compose
@@ -2066,11 +1638,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("compose.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.stop", method: "post" });
 		});
 
 	g_compose
@@ -2082,11 +1650,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("compose.templates", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.templates", method: "get" });
 		});
 
 	g_compose
@@ -2159,11 +1723,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["isolatedDeploymentsVolume"] != null) opts["isolatedDeploymentsVolume"] = opts["isolatedDeploymentsVolume"] === true || opts["isolatedDeploymentsVolume"] === "true";
 			if (opts["pullImages"] != null) opts["pullImages"] = opts["pullImages"] === true || opts["pullImages"] === "true";
 			const data = await apiPost("compose.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "compose.update", method: "post" });
 		});
 	const g_customRole = program.command('custom-role').description('custom-role commands');
 
@@ -2176,11 +1736,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("customRole.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "customRole.all", method: "get" });
 		});
 
 	g_customRole
@@ -2193,11 +1749,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("customRole.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "customRole.create", method: "post" });
 		});
 
 	g_customRole
@@ -2209,11 +1761,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("customRole.getStatements", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "customRole.getStatements", method: "get" });
 		});
 
 	g_customRole
@@ -2225,11 +1773,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("customRole.membersByRole", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "customRole.membersByRole", method: "get" });
 		});
 
 	g_customRole
@@ -2241,11 +1785,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("customRole.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "customRole.remove", method: "post" });
 		});
 
 	g_customRole
@@ -2259,11 +1799,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("customRole.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "customRole.update", method: "post" });
 		});
 	const g_deployment = program.command('deployment').description('deployment commands');
 
@@ -2276,11 +1812,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("deployment.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.all", method: "get" });
 		});
 
 	g_deployment
@@ -2292,11 +1824,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("deployment.allByCompose", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.allByCompose", method: "get" });
 		});
 
 	g_deployment
@@ -2308,11 +1836,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("deployment.allByServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.allByServer", method: "get" });
 		});
 
 	g_deployment
@@ -2325,11 +1849,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("deployment.allByType", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.allByType", method: "get" });
 		});
 
 	g_deployment
@@ -2341,11 +1861,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("deployment.allCentralized", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.allCentralized", method: "get" });
 		});
 
 	g_deployment
@@ -2357,11 +1873,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("deployment.killProcess", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.killProcess", method: "post" });
 		});
 
 	g_deployment
@@ -2373,11 +1885,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("deployment.queueList", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.queueList", method: "get" });
 		});
 
 	g_deployment
@@ -2390,11 +1898,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("deployment.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.readLogs", method: "get" });
 		});
 
 	g_deployment
@@ -2406,11 +1910,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("deployment.removeDeployment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "deployment.removeDeployment", method: "post" });
 		});
 	const g_destination = program.command('destination').description('destination commands');
 
@@ -2423,11 +1923,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("destination.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "destination.all", method: "get" });
 		});
 
 	g_destination
@@ -2447,11 +1943,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("destination.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "destination.create", method: "post" });
 		});
 
 	g_destination
@@ -2463,11 +1955,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("destination.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "destination.one", method: "get" });
 		});
 
 	g_destination
@@ -2479,11 +1967,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("destination.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "destination.remove", method: "post" });
 		});
 
 	g_destination
@@ -2503,11 +1987,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("destination.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "destination.testConnection", method: "post" });
 		});
 
 	g_destination
@@ -2528,11 +2008,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("destination.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "destination.update", method: "post" });
 		});
 	const g_dnsProvider = program.command('dns-provider').description('dns-provider commands');
 
@@ -2545,11 +2021,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dnsProvider.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.all", method: "get" });
 		});
 
 	g_dnsProvider
@@ -2562,11 +2034,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dnsProvider.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.create", method: "post" });
 		});
 
 	g_dnsProvider
@@ -2586,11 +2054,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["ttl"] != null) opts["ttl"] = Number(opts["ttl"]);
 			if (opts["proxied"] != null) opts["proxied"] = opts["proxied"] === true || opts["proxied"] === "true";
 			const data = await apiPost("dnsProvider.createRecord", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.createRecord", method: "post" });
 		});
 
 	g_dnsProvider
@@ -2604,11 +2068,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dnsProvider.deleteRecord", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.deleteRecord", method: "post" });
 		});
 
 	g_dnsProvider
@@ -2621,11 +2081,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dnsProvider.listRecords", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.listRecords", method: "get" });
 		});
 
 	g_dnsProvider
@@ -2637,11 +2093,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dnsProvider.listZones", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.listZones", method: "get" });
 		});
 
 	g_dnsProvider
@@ -2653,11 +2105,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dnsProvider.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.one", method: "get" });
 		});
 
 	g_dnsProvider
@@ -2669,11 +2117,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dnsProvider.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.remove", method: "post" });
 		});
 
 	g_dnsProvider
@@ -2686,11 +2130,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dnsProvider.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.testConnection", method: "post" });
 		});
 
 	g_dnsProvider
@@ -2704,11 +2144,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dnsProvider.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.update", method: "post" });
 		});
 
 	g_dnsProvider
@@ -2729,11 +2165,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["ttl"] != null) opts["ttl"] = Number(opts["ttl"]);
 			if (opts["proxied"] != null) opts["proxied"] = opts["proxied"] === true || opts["proxied"] === "true";
 			const data = await apiPost("dnsProvider.updateRecord", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dnsProvider.updateRecord", method: "post" });
 		});
 	const g_docker = program.command('docker').description('docker commands');
 
@@ -2748,11 +2180,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.deleteContainerFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.deleteContainerFile", method: "post" });
 		});
 
 	g_docker
@@ -2765,11 +2193,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.getConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getConfig", method: "get" });
 		});
 
 	g_docker
@@ -2781,11 +2205,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.getContainers", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getContainers", method: "get" });
 		});
 
 	g_docker
@@ -2799,11 +2219,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.getContainersByAppLabel", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getContainersByAppLabel", method: "get" });
 		});
 
 	g_docker
@@ -2817,11 +2233,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.getContainersByAppNameMatch", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getContainersByAppNameMatch", method: "get" });
 		});
 
 	g_docker
@@ -2834,11 +2246,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["minutes"] != null) opts["minutes"] = Number(opts["minutes"]);
 			const data = await apiGet("docker.getEvents", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getEvents", method: "get" });
 		});
 
 	g_docker
@@ -2851,11 +2259,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["sinceHours"] != null) opts["sinceHours"] = Number(opts["sinceHours"]);
 			const data = await apiGet("docker.getServerHealth", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getServerHealth", method: "get" });
 		});
 
 	g_docker
@@ -2868,11 +2272,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.getServiceContainersByAppName", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getServiceContainersByAppName", method: "get" });
 		});
 
 	g_docker
@@ -2885,11 +2285,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.getStackContainersByAppName", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.getStackContainersByAppName", method: "get" });
 		});
 
 	g_docker
@@ -2902,11 +2298,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.killContainer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.killContainer", method: "post" });
 		});
 
 	g_docker
@@ -2920,11 +2312,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.listContainerFiles", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.listContainerFiles", method: "get" });
 		});
 
 	g_docker
@@ -2938,11 +2326,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("docker.readContainerFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.readContainerFile", method: "get" });
 		});
 
 	g_docker
@@ -2955,11 +2339,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.removeContainer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.removeContainer", method: "post" });
 		});
 
 	g_docker
@@ -2972,11 +2352,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.restartContainer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.restartContainer", method: "post" });
 		});
 
 	g_docker
@@ -2989,11 +2365,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.startContainer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.startContainer", method: "post" });
 		});
 
 	g_docker
@@ -3006,11 +2378,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.stopContainer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.stopContainer", method: "post" });
 		});
 
 	g_docker
@@ -3022,11 +2390,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.uploadFileToContainer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.uploadFileToContainer", method: "post" });
 		});
 
 	g_docker
@@ -3041,11 +2405,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("docker.writeContainerFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "docker.writeContainerFile", method: "post" });
 		});
 	const g_dockerDiskUsage = program.command('docker-disk-usage').description('docker-disk-usage commands');
 
@@ -3058,11 +2418,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerDiskUsage.getBuildCache", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerDiskUsage.getBuildCache", method: "get" });
 		});
 
 	g_dockerDiskUsage
@@ -3074,11 +2430,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerDiskUsage.getDiskUsage", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerDiskUsage.getDiskUsage", method: "get" });
 		});
 
 	g_dockerDiskUsage
@@ -3090,11 +2442,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dockerDiskUsage.pruneBuildCache", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerDiskUsage.pruneBuildCache", method: "post" });
 		});
 	const g_dockerImage = program.command('docker-image').description('docker-image commands');
 
@@ -3108,11 +2456,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerImage.getImageConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerImage.getImageConfig", method: "get" });
 		});
 
 	g_dockerImage
@@ -3124,11 +2468,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerImage.getImages", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerImage.getImages", method: "get" });
 		});
 
 	g_dockerImage
@@ -3145,11 +2485,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["force"] != null) opts["force"] = opts["force"] === true || opts["force"] === "true";
 			const data = await apiPost("dockerImage.removeImage", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerImage.removeImage", method: "post" });
 		});
 	const g_dockerVolume = program.command('docker-volume').description('docker-volume commands');
 
@@ -3164,11 +2500,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dockerVolume.deleteVolumeFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.deleteVolumeFile", method: "post" });
 		});
 
 	g_dockerVolume
@@ -3181,11 +2513,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerVolume.getVolumeConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.getVolumeConfig", method: "get" });
 		});
 
 	g_dockerVolume
@@ -3197,11 +2525,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerVolume.getVolumes", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.getVolumes", method: "get" });
 		});
 
 	g_dockerVolume
@@ -3213,11 +2537,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerVolume.getVolumesSize", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.getVolumesSize", method: "get" });
 		});
 
 	g_dockerVolume
@@ -3231,11 +2551,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerVolume.listVolumeFiles", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.listVolumeFiles", method: "get" });
 		});
 
 	g_dockerVolume
@@ -3249,11 +2565,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("dockerVolume.readVolumeFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.readVolumeFile", method: "get" });
 		});
 
 	g_dockerVolume
@@ -3266,11 +2578,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dockerVolume.removeVolume", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.removeVolume", method: "post" });
 		});
 
 	g_dockerVolume
@@ -3285,11 +2593,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("dockerVolume.writeVolumeFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "dockerVolume.writeVolumeFile", method: "post" });
 		});
 	const g_domain = program.command('domain').description('domain commands');
 
@@ -3302,11 +2606,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("domain.byApplicationId", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.byApplicationId", method: "get" });
 		});
 
 	g_domain
@@ -3318,11 +2618,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("domain.byComposeId", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.byComposeId", method: "get" });
 		});
 
 	g_domain
@@ -3334,11 +2630,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("domain.canGenerateTraefikMeDomains", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.canGenerateTraefikMeDomains", method: "get" });
 		});
 
 	g_domain
@@ -3371,11 +2663,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["stripPath"] != null) opts["stripPath"] = opts["stripPath"] === true || opts["stripPath"] === "true";
 			if (opts["forwardAuthEnabled"] != null) opts["forwardAuthEnabled"] = opts["forwardAuthEnabled"] === true || opts["forwardAuthEnabled"] === "true";
 			const data = await apiPost("domain.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.create", method: "post" });
 		});
 
 	g_domain
@@ -3387,11 +2675,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("domain.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.delete", method: "post" });
 		});
 
 	g_domain
@@ -3404,11 +2688,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("domain.generateDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.generateDomain", method: "post" });
 		});
 
 	g_domain
@@ -3420,11 +2700,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("domain.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.one", method: "get" });
 		});
 
 	g_domain
@@ -3436,11 +2712,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("domain.toggleEnable", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.toggleEnable", method: "post" });
 		});
 
 	g_domain
@@ -3474,11 +2746,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["forwardAuthEnabled"] != null) opts["forwardAuthEnabled"] = opts["forwardAuthEnabled"] === true || opts["forwardAuthEnabled"] === "true";
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("domain.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.update", method: "post" });
 		});
 
 	g_domain
@@ -3491,11 +2759,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("domain.validateDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "domain.validateDomain", method: "post" });
 		});
 	const g_environment = program.command('environment').description('environment commands');
 
@@ -3508,11 +2772,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("environment.byProjectId", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "environment.byProjectId", method: "get" });
 		});
 
 	g_environment
@@ -3526,11 +2786,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("environment.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "environment.create", method: "post" });
 		});
 
 	g_environment
@@ -3544,11 +2800,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("environment.duplicate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "environment.duplicate", method: "post" });
 		});
 
 	g_environment
@@ -3560,11 +2812,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("environment.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "environment.one", method: "get" });
 		});
 
 	g_environment
@@ -3576,11 +2824,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("environment.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "environment.remove", method: "post" });
 		});
 
 	g_environment
@@ -3598,11 +2842,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("environment.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "environment.search", method: "get" });
 		});
 
 	g_environment
@@ -3618,11 +2858,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("environment.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "environment.update", method: "post" });
 		});
 	const g_forwardAuth = program.command('forward-auth').description('forward-auth commands');
 
@@ -3636,11 +2872,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("forwardAuth.deployOnServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.deployOnServer", method: "post" });
 		});
 
 	g_forwardAuth
@@ -3652,11 +2884,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("forwardAuth.disable", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.disable", method: "post" });
 		});
 
 	g_forwardAuth
@@ -3668,11 +2896,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("forwardAuth.enable", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.enable", method: "post" });
 		});
 
 	g_forwardAuth
@@ -3684,11 +2908,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("forwardAuth.getAuthDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.getAuthDomain", method: "get" });
 		});
 
 	g_forwardAuth
@@ -3700,11 +2920,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("forwardAuth.listProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.listProviders", method: "get" });
 		});
 
 	g_forwardAuth
@@ -3716,11 +2932,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("forwardAuth.removeAuthDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.removeAuthDomain", method: "post" });
 		});
 
 	g_forwardAuth
@@ -3732,11 +2944,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("forwardAuth.removeOnServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.removeOnServer", method: "post" });
 		});
 
 	g_forwardAuth
@@ -3748,11 +2956,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("forwardAuth.serverStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.serverStatus", method: "get" });
 		});
 
 	g_forwardAuth
@@ -3769,11 +2973,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["https"] != null) opts["https"] = opts["https"] === true || opts["https"] === "true";
 			const data = await apiPost("forwardAuth.setAuthDomain", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.setAuthDomain", method: "post" });
 		});
 
 	g_forwardAuth
@@ -3785,11 +2985,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("forwardAuth.status", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "forwardAuth.status", method: "get" });
 		});
 	const g_gitea = program.command('gitea').description('gitea commands');
 
@@ -3817,11 +3013,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["expiresAt"] != null) opts["expiresAt"] = Number(opts["expiresAt"]);
 			if (opts["lastAuthenticatedAt"] != null) opts["lastAuthenticatedAt"] = Number(opts["lastAuthenticatedAt"]);
 			const data = await apiPost("gitea.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.create", method: "post" });
 		});
 
 	g_gitea
@@ -3835,11 +3027,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitea.getGiteaBranches", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.getGiteaBranches", method: "get" });
 		});
 
 	g_gitea
@@ -3851,11 +3039,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitea.getGiteaRepositories", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.getGiteaRepositories", method: "get" });
 		});
 
 	g_gitea
@@ -3867,11 +3051,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitea.getGiteaUrl", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.getGiteaUrl", method: "get" });
 		});
 
 	g_gitea
@@ -3883,11 +3063,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitea.giteaProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.giteaProviders", method: "get" });
 		});
 
 	g_gitea
@@ -3899,11 +3075,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitea.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.one", method: "get" });
 		});
 
 	g_gitea
@@ -3916,11 +3088,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("gitea.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.testConnection", method: "post" });
 		});
 
 	g_gitea
@@ -3947,11 +3115,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["expiresAt"] != null) opts["expiresAt"] = Number(opts["expiresAt"]);
 			if (opts["lastAuthenticatedAt"] != null) opts["lastAuthenticatedAt"] = Number(opts["lastAuthenticatedAt"]);
 			const data = await apiPost("gitea.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitea.update", method: "post" });
 		});
 	const g_github = program.command('github').description('github commands');
 
@@ -3966,11 +3130,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("github.getGithubBranches", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "github.getGithubBranches", method: "get" });
 		});
 
 	g_github
@@ -3982,11 +3142,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("github.getGithubRepositories", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "github.getGithubRepositories", method: "get" });
 		});
 
 	g_github
@@ -3998,11 +3154,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("github.githubProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "github.githubProviders", method: "get" });
 		});
 
 	g_github
@@ -4014,11 +3166,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("github.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "github.one", method: "get" });
 		});
 
 	g_github
@@ -4030,11 +3178,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("github.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "github.testConnection", method: "post" });
 		});
 
 	g_github
@@ -4049,11 +3193,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("github.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "github.update", method: "post" });
 		});
 	const g_gitlab = program.command('gitlab').description('gitlab commands');
 
@@ -4074,11 +3214,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("gitlab.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitlab.create", method: "post" });
 		});
 
 	g_gitlab
@@ -4093,11 +3229,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["id"] != null) opts["id"] = Number(opts["id"]);
 			const data = await apiGet("gitlab.getGitlabBranches", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitlab.getGitlabBranches", method: "get" });
 		});
 
 	g_gitlab
@@ -4109,11 +3241,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitlab.getGitlabRepositories", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitlab.getGitlabRepositories", method: "get" });
 		});
 
 	g_gitlab
@@ -4125,11 +3253,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitlab.gitlabProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitlab.gitlabProviders", method: "get" });
 		});
 
 	g_gitlab
@@ -4141,11 +3265,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitlab.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitlab.one", method: "get" });
 		});
 
 	g_gitlab
@@ -4158,11 +3278,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("gitlab.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitlab.testConnection", method: "post" });
 		});
 
 	g_gitlab
@@ -4182,11 +3298,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("gitlab.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitlab.update", method: "post" });
 		});
 	const g_gitProvider = program.command('git-provider').description('git-provider commands');
 
@@ -4199,11 +3311,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitProvider.allForPermissions", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitProvider.allForPermissions", method: "get" });
 		});
 
 	g_gitProvider
@@ -4215,11 +3323,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("gitProvider.getAll", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitProvider.getAll", method: "get" });
 		});
 
 	g_gitProvider
@@ -4231,11 +3335,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("gitProvider.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitProvider.remove", method: "post" });
 		});
 
 	g_gitProvider
@@ -4249,11 +3349,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["sharedWithOrganization"] != null) opts["sharedWithOrganization"] = opts["sharedWithOrganization"] === true || opts["sharedWithOrganization"] === "true";
 			const data = await apiPost("gitProvider.toggleShare", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "gitProvider.toggleShare", method: "post" });
 		});
 	const g_libsql = program.command('libsql').description('libsql commands');
 
@@ -4267,11 +3363,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.changeStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.changeStatus", method: "post" });
 		});
 
 	g_libsql
@@ -4294,11 +3386,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableNamespaces"] != null) opts["enableNamespaces"] = opts["enableNamespaces"] === true || opts["enableNamespaces"] === "true";
 			const data = await apiPost("libsql.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.create", method: "post" });
 		});
 
 	g_libsql
@@ -4310,11 +3398,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.deploy", method: "post" });
 		});
 
 	g_libsql
@@ -4327,11 +3411,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.move", method: "post" });
 		});
 
 	g_libsql
@@ -4343,11 +3423,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("libsql.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.one", method: "get" });
 		});
 
 	g_libsql
@@ -4362,11 +3438,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("libsql.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.readLogs", method: "get" });
 		});
 
 	g_libsql
@@ -4378,11 +3450,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.rebuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.rebuild", method: "post" });
 		});
 
 	g_libsql
@@ -4395,11 +3463,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.reload", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.reload", method: "post" });
 		});
 
 	g_libsql
@@ -4411,11 +3475,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.remove", method: "post" });
 		});
 
 	g_libsql
@@ -4428,11 +3488,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.saveEnvironment", method: "post" });
 		});
 
 	g_libsql
@@ -4449,11 +3505,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["externalGRPCPort"] != null) opts["externalGRPCPort"] = Number(opts["externalGRPCPort"]);
 			if (opts["externalAdminPort"] != null) opts["externalAdminPort"] = Number(opts["externalAdminPort"]);
 			const data = await apiPost("libsql.saveExternalPorts", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.saveExternalPorts", method: "post" });
 		});
 
 	g_libsql
@@ -4465,11 +3517,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.start", method: "post" });
 		});
 
 	g_libsql
@@ -4481,11 +3529,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("libsql.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.stop", method: "post" });
 		});
 
 	g_libsql
@@ -4538,11 +3582,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("libsql.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "libsql.update", method: "post" });
 		});
 	const g_licenseKey = program.command('license-key').description('license-key commands');
 
@@ -4555,11 +3595,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("licenseKey.activate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "licenseKey.activate", method: "post" });
 		});
 
 	g_licenseKey
@@ -4571,11 +3607,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("licenseKey.deactivate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "licenseKey.deactivate", method: "post" });
 		});
 
 	g_licenseKey
@@ -4587,11 +3619,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("licenseKey.getEnterpriseSettings", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "licenseKey.getEnterpriseSettings", method: "get" });
 		});
 
 	g_licenseKey
@@ -4603,11 +3631,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("licenseKey.haveValidLicenseKey", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "licenseKey.haveValidLicenseKey", method: "get" });
 		});
 
 	g_licenseKey
@@ -4620,11 +3644,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableEnterpriseFeatures"] != null) opts["enableEnterpriseFeatures"] = opts["enableEnterpriseFeatures"] === true || opts["enableEnterpriseFeatures"] === "true";
 			const data = await apiPost("licenseKey.updateEnterpriseSettings", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "licenseKey.updateEnterpriseSettings", method: "post" });
 		});
 
 	g_licenseKey
@@ -4636,11 +3656,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("licenseKey.validate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "licenseKey.validate", method: "post" });
 		});
 	const g_mariadb = program.command('mariadb').description('mariadb commands');
 
@@ -4655,11 +3671,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.changePassword", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.changePassword", method: "post" });
 		});
 
 	g_mariadb
@@ -4672,11 +3684,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.changeStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.changeStatus", method: "post" });
 		});
 
 	g_mariadb
@@ -4697,11 +3705,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.create", method: "post" });
 		});
 
 	g_mariadb
@@ -4713,11 +3717,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.deploy", method: "post" });
 		});
 
 	g_mariadb
@@ -4730,11 +3730,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.move", method: "post" });
 		});
 
 	g_mariadb
@@ -4746,11 +3742,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("mariadb.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.one", method: "get" });
 		});
 
 	g_mariadb
@@ -4765,11 +3757,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("mariadb.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.readLogs", method: "get" });
 		});
 
 	g_mariadb
@@ -4781,11 +3769,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.rebuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.rebuild", method: "post" });
 		});
 
 	g_mariadb
@@ -4798,11 +3782,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.reload", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.reload", method: "post" });
 		});
 
 	g_mariadb
@@ -4814,11 +3794,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.remove", method: "post" });
 		});
 
 	g_mariadb
@@ -4831,11 +3807,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.saveEnvironment", method: "post" });
 		});
 
 	g_mariadb
@@ -4848,11 +3820,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			const data = await apiPost("mariadb.saveExternalPort", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.saveExternalPort", method: "post" });
 		});
 
 	g_mariadb
@@ -4872,11 +3840,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("mariadb.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.search", method: "get" });
 		});
 
 	g_mariadb
@@ -4888,11 +3852,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.start", method: "post" });
 		});
 
 	g_mariadb
@@ -4904,11 +3864,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mariadb.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.stop", method: "post" });
 		});
 
 	g_mariadb
@@ -4956,11 +3912,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("mariadb.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mariadb.update", method: "post" });
 		});
 	const g_mongo = program.command('mongo').description('mongo commands');
 
@@ -4974,11 +3926,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.changePassword", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.changePassword", method: "post" });
 		});
 
 	g_mongo
@@ -4991,11 +3939,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.changeStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.changeStatus", method: "post" });
 		});
 
 	g_mongo
@@ -5016,11 +3960,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["replicaSets"] != null) opts["replicaSets"] = opts["replicaSets"] === true || opts["replicaSets"] === "true";
 			const data = await apiPost("mongo.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.create", method: "post" });
 		});
 
 	g_mongo
@@ -5032,11 +3972,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.deploy", method: "post" });
 		});
 
 	g_mongo
@@ -5049,11 +3985,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.move", method: "post" });
 		});
 
 	g_mongo
@@ -5065,11 +3997,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("mongo.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.one", method: "get" });
 		});
 
 	g_mongo
@@ -5084,11 +4012,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("mongo.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.readLogs", method: "get" });
 		});
 
 	g_mongo
@@ -5100,11 +4024,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.rebuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.rebuild", method: "post" });
 		});
 
 	g_mongo
@@ -5117,11 +4037,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.reload", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.reload", method: "post" });
 		});
 
 	g_mongo
@@ -5133,11 +4049,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.remove", method: "post" });
 		});
 
 	g_mongo
@@ -5150,11 +4062,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.saveEnvironment", method: "post" });
 		});
 
 	g_mongo
@@ -5167,11 +4075,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			const data = await apiPost("mongo.saveExternalPort", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.saveExternalPort", method: "post" });
 		});
 
 	g_mongo
@@ -5191,11 +4095,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("mongo.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.search", method: "get" });
 		});
 
 	g_mongo
@@ -5207,11 +4107,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.start", method: "post" });
 		});
 
 	g_mongo
@@ -5223,11 +4119,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mongo.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.stop", method: "post" });
 		});
 
 	g_mongo
@@ -5276,11 +4168,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["replicaSets"] != null) opts["replicaSets"] = opts["replicaSets"] === true || opts["replicaSets"] === "true";
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("mongo.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mongo.update", method: "post" });
 		});
 	const g_mounts = program.command('mounts').description('mounts commands');
 
@@ -5293,11 +4181,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("mounts.allNamedByApplicationId", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mounts.allNamedByApplicationId", method: "get" });
 		});
 
 	g_mounts
@@ -5316,11 +4200,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mounts.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mounts.create", method: "post" });
 		});
 
 	g_mounts
@@ -5333,11 +4213,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("mounts.listByServiceId", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mounts.listByServiceId", method: "get" });
 		});
 
 	g_mounts
@@ -5349,11 +4225,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("mounts.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mounts.one", method: "get" });
 		});
 
 	g_mounts
@@ -5365,11 +4237,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mounts.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mounts.remove", method: "post" });
 		});
 
 	g_mounts
@@ -5396,11 +4264,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mounts.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mounts.update", method: "post" });
 		});
 	const g_mysql = program.command('mysql').description('mysql commands');
 
@@ -5415,11 +4279,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.changePassword", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.changePassword", method: "post" });
 		});
 
 	g_mysql
@@ -5432,11 +4292,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.changeStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.changeStatus", method: "post" });
 		});
 
 	g_mysql
@@ -5457,11 +4313,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.create", method: "post" });
 		});
 
 	g_mysql
@@ -5473,11 +4325,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.deploy", method: "post" });
 		});
 
 	g_mysql
@@ -5490,11 +4338,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.move", method: "post" });
 		});
 
 	g_mysql
@@ -5506,11 +4350,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("mysql.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.one", method: "get" });
 		});
 
 	g_mysql
@@ -5525,11 +4365,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("mysql.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.readLogs", method: "get" });
 		});
 
 	g_mysql
@@ -5541,11 +4377,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.rebuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.rebuild", method: "post" });
 		});
 
 	g_mysql
@@ -5558,11 +4390,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.reload", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.reload", method: "post" });
 		});
 
 	g_mysql
@@ -5574,11 +4402,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.remove", method: "post" });
 		});
 
 	g_mysql
@@ -5591,11 +4415,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.saveEnvironment", method: "post" });
 		});
 
 	g_mysql
@@ -5608,11 +4428,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			const data = await apiPost("mysql.saveExternalPort", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.saveExternalPort", method: "post" });
 		});
 
 	g_mysql
@@ -5632,11 +4448,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("mysql.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.search", method: "get" });
 		});
 
 	g_mysql
@@ -5648,11 +4460,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.start", method: "post" });
 		});
 
 	g_mysql
@@ -5664,11 +4472,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("mysql.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.stop", method: "post" });
 		});
 
 	g_mysql
@@ -5716,11 +4520,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("mysql.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "mysql.update", method: "post" });
 		});
 	const g_network = program.command('network').description('network commands');
 
@@ -5733,11 +4533,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("network.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.all", method: "get" });
 		});
 
 	g_network
@@ -5764,11 +4560,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["enableIPv4"] != null) opts["enableIPv4"] = opts["enableIPv4"] === true || opts["enableIPv4"] === "true";
 			if (opts["enableIPv6"] != null) opts["enableIPv6"] = opts["enableIPv6"] === true || opts["enableIPv6"] === "true";
 			const data = await apiPost("network.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.create", method: "post" });
 		});
 
 	g_network
@@ -5781,11 +4573,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("network.import", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.import", method: "post" });
 		});
 
 	g_network
@@ -5797,11 +4585,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("network.inspect", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.inspect", method: "get" });
 		});
 
 	g_network
@@ -5813,11 +4597,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("network.networksToSync", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.networksToSync", method: "get" });
 		});
 
 	g_network
@@ -5829,11 +4609,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("network.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.one", method: "get" });
 		});
 
 	g_network
@@ -5845,11 +4621,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("network.recreate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.recreate", method: "post" });
 		});
 
 	g_network
@@ -5861,11 +4633,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("network.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.remove", method: "post" });
 		});
 
 	g_network
@@ -5877,11 +4645,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("network.resync", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "network.resync", method: "post" });
 		});
 	const g_notification = program.command('notification').description('notification commands');
 
@@ -5894,11 +4658,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("notification.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.all", method: "get" });
 		});
 
 	g_notification
@@ -5935,11 +4695,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.createCustom", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createCustom", method: "post" });
 		});
 
 	g_notification
@@ -5978,11 +4734,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.createDiscord", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createDiscord", method: "post" });
 		});
 
 	g_notification
@@ -6024,11 +4776,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["smtpPort"] != null) opts["smtpPort"] = Number(opts["smtpPort"]);
 			const data = await apiPost("notification.createEmail", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createEmail", method: "post" });
 		});
 
 	g_notification
@@ -6070,11 +4818,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.createGotify", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createGotify", method: "post" });
 		});
 
 	g_notification
@@ -6110,11 +4854,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.createLark", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createLark", method: "post" });
 		});
 
 	g_notification
@@ -6152,11 +4892,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.createMattermost", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createMattermost", method: "post" });
 		});
 
 	g_notification
@@ -6196,11 +4932,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			const data = await apiPost("notification.createNtfy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createNtfy", method: "post" });
 		});
 
 	g_notification
@@ -6243,11 +4975,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["retry"] != null) opts["retry"] = Number(opts["retry"]);
 			if (opts["expire"] != null) opts["expire"] = Number(opts["expire"]);
 			const data = await apiPost("notification.createPushover", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createPushover", method: "post" });
 		});
 
 	g_notification
@@ -6285,11 +5013,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.createResend", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createResend", method: "post" });
 		});
 
 	g_notification
@@ -6326,11 +5050,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.createSlack", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createSlack", method: "post" });
 		});
 
 	g_notification
@@ -6366,11 +5086,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.createTeams", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createTeams", method: "post" });
 		});
 
 	g_notification
@@ -6408,11 +5124,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.createTelegram", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.createTelegram", method: "post" });
 		});
 
 	g_notification
@@ -6424,11 +5136,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("notification.getEmailProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.getEmailProviders", method: "get" });
 		});
 
 	g_notification
@@ -6440,11 +5148,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("notification.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.one", method: "get" });
 		});
 
 	g_notification
@@ -6463,11 +5167,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["Value"] != null) opts["Value"] = Number(opts["Value"]);
 			if (opts["Threshold"] != null) opts["Threshold"] = Number(opts["Threshold"]);
 			const data = await apiPost("notification.receiveNotification", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.receiveNotification", method: "post" });
 		});
 
 	g_notification
@@ -6479,11 +5179,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.remove", method: "post" });
 		});
 
 	g_notification
@@ -6496,11 +5192,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.testCustomConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testCustomConnection", method: "post" });
 		});
 
 	g_notification
@@ -6514,11 +5206,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.testDiscordConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testDiscordConnection", method: "post" });
 		});
 
 	g_notification
@@ -6535,11 +5223,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["smtpPort"] != null) opts["smtpPort"] = Number(opts["smtpPort"]);
 			const data = await apiPost("notification.testEmailConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testEmailConnection", method: "post" });
 		});
 
 	g_notification
@@ -6556,11 +5240,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.testGotifyConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testGotifyConnection", method: "post" });
 		});
 
 	g_notification
@@ -6572,11 +5252,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.testLarkConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testLarkConnection", method: "post" });
 		});
 
 	g_notification
@@ -6590,11 +5266,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.testMattermostConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testMattermostConnection", method: "post" });
 		});
 
 	g_notification
@@ -6609,11 +5281,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			const data = await apiPost("notification.testNtfyConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testNtfyConnection", method: "post" });
 		});
 
 	g_notification
@@ -6631,11 +5299,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["retry"] != null) opts["retry"] = Number(opts["retry"]);
 			if (opts["expire"] != null) opts["expire"] = Number(opts["expire"]);
 			const data = await apiPost("notification.testPushoverConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testPushoverConnection", method: "post" });
 		});
 
 	g_notification
@@ -6649,11 +5313,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.testResendConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testResendConnection", method: "post" });
 		});
 
 	g_notification
@@ -6666,11 +5326,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.testSlackConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testSlackConnection", method: "post" });
 		});
 
 	g_notification
@@ -6682,11 +5338,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.testTeamsConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testTeamsConnection", method: "post" });
 		});
 
 	g_notification
@@ -6700,11 +5352,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("notification.testTelegramConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.testTelegramConnection", method: "post" });
 		});
 
 	g_notification
@@ -6744,11 +5392,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updateCustom", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateCustom", method: "post" });
 		});
 
 	g_notification
@@ -6790,11 +5434,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.updateDiscord", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateDiscord", method: "post" });
 		});
 
 	g_notification
@@ -6839,11 +5479,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["smtpPort"] != null) opts["smtpPort"] = Number(opts["smtpPort"]);
 			const data = await apiPost("notification.updateEmail", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateEmail", method: "post" });
 		});
 
 	g_notification
@@ -6888,11 +5524,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			if (opts["decoration"] != null) opts["decoration"] = opts["decoration"] === true || opts["decoration"] === "true";
 			const data = await apiPost("notification.updateGotify", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateGotify", method: "post" });
 		});
 
 	g_notification
@@ -6931,11 +5563,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updateLark", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateLark", method: "post" });
 		});
 
 	g_notification
@@ -6976,11 +5604,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updateMattermost", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateMattermost", method: "post" });
 		});
 
 	g_notification
@@ -7023,11 +5647,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			if (opts["priority"] != null) opts["priority"] = Number(opts["priority"]);
 			const data = await apiPost("notification.updateNtfy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateNtfy", method: "post" });
 		});
 
 	g_notification
@@ -7073,11 +5693,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updatePushover", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updatePushover", method: "post" });
 		});
 
 	g_notification
@@ -7118,11 +5734,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updateResend", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateResend", method: "post" });
 		});
 
 	g_notification
@@ -7162,11 +5774,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updateSlack", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateSlack", method: "post" });
 		});
 
 	g_notification
@@ -7205,11 +5813,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updateTeams", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateTeams", method: "post" });
 		});
 
 	g_notification
@@ -7250,11 +5854,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["dockerCleanup"] != null) opts["dockerCleanup"] = opts["dockerCleanup"] === true || opts["dockerCleanup"] === "true";
 			if (opts["serverThreshold"] != null) opts["serverThreshold"] = opts["serverThreshold"] === true || opts["serverThreshold"] === "true";
 			const data = await apiPost("notification.updateTelegram", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "notification.updateTelegram", method: "post" });
 		});
 	const g_organization = program.command('organization').description('organization commands');
 
@@ -7267,11 +5867,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("organization.active", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.active", method: "get" });
 		});
 
 	g_organization
@@ -7283,11 +5879,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("organization.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.all", method: "get" });
 		});
 
 	g_organization
@@ -7299,11 +5891,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("organization.allInvitations", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.allInvitations", method: "get" });
 		});
 
 	g_organization
@@ -7316,11 +5904,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.create", method: "post" });
 		});
 
 	g_organization
@@ -7332,11 +5916,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.delete", method: "post" });
 		});
 
 	g_organization
@@ -7349,11 +5929,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.inviteMember", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.inviteMember", method: "post" });
 		});
 
 	g_organization
@@ -7365,11 +5941,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("organization.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.one", method: "get" });
 		});
 
 	g_organization
@@ -7381,11 +5953,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.removeInvitation", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.removeInvitation", method: "post" });
 		});
 
 	g_organization
@@ -7397,11 +5965,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.setDefault", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.setDefault", method: "post" });
 		});
 
 	g_organization
@@ -7416,11 +5980,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.update", method: "post" });
 		});
 
 	g_organization
@@ -7433,11 +5993,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("organization.updateMemberRole", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "organization.updateMemberRole", method: "post" });
 		});
 	const g_overview = program.command('overview').description('overview commands');
 
@@ -7450,11 +6006,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("overview.backups", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "overview.backups", method: "get" });
 		});
 
 	g_overview
@@ -7466,11 +6018,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("overview.domains", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "overview.domains", method: "get" });
 		});
 
 	g_overview
@@ -7482,11 +6030,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("overview.services", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "overview.services", method: "get" });
 		});
 	const g_patch = program.command('patch').description('patch commands');
 
@@ -7500,11 +6044,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("patch.byEntityId", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.byEntityId", method: "get" });
 		});
 
 	g_patch
@@ -7516,11 +6056,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("patch.cleanPatchRepos", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.cleanPatchRepos", method: "post" });
 		});
 
 	g_patch
@@ -7538,11 +6074,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("patch.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.create", method: "post" });
 		});
 
 	g_patch
@@ -7554,11 +6086,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("patch.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.delete", method: "post" });
 		});
 
 	g_patch
@@ -7571,11 +6099,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("patch.ensureRepo", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.ensureRepo", method: "post" });
 		});
 
 	g_patch
@@ -7589,11 +6113,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("patch.markFileForDeletion", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.markFileForDeletion", method: "post" });
 		});
 
 	g_patch
@@ -7605,11 +6125,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("patch.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.one", method: "get" });
 		});
 
 	g_patch
@@ -7623,11 +6139,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("patch.readRepoDirectories", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.readRepoDirectories", method: "get" });
 		});
 
 	g_patch
@@ -7641,11 +6153,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("patch.readRepoFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.readRepoFile", method: "get" });
 		});
 
 	g_patch
@@ -7661,11 +6169,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("patch.saveFileAsPatch", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.saveFileAsPatch", method: "post" });
 		});
 
 	g_patch
@@ -7679,11 +6183,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("patch.toggleEnabled", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.toggleEnabled", method: "post" });
 		});
 
 	g_patch
@@ -7702,11 +6202,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("patch.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "patch.update", method: "post" });
 		});
 	const g_port = program.command('port').description('port commands');
 
@@ -7724,11 +6220,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["publishedPort"] != null) opts["publishedPort"] = Number(opts["publishedPort"]);
 			if (opts["targetPort"] != null) opts["targetPort"] = Number(opts["targetPort"]);
 			const data = await apiPost("port.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "port.create", method: "post" });
 		});
 
 	g_port
@@ -7740,11 +6232,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("port.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "port.delete", method: "post" });
 		});
 
 	g_port
@@ -7756,11 +6244,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("port.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "port.one", method: "get" });
 		});
 
 	g_port
@@ -7777,11 +6261,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["publishedPort"] != null) opts["publishedPort"] = Number(opts["publishedPort"]);
 			if (opts["targetPort"] != null) opts["targetPort"] = Number(opts["targetPort"]);
 			const data = await apiPost("port.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "port.update", method: "post" });
 		});
 	const g_postgres = program.command('postgres').description('postgres commands');
 
@@ -7795,11 +6275,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.changePassword", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.changePassword", method: "post" });
 		});
 
 	g_postgres
@@ -7812,11 +6288,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.changeStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.changeStatus", method: "post" });
 		});
 
 	g_postgres
@@ -7836,11 +6308,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.create", method: "post" });
 		});
 
 	g_postgres
@@ -7852,11 +6320,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.deploy", method: "post" });
 		});
 
 	g_postgres
@@ -7869,11 +6333,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.move", method: "post" });
 		});
 
 	g_postgres
@@ -7885,11 +6345,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("postgres.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.one", method: "get" });
 		});
 
 	g_postgres
@@ -7904,11 +6360,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("postgres.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.readLogs", method: "get" });
 		});
 
 	g_postgres
@@ -7920,11 +6372,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.rebuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.rebuild", method: "post" });
 		});
 
 	g_postgres
@@ -7937,11 +6385,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.reload", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.reload", method: "post" });
 		});
 
 	g_postgres
@@ -7953,11 +6397,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.remove", method: "post" });
 		});
 
 	g_postgres
@@ -7970,11 +6410,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.saveEnvironment", method: "post" });
 		});
 
 	g_postgres
@@ -7987,11 +6423,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			const data = await apiPost("postgres.saveExternalPort", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.saveExternalPort", method: "post" });
 		});
 
 	g_postgres
@@ -8011,11 +6443,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("postgres.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.search", method: "get" });
 		});
 
 	g_postgres
@@ -8027,11 +6455,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.start", method: "post" });
 		});
 
 	g_postgres
@@ -8043,11 +6467,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("postgres.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.stop", method: "post" });
 		});
 
 	g_postgres
@@ -8094,11 +6514,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("postgres.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "postgres.update", method: "post" });
 		});
 	const g_previewDeployment = program.command('preview-deployment').description('preview-deployment commands');
 
@@ -8111,11 +6527,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("previewDeployment.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "previewDeployment.all", method: "get" });
 		});
 
 	g_previewDeployment
@@ -8127,11 +6539,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("previewDeployment.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "previewDeployment.delete", method: "post" });
 		});
 
 	g_previewDeployment
@@ -8143,11 +6551,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("previewDeployment.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "previewDeployment.one", method: "get" });
 		});
 
 	g_previewDeployment
@@ -8161,11 +6565,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("previewDeployment.redeploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "previewDeployment.redeploy", method: "post" });
 		});
 	const g_project = program.command('project').description('project commands');
 
@@ -8178,11 +6578,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("project.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.all", method: "get" });
 		});
 
 	g_project
@@ -8194,11 +6590,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("project.allForPermissions", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.allForPermissions", method: "get" });
 		});
 
 	g_project
@@ -8210,11 +6602,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("project.completeOnboarding", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.completeOnboarding", method: "post" });
 		});
 
 	g_project
@@ -8228,11 +6616,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("project.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.create", method: "post" });
 		});
 
 	g_project
@@ -8252,11 +6636,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["includeServices"] != null) opts["includeServices"] = opts["includeServices"] === true || opts["includeServices"] === "true";
 			if (opts["duplicateInSameProject"] != null) opts["duplicateInSameProject"] = opts["duplicateInSameProject"] === true || opts["duplicateInSameProject"] === "true";
 			const data = await apiPost("project.duplicate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.duplicate", method: "post" });
 		});
 
 	g_project
@@ -8268,11 +6648,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("project.homeStats", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.homeStats", method: "get" });
 		});
 
 	g_project
@@ -8284,11 +6660,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("project.onboardingStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.onboardingStatus", method: "get" });
 		});
 
 	g_project
@@ -8300,11 +6672,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("project.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.one", method: "get" });
 		});
 
 	g_project
@@ -8316,11 +6684,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("project.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.remove", method: "post" });
 		});
 
 	g_project
@@ -8337,11 +6701,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("project.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.search", method: "get" });
 		});
 
 	g_project
@@ -8358,11 +6718,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("project.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "project.update", method: "post" });
 		});
 	const g_redirects = program.command('redirects').description('redirects commands');
 
@@ -8379,11 +6735,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["permanent"] != null) opts["permanent"] = opts["permanent"] === true || opts["permanent"] === "true";
 			const data = await apiPost("redirects.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redirects.create", method: "post" });
 		});
 
 	g_redirects
@@ -8395,11 +6747,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redirects.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redirects.delete", method: "post" });
 		});
 
 	g_redirects
@@ -8411,11 +6759,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("redirects.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redirects.one", method: "get" });
 		});
 
 	g_redirects
@@ -8431,11 +6775,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["permanent"] != null) opts["permanent"] = opts["permanent"] === true || opts["permanent"] === "true";
 			const data = await apiPost("redirects.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redirects.update", method: "post" });
 		});
 	const g_redis = program.command('redis').description('redis commands');
 
@@ -8449,11 +6789,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.changePassword", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.changePassword", method: "post" });
 		});
 
 	g_redis
@@ -8466,11 +6802,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.changeStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.changeStatus", method: "post" });
 		});
 
 	g_redis
@@ -8488,11 +6820,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.create", method: "post" });
 		});
 
 	g_redis
@@ -8504,11 +6832,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.deploy", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.deploy", method: "post" });
 		});
 
 	g_redis
@@ -8521,11 +6845,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.move", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.move", method: "post" });
 		});
 
 	g_redis
@@ -8537,11 +6857,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("redis.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.one", method: "get" });
 		});
 
 	g_redis
@@ -8556,11 +6872,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["tail"] != null) opts["tail"] = Number(opts["tail"]);
 			const data = await apiGet("redis.readLogs", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.readLogs", method: "get" });
 		});
 
 	g_redis
@@ -8572,11 +6884,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.rebuild", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.rebuild", method: "post" });
 		});
 
 	g_redis
@@ -8589,11 +6897,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.reload", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.reload", method: "post" });
 		});
 
 	g_redis
@@ -8605,11 +6909,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.remove", method: "post" });
 		});
 
 	g_redis
@@ -8622,11 +6922,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.saveEnvironment", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.saveEnvironment", method: "post" });
 		});
 
 	g_redis
@@ -8639,11 +6935,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["externalPort"] != null) opts["externalPort"] = Number(opts["externalPort"]);
 			const data = await apiPost("redis.saveExternalPort", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.saveExternalPort", method: "post" });
 		});
 
 	g_redis
@@ -8663,11 +6955,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["limit"] != null) opts["limit"] = Number(opts["limit"]);
 			if (opts["offset"] != null) opts["offset"] = Number(opts["offset"]);
 			const data = await apiGet("redis.search", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.search", method: "get" });
 		});
 
 	g_redis
@@ -8679,11 +6967,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.start", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.start", method: "post" });
 		});
 
 	g_redis
@@ -8695,11 +6979,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("redis.stop", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.stop", method: "post" });
 		});
 
 	g_redis
@@ -8744,11 +7024,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["replicas"] != null) opts["replicas"] = Number(opts["replicas"]);
 			if (opts["detachDokployNetwork"] != null) opts["detachDokployNetwork"] = opts["detachDokployNetwork"] === true || opts["detachDokployNetwork"] === "true";
 			const data = await apiPost("redis.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "redis.update", method: "post" });
 		});
 	const g_registry = program.command('registry').description('registry commands');
 
@@ -8761,11 +7037,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("registry.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "registry.all", method: "get" });
 		});
 
 	g_registry
@@ -8783,11 +7055,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("registry.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "registry.create", method: "post" });
 		});
 
 	g_registry
@@ -8799,11 +7067,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("registry.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "registry.one", method: "get" });
 		});
 
 	g_registry
@@ -8815,11 +7079,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("registry.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "registry.remove", method: "post" });
 		});
 
 	g_registry
@@ -8837,11 +7097,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("registry.testRegistry", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "registry.testRegistry", method: "post" });
 		});
 
 	g_registry
@@ -8854,11 +7110,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("registry.testRegistryById", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "registry.testRegistryById", method: "post" });
 		});
 
 	g_registry
@@ -8879,11 +7131,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("registry.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "registry.update", method: "post" });
 		});
 	const g_rollback = program.command('rollback').description('rollback commands');
 
@@ -8896,11 +7144,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("rollback.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "rollback.delete", method: "post" });
 		});
 
 	g_rollback
@@ -8912,11 +7156,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("rollback.rollback", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "rollback.rollback", method: "post" });
 		});
 	const g_schedule = program.command('schedule').description('schedule commands');
 
@@ -8946,11 +7186,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("schedule.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "schedule.create", method: "post" });
 		});
 
 	g_schedule
@@ -8962,11 +7198,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("schedule.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "schedule.delete", method: "post" });
 		});
 
 	g_schedule
@@ -8979,11 +7211,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("schedule.list", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "schedule.list", method: "get" });
 		});
 
 	g_schedule
@@ -8995,11 +7223,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("schedule.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "schedule.one", method: "get" });
 		});
 
 	g_schedule
@@ -9011,11 +7235,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("schedule.runManually", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "schedule.runManually", method: "post" });
 		});
 
 	g_schedule
@@ -9044,11 +7264,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("schedule.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "schedule.update", method: "post" });
 		});
 	const g_scim = program.command('scim').description('scim commands');
 
@@ -9061,11 +7277,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("scim.deleteProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "scim.deleteProvider", method: "post" });
 		});
 
 	g_scim
@@ -9077,11 +7289,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("scim.generateToken", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "scim.generateToken", method: "post" });
 		});
 
 	g_scim
@@ -9093,11 +7301,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("scim.listProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "scim.listProviders", method: "get" });
 		});
 	const g_security = program.command('security').description('security commands');
 
@@ -9112,11 +7316,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("security.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "security.create", method: "post" });
 		});
 
 	g_security
@@ -9128,11 +7328,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("security.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "security.delete", method: "post" });
 		});
 
 	g_security
@@ -9144,11 +7340,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("security.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "security.one", method: "get" });
 		});
 
 	g_security
@@ -9162,11 +7354,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("security.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "security.update", method: "post" });
 		});
 	const g_server = program.command('server').description('server commands');
 
@@ -9179,11 +7367,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.all", method: "get" });
 		});
 
 	g_server
@@ -9195,11 +7379,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.allForPermissions", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.allForPermissions", method: "get" });
 		});
 
 	g_server
@@ -9211,11 +7391,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.buildServers", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.buildServers", method: "get" });
 		});
 
 	g_server
@@ -9227,11 +7403,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.count", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.count", method: "get" });
 		});
 
 	g_server
@@ -9252,11 +7424,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["port"] != null) opts["port"] = Number(opts["port"]);
 			if (opts["enableDockerCleanup"] != null) opts["enableDockerCleanup"] = opts["enableDockerCleanup"] === true || opts["enableDockerCleanup"] === "true";
 			const data = await apiPost("server.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.create", method: "post" });
 		});
 
 	g_server
@@ -9268,11 +7436,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.getDefaultCommand", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.getDefaultCommand", method: "get" });
 		});
 
 	g_server
@@ -9286,11 +7450,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.getServerMetrics", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.getServerMetrics", method: "get" });
 		});
 
 	g_server
@@ -9302,11 +7462,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.getServerTime", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.getServerTime", method: "get" });
 		});
 
 	g_server
@@ -9318,11 +7474,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.getServices", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.getServices", method: "get" });
 		});
 
 	g_server
@@ -9334,11 +7486,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.one", method: "get" });
 		});
 
 	g_server
@@ -9350,11 +7498,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.publicIp", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.publicIp", method: "get" });
 		});
 
 	g_server
@@ -9366,11 +7510,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("server.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.remove", method: "post" });
 		});
 
 	g_server
@@ -9382,11 +7522,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.security", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.security", method: "get" });
 		});
 
 	g_server
@@ -9398,11 +7534,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("server.setup", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.setup", method: "post" });
 		});
 
 	g_server
@@ -9415,11 +7547,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("server.setupMonitoring", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.setupMonitoring", method: "post" });
 		});
 
 	g_server
@@ -9442,11 +7570,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["port"] != null) opts["port"] = Number(opts["port"]);
 			if (opts["enableDockerCleanup"] != null) opts["enableDockerCleanup"] = opts["enableDockerCleanup"] === true || opts["enableDockerCleanup"] === "true";
 			const data = await apiPost("server.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.update", method: "post" });
 		});
 
 	g_server
@@ -9459,11 +7583,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["buildsConcurrency"] != null) opts["buildsConcurrency"] = Number(opts["buildsConcurrency"]);
 			const data = await apiPost("server.updateBuildsConcurrency", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.updateBuildsConcurrency", method: "post" });
 		});
 
 	g_server
@@ -9475,11 +7595,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.validate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.validate", method: "get" });
 		});
 
 	g_server
@@ -9491,11 +7607,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("server.withSSHKey", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "server.withSSHKey", method: "get" });
 		});
 	const g_settings = program.command('settings').description('settings commands');
 
@@ -9512,11 +7624,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["https"] != null) opts["https"] = opts["https"] === true || opts["https"] === "true";
 			const data = await apiPost("settings.assignDomainServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.assignDomainServer", method: "post" });
 		});
 
 	g_settings
@@ -9528,11 +7636,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.checkGPUStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.checkGPUStatus", method: "get" });
 		});
 
 	g_settings
@@ -9544,11 +7648,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.checkInfrastructureHealth", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.checkInfrastructureHealth", method: "get" });
 		});
 
 	g_settings
@@ -9560,11 +7660,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanAll", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanAll", method: "post" });
 		});
 
 	g_settings
@@ -9576,11 +7672,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanAllDeploymentQueue", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanAllDeploymentQueue", method: "post" });
 		});
 
 	g_settings
@@ -9592,11 +7684,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanDockerBuilder", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanDockerBuilder", method: "post" });
 		});
 
 	g_settings
@@ -9608,11 +7696,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanDockerPrune", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanDockerPrune", method: "post" });
 		});
 
 	g_settings
@@ -9624,11 +7708,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanMonitoring", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanMonitoring", method: "post" });
 		});
 
 	g_settings
@@ -9640,11 +7720,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanSSHPrivateKey", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanSSHPrivateKey", method: "post" });
 		});
 
 	g_settings
@@ -9656,11 +7732,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanStoppedContainers", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanStoppedContainers", method: "post" });
 		});
 
 	g_settings
@@ -9672,11 +7744,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanUnusedImages", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanUnusedImages", method: "post" });
 		});
 
 	g_settings
@@ -9688,11 +7756,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.cleanUnusedVolumes", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.cleanUnusedVolumes", method: "post" });
 		});
 
 	g_settings
@@ -9704,11 +7768,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getDockerDiskUsage", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getDockerDiskUsage", method: "get" });
 		});
 
 	g_settings
@@ -9720,11 +7780,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getDokployCloudIps", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getDokployCloudIps", method: "get" });
 		});
 
 	g_settings
@@ -9736,11 +7792,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getDokployVersion", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getDokployVersion", method: "get" });
 		});
 
 	g_settings
@@ -9752,11 +7804,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getIp", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getIp", method: "get" });
 		});
 
 	g_settings
@@ -9768,11 +7816,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getLogCleanupStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getLogCleanupStatus", method: "get" });
 		});
 
 	g_settings
@@ -9784,11 +7828,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getOpenApiDocument", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getOpenApiDocument", method: "get" });
 		});
 
 	g_settings
@@ -9800,11 +7840,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getReleaseTag", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getReleaseTag", method: "get" });
 		});
 
 	g_settings
@@ -9816,11 +7852,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getTraefikPorts", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getTraefikPorts", method: "get" });
 		});
 
 	g_settings
@@ -9832,11 +7864,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.getUpdateData", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getUpdateData", method: "post" });
 		});
 
 	g_settings
@@ -9848,11 +7876,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.getWebServerSettings", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.getWebServerSettings", method: "get" });
 		});
 
 	g_settings
@@ -9864,11 +7888,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.haveActivateRequests", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.haveActivateRequests", method: "get" });
 		});
 
 	g_settings
@@ -9880,11 +7900,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.haveTraefikDashboardPortEnabled", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.haveTraefikDashboardPortEnabled", method: "get" });
 		});
 
 	g_settings
@@ -9896,11 +7912,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.health", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.health", method: "get" });
 		});
 
 	g_settings
@@ -9912,11 +7924,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.isCloud", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.isCloud", method: "get" });
 		});
 
 	g_settings
@@ -9928,11 +7936,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.isUserSubscribed", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.isUserSubscribed", method: "get" });
 		});
 
 	g_settings
@@ -9944,11 +7948,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.readDirectories", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.readDirectories", method: "get" });
 		});
 
 	g_settings
@@ -9960,11 +7960,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.readMiddlewareTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.readMiddlewareTraefikConfig", method: "get" });
 		});
 
 	g_settings
@@ -9976,11 +7972,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.readTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.readTraefikConfig", method: "get" });
 		});
 
 	g_settings
@@ -9992,11 +7984,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.readTraefikEnv", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.readTraefikEnv", method: "get" });
 		});
 
 	g_settings
@@ -10009,11 +7997,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.readTraefikFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.readTraefikFile", method: "get" });
 		});
 
 	g_settings
@@ -10025,11 +8009,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("settings.readWebServerTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.readWebServerTraefikConfig", method: "get" });
 		});
 
 	g_settings
@@ -10041,11 +8021,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.reloadServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.reloadServer", method: "post" });
 		});
 
 	g_settings
@@ -10057,11 +8033,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.reloadTraefik", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.reloadTraefik", method: "post" });
 		});
 
 	g_settings
@@ -10073,11 +8045,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.saveSSHPrivateKey", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.saveSSHPrivateKey", method: "post" });
 		});
 
 	g_settings
@@ -10089,11 +8057,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.setupGPU", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.setupGPU", method: "post" });
 		});
 
 	g_settings
@@ -10107,11 +8071,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableDashboard"] != null) opts["enableDashboard"] = opts["enableDashboard"] === true || opts["enableDashboard"] === "true";
 			const data = await apiPost("settings.toggleDashboard", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.toggleDashboard", method: "post" });
 		});
 
 	g_settings
@@ -10124,11 +8084,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enable"] != null) opts["enable"] = opts["enable"] === true || opts["enable"] === "true";
 			const data = await apiPost("settings.toggleRequests", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.toggleRequests", method: "post" });
 		});
 
 	g_settings
@@ -10140,11 +8096,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["buildsConcurrency"] != null) opts["buildsConcurrency"] = Number(opts["buildsConcurrency"]);
 			const data = await apiPost("settings.updateBuildsConcurrency", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateBuildsConcurrency", method: "post" });
 		});
 
 	g_settings
@@ -10158,11 +8110,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enableDockerCleanup"] != null) opts["enableDockerCleanup"] = opts["enableDockerCleanup"] === true || opts["enableDockerCleanup"] === "true";
 			const data = await apiPost("settings.updateDockerCleanup", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateDockerCleanup", method: "post" });
 		});
 
 	g_settings
@@ -10175,11 +8123,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enforceSSO"] != null) opts["enforceSSO"] = opts["enforceSSO"] === true || opts["enforceSSO"] === "true";
 			const data = await apiPost("settings.updateEnforceSSO", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateEnforceSSO", method: "post" });
 		});
 
 	g_settings
@@ -10191,11 +8135,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateLogCleanup", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateLogCleanup", method: "post" });
 		});
 
 	g_settings
@@ -10207,11 +8147,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateMiddlewareTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateMiddlewareTraefikConfig", method: "post" });
 		});
 
 	g_settings
@@ -10224,11 +8160,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["remoteServersOnly"] != null) opts["remoteServersOnly"] = opts["remoteServersOnly"] === true || opts["remoteServersOnly"] === "true";
 			const data = await apiPost("settings.updateRemoteServersOnly", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateRemoteServersOnly", method: "post" });
 		});
 
 	g_settings
@@ -10240,11 +8172,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateServer", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateServer", method: "post" });
 		});
 
 	g_settings
@@ -10256,11 +8184,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateServerIp", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateServerIp", method: "post" });
 		});
 
 	g_settings
@@ -10272,11 +8196,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateTraefikConfig", method: "post" });
 		});
 
 	g_settings
@@ -10290,11 +8210,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateTraefikFile", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateTraefikFile", method: "post" });
 		});
 
 	g_settings
@@ -10307,11 +8223,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateTraefikPorts", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateTraefikPorts", method: "post" });
 		});
 
 	g_settings
@@ -10323,11 +8235,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.updateWebServerTraefikConfig", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.updateWebServerTraefikConfig", method: "post" });
 		});
 
 	g_settings
@@ -10340,11 +8248,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("settings.writeTraefikEnv", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "settings.writeTraefikEnv", method: "post" });
 		});
 	const g_sshKey = program.command('ssh-key').description('ssh-key commands');
 
@@ -10357,11 +8261,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sshKey.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sshKey.all", method: "get" });
 		});
 
 	g_sshKey
@@ -10373,11 +8273,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sshKey.allForApps", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sshKey.allForApps", method: "get" });
 		});
 
 	g_sshKey
@@ -10393,11 +8289,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sshKey.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sshKey.create", method: "post" });
 		});
 
 	g_sshKey
@@ -10409,11 +8301,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sshKey.generate", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sshKey.generate", method: "post" });
 		});
 
 	g_sshKey
@@ -10425,11 +8313,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sshKey.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sshKey.one", method: "get" });
 		});
 
 	g_sshKey
@@ -10441,11 +8325,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sshKey.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sshKey.remove", method: "post" });
 		});
 
 	g_sshKey
@@ -10460,11 +8340,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sshKey.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sshKey.update", method: "post" });
 		});
 	const g_sso = program.command('sso').description('sso commands');
 
@@ -10477,11 +8353,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sso.addTrustedOrigin", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.addTrustedOrigin", method: "post" });
 		});
 
 	g_sso
@@ -10493,11 +8365,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sso.deleteProvider", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.deleteProvider", method: "post" });
 		});
 
 	g_sso
@@ -10509,11 +8377,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sso.enforceSSO", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.enforceSSO", method: "get" });
 		});
 
 	g_sso
@@ -10525,11 +8389,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sso.getTrustedOrigins", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.getTrustedOrigins", method: "get" });
 		});
 
 	g_sso
@@ -10541,11 +8401,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sso.listProviders", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.listProviders", method: "get" });
 		});
 
 	g_sso
@@ -10557,11 +8413,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sso.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.one", method: "get" });
 		});
 
 	g_sso
@@ -10580,11 +8432,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["overrideUserInfo"] != null) opts["overrideUserInfo"] = opts["overrideUserInfo"] === true || opts["overrideUserInfo"] === "true";
 			const data = await apiPost("sso.register", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.register", method: "post" });
 		});
 
 	g_sso
@@ -10596,11 +8444,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sso.removeTrustedOrigin", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.removeTrustedOrigin", method: "post" });
 		});
 
 	g_sso
@@ -10612,11 +8456,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("sso.showSignInWithSSO", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.showSignInWithSSO", method: "get" });
 		});
 
 	g_sso
@@ -10635,11 +8475,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["overrideUserInfo"] != null) opts["overrideUserInfo"] = opts["overrideUserInfo"] === true || opts["overrideUserInfo"] === "true";
 			const data = await apiPost("sso.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.update", method: "post" });
 		});
 
 	g_sso
@@ -10652,11 +8488,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("sso.updateTrustedOrigin", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "sso.updateTrustedOrigin", method: "post" });
 		});
 	const g_stripe = program.command('stripe').description('stripe commands');
 
@@ -10669,11 +8501,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("stripe.canCreateMoreServers", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.canCreateMoreServers", method: "get" });
 		});
 
 	g_stripe
@@ -10690,11 +8518,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverQuantity"] != null) opts["serverQuantity"] = Number(opts["serverQuantity"]);
 			if (opts["isAnnual"] != null) opts["isAnnual"] = opts["isAnnual"] === true || opts["isAnnual"] === "true";
 			const data = await apiPost("stripe.createCheckoutSession", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.createCheckoutSession", method: "post" });
 		});
 
 	g_stripe
@@ -10706,11 +8530,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("stripe.createCustomerPortalSession", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.createCustomerPortalSession", method: "post" });
 		});
 
 	g_stripe
@@ -10722,11 +8542,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("stripe.getBillingStatus", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.getBillingStatus", method: "get" });
 		});
 
 	g_stripe
@@ -10738,11 +8554,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("stripe.getCurrentPlan", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.getCurrentPlan", method: "get" });
 		});
 
 	g_stripe
@@ -10754,11 +8566,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("stripe.getInvoices", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.getInvoices", method: "get" });
 		});
 
 	g_stripe
@@ -10770,11 +8578,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("stripe.getProducts", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.getProducts", method: "get" });
 		});
 
 	g_stripe
@@ -10786,11 +8590,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("stripe.startFreeTrial", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.startFreeTrial", method: "post" });
 		});
 
 	g_stripe
@@ -10803,11 +8603,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("stripe.updateInvoiceNotifications", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.updateInvoiceNotifications", method: "post" });
 		});
 
 	g_stripe
@@ -10823,11 +8619,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serverQuantity"] != null) opts["serverQuantity"] = Number(opts["serverQuantity"]);
 			if (opts["isAnnual"] != null) opts["isAnnual"] = opts["isAnnual"] === true || opts["isAnnual"] === "true";
 			const data = await apiPost("stripe.upgradeSubscription", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "stripe.upgradeSubscription", method: "post" });
 		});
 	const g_swarm = program.command('swarm').description('swarm commands');
 
@@ -10840,11 +8632,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("swarm.getContainerStats", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "swarm.getContainerStats", method: "get" });
 		});
 
 	g_swarm
@@ -10856,11 +8644,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("swarm.getNodeApps", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "swarm.getNodeApps", method: "get" });
 		});
 
 	g_swarm
@@ -10873,11 +8657,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("swarm.getNodeInfo", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "swarm.getNodeInfo", method: "get" });
 		});
 
 	g_swarm
@@ -10889,11 +8669,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("swarm.getNodes", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "swarm.getNodes", method: "get" });
 		});
 	const g_tag = program.command('tag').description('tag commands');
 
@@ -10906,11 +8682,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("tag.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.all", method: "get" });
 		});
 
 	g_tag
@@ -10923,11 +8695,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("tag.assignToProject", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.assignToProject", method: "post" });
 		});
 
 	g_tag
@@ -10940,11 +8708,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("tag.bulkAssign", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.bulkAssign", method: "post" });
 		});
 
 	g_tag
@@ -10957,11 +8721,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("tag.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.create", method: "post" });
 		});
 
 	g_tag
@@ -10973,11 +8733,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("tag.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.one", method: "get" });
 		});
 
 	g_tag
@@ -10989,11 +8745,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("tag.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.remove", method: "post" });
 		});
 
 	g_tag
@@ -11006,11 +8758,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("tag.removeFromProject", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.removeFromProject", method: "post" });
 		});
 
 	g_tag
@@ -11026,11 +8774,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("tag.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "tag.update", method: "post" });
 		});
 	const g_user = program.command('user').description('user commands');
 
@@ -11043,11 +8787,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.all", method: "get" });
 		});
 
 	g_user
@@ -11096,11 +8836,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["canDeleteEnvironments"] != null) opts["canDeleteEnvironments"] = opts["canDeleteEnvironments"] === true || opts["canDeleteEnvironments"] === "true";
 			if (opts["canCreateEnvironments"] != null) opts["canCreateEnvironments"] = opts["canCreateEnvironments"] === true || opts["canCreateEnvironments"] === "true";
 			const data = await apiPost("user.assignPermissions", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.assignPermissions", method: "post" });
 		});
 
 	g_user
@@ -11112,11 +8848,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.checkUserOrganizations", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.checkUserOrganizations", method: "get" });
 		});
 
 	g_user
@@ -11144,11 +8876,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["refillAmount"] != null) opts["refillAmount"] = Number(opts["refillAmount"]);
 			if (opts["refillInterval"] != null) opts["refillInterval"] = Number(opts["refillInterval"]);
 			const data = await apiPost("user.createApiKey", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.createApiKey", method: "post" });
 		});
 
 	g_user
@@ -11162,11 +8890,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.createUserWithCredentials", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.createUserWithCredentials", method: "post" });
 		});
 
 	g_user
@@ -11178,11 +8902,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.deleteApiKey", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.deleteApiKey", method: "post" });
 		});
 
 	g_user
@@ -11194,11 +8914,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.generateToken", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.generateToken", method: "post" });
 		});
 
 	g_user
@@ -11210,11 +8926,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.get", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.get", method: "get" });
 		});
 
 	g_user
@@ -11226,11 +8938,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getBackups", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getBackups", method: "get" });
 		});
 
 	g_user
@@ -11242,11 +8950,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getBookmarkedTemplates", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getBookmarkedTemplates", method: "get" });
 		});
 
 	g_user
@@ -11261,11 +8965,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getContainerMetrics", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getContainerMetrics", method: "get" });
 		});
 
 	g_user
@@ -11277,11 +8977,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getInvitations", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getInvitations", method: "get" });
 		});
 
 	g_user
@@ -11293,11 +8989,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getMetricsToken", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getMetricsToken", method: "get" });
 		});
 
 	g_user
@@ -11309,11 +9001,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getPermissions", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getPermissions", method: "get" });
 		});
 
 	g_user
@@ -11325,11 +9013,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getServerMetrics", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getServerMetrics", method: "get" });
 		});
 
 	g_user
@@ -11341,11 +9025,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.getUserByToken", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.getUserByToken", method: "get" });
 		});
 
 	g_user
@@ -11357,11 +9037,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.haveRootAccess", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.haveRootAccess", method: "get" });
 		});
 
 	g_user
@@ -11373,11 +9049,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.listPasskeys", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.listPasskeys", method: "get" });
 		});
 
 	g_user
@@ -11389,11 +9061,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.listSessions", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.listSessions", method: "get" });
 		});
 
 	g_user
@@ -11405,11 +9073,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.one", method: "get" });
 		});
 
 	g_user
@@ -11421,11 +9085,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.remove", method: "post" });
 		});
 
 	g_user
@@ -11437,11 +9097,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.revokeSession", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.revokeSession", method: "post" });
 		});
 
 	g_user
@@ -11454,11 +9110,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.sendInvitation", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.sendInvitation", method: "post" });
 		});
 
 	g_user
@@ -11470,11 +9122,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("user.session", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.session", method: "get" });
 		});
 
 	g_user
@@ -11486,11 +9134,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("user.toggleTemplateBookmark", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.toggleTemplateBookmark", method: "post" });
 		});
 
 	g_user
@@ -11542,11 +9186,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["serversQuantity"] != null) opts["serversQuantity"] = Number(opts["serversQuantity"]);
 			if (opts["sendInvoiceNotifications"] != null) opts["sendInvoiceNotifications"] = opts["sendInvoiceNotifications"] === true || opts["sendInvoiceNotifications"] === "true";
 			const data = await apiPost("user.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "user.update", method: "post" });
 		});
 	const g_vaultProvider = program.command('vault-provider').description('vault-provider commands');
 
@@ -11559,11 +9199,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("vaultProvider.all", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "vaultProvider.all", method: "get" });
 		});
 
 	g_vaultProvider
@@ -11577,11 +9213,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("vaultProvider.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "vaultProvider.create", method: "post" });
 		});
 
 	g_vaultProvider
@@ -11595,11 +9227,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("vaultProvider.listSecretNames", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "vaultProvider.listSecretNames", method: "get" });
 		});
 
 	g_vaultProvider
@@ -11611,11 +9239,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("vaultProvider.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "vaultProvider.one", method: "get" });
 		});
 
 	g_vaultProvider
@@ -11627,11 +9251,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("vaultProvider.remove", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "vaultProvider.remove", method: "post" });
 		});
 
 	g_vaultProvider
@@ -11644,11 +9264,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("vaultProvider.testConnection", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "vaultProvider.testConnection", method: "post" });
 		});
 
 	g_vaultProvider
@@ -11663,11 +9279,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("vaultProvider.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "vaultProvider.update", method: "post" });
 		});
 	const g_volumeBackups = program.command('volume-backups').description('volume-backups commands');
 
@@ -11703,11 +9315,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("volumeBackups.create", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "volumeBackups.create", method: "post" });
 		});
 
 	g_volumeBackups
@@ -11719,11 +9327,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("volumeBackups.delete", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "volumeBackups.delete", method: "post" });
 		});
 
 	g_volumeBackups
@@ -11736,11 +9340,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("volumeBackups.list", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "volumeBackups.list", method: "get" });
 		});
 
 	g_volumeBackups
@@ -11752,11 +9352,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("volumeBackups.one", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "volumeBackups.one", method: "get" });
 		});
 
 	g_volumeBackups
@@ -11768,11 +9364,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("volumeBackups.runManually", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "volumeBackups.runManually", method: "post" });
 		});
 
 	g_volumeBackups
@@ -11808,11 +9400,7 @@ export function registerGeneratedCommands(program: Command) {
 			if (opts["keepLatestCount"] != null) opts["keepLatestCount"] = Number(opts["keepLatestCount"]);
 			if (opts["enabled"] != null) opts["enabled"] = opts["enabled"] === true || opts["enabled"] === "true";
 			const data = await apiPost("volumeBackups.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "volumeBackups.update", method: "post" });
 		});
 	const g_whitelabeling = program.command('whitelabeling').description('whitelabeling commands');
 
@@ -11825,11 +9413,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("whitelabeling.get", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "whitelabeling.get", method: "get" });
 		});
 
 	g_whitelabeling
@@ -11841,11 +9425,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiGet("whitelabeling.getPublic", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "whitelabeling.getPublic", method: "get" });
 		});
 
 	g_whitelabeling
@@ -11857,11 +9437,7 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("whitelabeling.reset", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "whitelabeling.reset", method: "post" });
 		});
 
 	g_whitelabeling
@@ -11873,10 +9449,6 @@ export function registerGeneratedCommands(program: Command) {
 			const jsonOutput = opts.json; delete opts.json;
 
 			const data = await apiPost("whitelabeling.update", opts);
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "whitelabeling.update", method: "post" });
 		});
 }

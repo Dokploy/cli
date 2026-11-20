@@ -86,7 +86,8 @@ interface OptionInfo {
 // ---------------------------------------------------------------------------
 
 function resolveType(prop: SchemaProperty): "string" | "number" | "boolean" {
-	const raw = prop.type ?? prop.anyOf?.find((s) => s.type && s.type !== "null")?.type;
+	const raw =
+		prop.type ?? prop.anyOf?.find((s) => s.type && s.type !== "null")?.type;
 	if (raw === "number" || raw === "integer") return "number";
 	if (raw === "boolean") return "boolean";
 	return "string";
@@ -98,7 +99,9 @@ function resolveEnum(prop: SchemaProperty): string[] | undefined {
 	return inner?.enum;
 }
 
-function extractOptionsFromSchema(schema: SchemaObject | undefined): OptionInfo[] {
+function extractOptionsFromSchema(
+	schema: SchemaObject | undefined,
+): OptionInfo[] {
 	if (!schema?.properties) return [];
 	const required = new Set(schema.required ?? []);
 	return Object.entries(schema.properties).map(([name, prop]) => {
@@ -108,7 +111,10 @@ function extractOptionsFromSchema(schema: SchemaObject | undefined): OptionInfo[
 		if (enumValues) desc += ` (${enumValues.join(", ")})`;
 		return {
 			name,
-			flag: `--${name} <${type === "boolean" ? "" : "value"}>`.replace(/ <>/g, ""),
+			flag: `--${name} <${type === "boolean" ? "" : "value"}>`.replace(
+				/ <>/g,
+				"",
+			),
 			description: desc,
 			required: required.has(name),
 			type,
@@ -125,7 +131,10 @@ function extractOptionsFromParams(params: ParameterObject[]): OptionInfo[] {
 		if (enumValues) desc += ` (${enumValues.join(", ")})`;
 		return {
 			name: p.name,
-			flag: `--${p.name} <${type === "boolean" ? "" : "value"}>`.replace(/ <>/g, ""),
+			flag: `--${p.name} <${type === "boolean" ? "" : "value"}>`.replace(
+				/ <>/g,
+				"",
+			),
 			description: desc,
 			required: p.required ?? false,
 			type,
@@ -154,7 +163,9 @@ function parseSpec(spec: OpenAPISpec): CommandInfo[] {
 			if (!group || !action) continue;
 
 			const bodySchema = op.requestBody?.content?.["application/json"]?.schema;
-			const paramOptions = op.parameters ? extractOptionsFromParams(op.parameters) : [];
+			const paramOptions = op.parameters
+				? extractOptionsFromParams(op.parameters)
+				: [];
 			const bodyOptions = extractOptionsFromSchema(bodySchema);
 			const options = [...paramOptions, ...bodyOptions];
 
@@ -177,9 +188,8 @@ function parseSpec(spec: OpenAPISpec): CommandInfo[] {
 // ---------------------------------------------------------------------------
 
 function generateOptionLine(opt: OptionInfo): string {
-	const flag = opt.type === "boolean"
-		? `--${opt.name}`
-		: `--${opt.name} <value>`;
+	const flag =
+		opt.type === "boolean" ? `--${opt.name}` : `--${opt.name} <value>`;
 	const escaped = opt.description.replace(/'/g, "\\'");
 	const line = opt.required
 		? `.requiredOption('${flag}', '${escaped}')`
@@ -208,9 +218,10 @@ function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 		.map((c) => `\t\t\t${c}`)
 		.join("\n");
 
-	const apiCall = cmd.method === "post"
-		? `await apiPost("${cmd.endpoint}", opts)`
-		: `await apiGet("${cmd.endpoint}", opts)`;
+	const apiCall =
+		cmd.method === "post"
+			? `await apiPost("${cmd.endpoint}", opts)`
+			: `await apiGet("${cmd.endpoint}", opts)`;
 
 	const escapedDesc = cmd.description.replace(/'/g, "\\'");
 
@@ -224,11 +235,7 @@ function generateCommandCode(cmd: CommandInfo, groupVar: string): string {
 			const jsonOutput = opts.json; delete opts.json;
 ${coercions}
 			const data = ${apiCall};
-			if (jsonOutput) {
-				console.log(JSON.stringify(data, null, 2));
-			} else {
-				printOutput(data);
-			}
+			render(data, { json: jsonOutput, endpoint: "${cmd.endpoint}", method: "${cmd.method}" });
 		});`;
 }
 
@@ -242,10 +249,14 @@ function generateFile(commands: CommandInfo[]): string {
 	}
 
 	const groupBlocks: string[] = [];
-	for (const [group, cmds] of [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+	for (const [group, cmds] of [...groups.entries()].sort((a, b) =>
+		a[0].localeCompare(b[0]),
+	)) {
 		const varName = `g_${group.replace(/[^a-zA-Z0-9]/g, "_")}`;
 		const kebabGroup = camelToKebab(group);
-		groupBlocks.push(`\tconst ${varName} = program.command('${kebabGroup}').description('${kebabGroup} commands');`);
+		groupBlocks.push(
+			`\tconst ${varName} = program.command('${kebabGroup}').description('${kebabGroup} commands');`,
+		);
 		for (const cmd of cmds) {
 			groupBlocks.push(generateCommandCode(cmd, varName));
 		}
@@ -255,20 +266,8 @@ function generateFile(commands: CommandInfo[]): string {
 // Run: npx tsx scripts/generate.ts
 
 import type { Command } from "commander";
-import chalk from "chalk";
 import { apiPost, apiGet } from "../client.js";
-
-function printOutput(data: unknown) {
-	if (data === null || data === undefined) {
-		console.log(chalk.green("OK"));
-		return;
-	}
-	if (typeof data === "string") {
-		console.log(data);
-		return;
-	}
-	console.log(JSON.stringify(data, null, 2));
-}
+import { render } from "../ui/render.js";
 
 export function registerGeneratedCommands(program: Command) {
 ${groupBlocks.join("\n")}
@@ -286,4 +285,6 @@ const commands = parseSpec(spec);
 fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
 fs.writeFileSync(OUT_PATH, generateFile(commands));
 
-console.log(`Generated ${commands.length} commands → ${path.relative(ROOT, OUT_PATH)}`);
+console.log(
+	`Generated ${commands.length} commands → ${path.relative(ROOT, OUT_PATH)}`,
+);
