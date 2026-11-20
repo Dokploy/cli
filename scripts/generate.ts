@@ -191,9 +191,12 @@ function generateOptionLine(opt: OptionInfo): string {
 	const flag =
 		opt.type === "boolean" ? `--${opt.name}` : `--${opt.name} <value>`;
 	const escaped = opt.description.replace(/'/g, "\\'");
-	return opt.required
+	const line = opt.required
 		? `.requiredOption('${flag}', '${escaped}')`
 		: `.option('${flag}', '${escaped}')`;
+	if (opt.type !== "boolean") return line;
+	// --no-x lets booleans be set to false; undefined when neither flag is passed.
+	return `${line}\n\t\t.option('--no-${opt.name}', 'set ${opt.name} to false')`;
 }
 
 function generateCoercion(opt: OptionInfo): string {
